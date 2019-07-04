@@ -23,6 +23,7 @@ set(library_name ${PROJECT_NAME})
 
 add_library(${library_name} SHARED
   src/behavior_tree_engine.cpp
+  src/recovery_node.cpp
 )
 
 set(dependencies

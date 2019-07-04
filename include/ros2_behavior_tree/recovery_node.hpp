@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NAV2_BT_NAVIGATOR__RECOVERY_NODE_HPP_
-#define NAV2_BT_NAVIGATOR__RECOVERY_NODE_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__RECOVERY_NODE_HPP_
+#define ROS2_BEHAVIOR_TREE__RECOVERY_NODE_HPP_
 
 #include <string>
+
 #include "behaviortree_cpp/control_node.h"
 
-namespace nav2_bt_navigator
+namespace ros2_behavior_tree
 {
 /**
  * @brief The RecoveryNode has only two children and returns SUCCESS if and only if the first child
@@ -36,7 +37,6 @@ class RecoveryNode : public BT::ControlNode
 {
 public:
   RecoveryNode(const std::string & name, const BT::NodeParameters & params);
-
   ~RecoveryNode() override = default;
 
   // Any BT node that accepts parameters must provide a requiredNodeParameters method
@@ -52,6 +52,6 @@ private:
   unsigned int retry_count_;
   BT::NodeStatus tick() override;
 };
-}  // namespace nav2_bt_navigator
+}  // namespace ros2_behavior_tree
 
-#endif  // NAV2_BT_NAVIGATOR__RECOVERY_NODE_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__RECOVERY_NODE_HPP_

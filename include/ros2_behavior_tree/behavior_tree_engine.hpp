@@ -68,6 +68,13 @@ public:
     BT::applyRecursiveVisitor(root_node, visitor);
   }
 
+  BT::NodeStatus message(BT::TreeNode & tree_node);
+  BT::NodeStatus setCondition(BT::TreeNode & tree_node);
+
+  void registerSimpleActionWithParameters(
+    const std::string & ID,
+    const BT::SimpleActionNode::TickFunctor & tick_functor, const BT::NodeParameters & params);
+
 protected:
   // The factory that will be used to dynamically construct the behavior tree
   BT::BehaviorTreeFactory factory_;

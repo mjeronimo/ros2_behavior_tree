@@ -12,18 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include "nav2_bt_navigator/recovery_node.hpp"
+#include "ros2_behavior_tree/recovery_node.hpp"
 
-namespace nav2_bt_navigator
+#include <string>
+
+namespace ros2_behavior_tree
 {
+
 RecoveryNode::RecoveryNode(const std::string & name, const BT::NodeParameters & params)
 : BT::ControlNode::ControlNode(name, params), current_child_idx_(0), retry_count_(0)
 {
   getParam<unsigned int>("number_of_retries", number_of_retries_);
 }
 
-BT::NodeStatus RecoveryNode::tick()
+BT::NodeStatus
+RecoveryNode::tick()
 {
   const unsigned children_count = children_nodes_.size();
 
@@ -68,7 +71,7 @@ BT::NodeStatus RecoveryNode::tick()
         default:
           {
           }
-      }  // end switch
+      }
 
     } else if (current_child_idx_ == 1) {
       switch (child_status) {
@@ -97,11 +100,12 @@ BT::NodeStatus RecoveryNode::tick()
         default:
           {
           }
-      }  // end switch
+      }
     }
-  }  // end while loop
+  }
+
   retry_count_ = 0;
   return BT::NodeStatus::FAILURE;
 }
 
-}  // namespace nav2_bt_navigator
+}  // namespace ros2_behavior_tree

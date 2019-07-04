@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Intel Corporation
+// Copyright (c) 2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,29 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NAV2_BT_NAVIGATOR__BT_NAVIGATOR_HPP_
-#define NAV2_BT_NAVIGATOR__BT_NAVIGATOR_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__BT_NAVIGATOR_HPP_
+#define ROS2_BEHAVIOR_TREE__BT_NAVIGATOR_HPP_
 
 #include <memory>
 #include <string>
 
 #include "behaviortree_cpp/blackboard/blackboard_local.h"
-#include "geometry_msgs/msg/pose_stamped.hpp"
-#include "nav2_bt_navigator/navigate_to_pose_behavior_tree.hpp"
-#include "nav2_util/lifecycle_node.hpp"
-#include "nav2_msgs/action/navigate_to_pose.hpp"
-#include "nav2_msgs/msg/path.hpp"
-#include "nav2_util/simple_action_server.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "ros2_behavior_treee/behavior_tree_engine.hpp"
 
-namespace nav2_bt_navigator
+namespace ros2_behavior_treee
 {
 
-class BtNavigator : public nav2_util::LifecycleNode
+class BtExecutor : public rclcpp_lifecycle::LifecycleNode
 {
 public:
-  BtNavigator();
-  ~BtNavigator();
+  BtExecutor();
+  virtual ~BtExecutor();
 
 protected:
   // The lifecycle node interface
@@ -53,21 +49,11 @@ protected:
   // The action server callback
   void navigateToPose();
 
-  // Goal pose initialization on the blackboard
-  void initializeGoalPose();
-
-  // A subscription and callback to handle the topic-based goal published from rviz
-  void onGoalPoseReceived(const geometry_msgs::msg::PoseStamped::SharedPtr pose);
-  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr goal_sub_;
-
   // The blackboard shared by all of the nodes in the tree
   BT::Blackboard::Ptr blackboard_;
 
   // The goal (on the blackboard) to be passed to ComputePath
   std::shared_ptr<geometry_msgs::msg::PoseStamped> goal_;
-
-  // The path (on the blackboard) to be returned from ComputePath and sent to the FollowPath task
-  std::shared_ptr<nav2_msgs::msg::Path> path_;
 
   // The XML string that defines the Behavior Tree to create
   std::string xml_string_;
@@ -78,13 +64,10 @@ protected:
   // The complete behavior tree that results from parsing the incoming XML
   std::unique_ptr<BT::Tree> tree_;
 
-  // A client that we'll use to send a command message to our own task server
-  rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr self_client_;
-
   // A regular, non-spinning ROS node that we can use for calls to the action client
   rclcpp::Node::SharedPtr client_node_;
 };
 
-}  // namespace nav2_bt_navigator
+}  // namespace ros2_behavior_treee
 
-#endif  // NAV2_BT_NAVIGATOR__BT_NAVIGATOR_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__BT_NAVIGATOR_HPP_

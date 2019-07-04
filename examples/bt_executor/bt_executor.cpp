@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Intel Corporation
+// Copyright (c) 2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "nav2_bt_navigator/bt_navigator.hpp"
+#include "behavior_tree_node.hpp"
 
 #include <fstream>
 #include <memory>
@@ -20,13 +20,13 @@
 #include <string>
 #include <utility>
 
-#include "nav2_behavior_tree/bt_conversions.hpp"
+#include "ros2_behavior_tree/bt_conversions.hpp"
 
-namespace nav2_bt_navigator
+namespace ros2_behavior_tree
 {
 
-BtNavigator::BtNavigator()
-: nav2_util::LifecycleNode("bt_navigator", "", true)
+BtExecutor::BtExecutor()
+: rclcpp_lifecycle::LifecycleNode("bt_navigator")
 {
   RCLCPP_INFO(get_logger(), "Creating");
 
@@ -34,13 +34,13 @@ BtNavigator::BtNavigator()
   declare_parameter("bt_xml_filename", rclcpp::ParameterValue(std::string("bt_navigator.xml")));
 }
 
-BtNavigator::~BtNavigator()
+BtExecutor::~BtExecutor()
 {
   RCLCPP_INFO(get_logger(), "Destroying");
 }
 
 nav2_util::CallbackReturn
-BtNavigator::on_configure(const rclcpp_lifecycle::State & /*state*/)
+BtExecutor::on_configure(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Configuring");
   auto node = shared_from_this();
@@ -50,34 +50,23 @@ BtNavigator::on_configure(const rclcpp_lifecycle::State & /*state*/)
   // Support for handling the topic-based goal pose from rviz
   client_node_ = std::make_shared<rclcpp::Node>("_", options);
 
-  self_client_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(
-    client_node_, "NavigateToPose");
-
-  goal_sub_ = rclcpp_node_->create_subscription<geometry_msgs::msg::PoseStamped>(
-    "/move_base_simple/goal",
-    rclcpp::SystemDefaultsQoS(),
-    std::bind(&BtNavigator::onGoalPoseReceived, this, std::placeholders::_1));
-
   // Create an action server that we implement with our navigateToPose method
   action_server_ = std::make_unique<ActionServer>(rclcpp_node_, "NavigateToPose",
-      std::bind(&BtNavigator::navigateToPose, this), false);
+      std::bind(&BtExecutor::navigateToPose, this), false);
 
   // Create the class that registers our custom nodes and executes the BT
   bt_ = std::make_unique<NavigateToPoseBehaviorTree>();
 
   // Create the path that will be returned from ComputePath and sent to FollowPath
   goal_ = std::make_shared<geometry_msgs::msg::PoseStamped>();
-  path_ = std::make_shared<nav2_msgs::msg::Path>();
 
   // Create the blackboard that will be shared by all of the nodes in the tree
   blackboard_ = BT::Blackboard::create<BT::BlackboardLocal>();
 
   // Put items on the blackboard
   blackboard_->set<geometry_msgs::msg::PoseStamped::SharedPtr>("goal", goal_);  // NOLINT
-  blackboard_->set<nav2_msgs::msg::Path::SharedPtr>("path", path_);  // NOLINT
   blackboard_->set<rclcpp::Node::SharedPtr>("node", client_node_);  // NOLINT
   blackboard_->set<std::chrono::milliseconds>("node_loop_timeout", std::chrono::milliseconds(10));  // NOLINT
-  blackboard_->set<bool>("path_updated", false);  // NOLINT
   blackboard_->set<bool>("initial_pose_received", false);  // NOLINT
 
   // Get the BT filename to use from the node parameter
@@ -112,7 +101,7 @@ BtNavigator::on_configure(const rclcpp_lifecycle::State & /*state*/)
 }
 
 nav2_util::CallbackReturn
-BtNavigator::on_activate(const rclcpp_lifecycle::State & /*state*/)
+BtExecutor::on_activate(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Activating");
 
@@ -122,7 +111,7 @@ BtNavigator::on_activate(const rclcpp_lifecycle::State & /*state*/)
 }
 
 nav2_util::CallbackReturn
-BtNavigator::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
+BtExecutor::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Deactivating");
 
@@ -132,15 +121,12 @@ BtNavigator::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
 }
 
 nav2_util::CallbackReturn
-BtNavigator::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
+BtExecutor::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Cleaning up");
 
-  goal_sub_.reset();
   client_node_.reset();
-  self_client_.reset();
   action_server_.reset();
-  path_.reset();
   xml_string_.clear();
   tree_.reset();
   blackboard_.reset();
@@ -150,24 +136,22 @@ BtNavigator::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
 }
 
 nav2_util::CallbackReturn
-BtNavigator::on_error(const rclcpp_lifecycle::State & /*state*/)
+BtExecutor::on_error(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_FATAL(get_logger(), "Lifecycle node entered error state");
   return nav2_util::CallbackReturn::SUCCESS;
 }
 
 nav2_util::CallbackReturn
-BtNavigator::on_shutdown(const rclcpp_lifecycle::State & /*state*/)
+BtExecutor::on_shutdown(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Shutting down");
   return nav2_util::CallbackReturn::SUCCESS;
 }
 
 void
-BtNavigator::navigateToPose()
+BtExecutor::navigateToPose()
 {
-  initializeGoalPose();
-
   auto is_canceling = [this]() {return action_server_->is_cancel_requested();};
 
   auto on_loop = [this]() {
@@ -204,24 +188,4 @@ BtNavigator::navigateToPose()
   }
 }
 
-void
-BtNavigator::initializeGoalPose()
-{
-  auto goal = action_server_->get_current_goal();
-
-  RCLCPP_INFO(get_logger(), "Begin navigating from current location to (%.2f, %.2f)",
-    goal->pose.pose.position.x, goal->pose.pose.position.y);
-
-  // Update the goal pose on the blackboard
-  *(blackboard_->get<geometry_msgs::msg::PoseStamped::SharedPtr>("goal")) = goal->pose;
-}
-
-void
-BtNavigator::onGoalPoseReceived(const geometry_msgs::msg::PoseStamped::SharedPtr pose)
-{
-  nav2_msgs::action::NavigateToPose::Goal goal;
-  goal.pose = *pose;
-  self_client_->async_send_goal(goal);
-}
-
-}  // namespace nav2_bt_navigator
+}  // namespace ros2_behavior_tree

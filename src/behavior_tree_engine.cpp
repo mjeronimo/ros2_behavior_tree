@@ -19,6 +19,7 @@
 
 #include "behaviortree_cpp/blackboard/blackboard_local.h"
 #include "ros2_behavior_tree/bt_conversions.hpp"
+#include "ros2_behavior_tree/conditional_loop_node.hpp"
 #include "ros2_behavior_tree/rate_controller_node.hpp"
 #include "ros2_behavior_tree/recovery_node.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -41,15 +42,26 @@ BehaviorTreeEngine::BehaviorTreeEngine()
     //std::bind(&NavigateToPoseBehaviorTree::initialPoseReceived, this, std::placeholders::_1));
 
   // Register our custom decorator nodes
-  factory_.registerNodeType<ros2_behavior_tree::RateController>("RateController");
+  factory_.registerNodeType<RateController>("RateController");
+  factory_.registerNodeType<ConditionalLoop>("ConditionalLoop");
 
   // Register our custom control nodes
-  factory_.registerNodeType<ros2_behavior_tree::RecoveryNode>("RecoveryNode");
+  factory_.registerNodeType<RecoveryNode>("RecoveryNode");
 
   // Register our simple action nodes
   //factory_.registerSimpleAction("clearEntirelyCostmapServiceRequest",
     //std::bind(&NavigateToPoseBehaviorTree::clearEntirelyCostmapServiceRequest, this,
     //std::placeholders::_1));
+
+  const BT::NodeParameters message_params {{"msg", "unknown"}};
+  registerSimpleActionWithParameters("Message",
+    std::bind(&BehaviorTreeEngine::message, this, std::placeholders::_1),
+    message_params);
+
+  const BT::NodeParameters set_condition_params {{"key", "unknown"}, {"value", "unknown"}};
+  registerSimpleActionWithParameters("SetCondition",
+    std::bind(&BehaviorTreeEngine::setCondition, this, std::placeholders::_1),
+    set_condition_params);
 }
 
 BtStatus

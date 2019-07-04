@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Intel Corporation
+// Copyright (c) 2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
 
 #include <memory>
 
-#include "nav2_bt_navigator/bt_navigator.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "bt_executor.hpp"
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<nav2_bt_navigator::BtNavigator>();
+  auto node = std::make_shared<nav2_behavior_tree::BtExecutor>();
   rclcpp::spin(node->get_node_base_interface());
   rclcpp::shutdown();
 

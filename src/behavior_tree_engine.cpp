@@ -31,27 +31,23 @@ namespace ros2_behavior_tree
 
 BehaviorTreeEngine::BehaviorTreeEngine()
 {
-  // Register our custom action nodes so that they can be included in XML description
-  //factory_.registerNodeType<ros2_behavior_tree::ComputePathToPoseAction>("ComputePathToPose");
-
-  // Register our custom condition nodes
-  //factory_.registerNodeType<ros2_behavior_tree::IsStuckCondition>("IsStuck");
-
-  // Register our simple condition nodes
-  //factory_.registerSimpleCondition("initialPoseReceived",
-    //std::bind(&NavigateToPoseBehaviorTree::initialPoseReceived, this, std::placeholders::_1));
+  // Register our custom control nodes
+  factory_.registerNodeType<RecoveryNode>("RecoveryNode");
 
   // Register our custom decorator nodes
   factory_.registerNodeType<RateController>("RateController");
   factory_.registerNodeType<ConditionalLoop>("ConditionalLoop");
 
-  // Register our custom control nodes
-  factory_.registerNodeType<RecoveryNode>("RecoveryNode");
+  // Register our simple condition nodes
+  // factory_.registerSimpleCondition("initialPoseReceived",
+  //    std::bind(&NavigateToPoseBehaviorTree::initialPoseReceived, this, std::placeholders::_1));
+
+  // Register our custom condition nodes
+  // factory_.registerNodeType<ros2_behavior_tree::IsStuckCondition>("IsStuck");
 
   // Register our simple action nodes
-  //factory_.registerSimpleAction("clearEntirelyCostmapServiceRequest",
-    //std::bind(&NavigateToPoseBehaviorTree::clearEntirelyCostmapServiceRequest, this,
-    //std::placeholders::_1));
+  // factory_.registerSimpleAction("clearEntirely",
+  //   std::bind(&NavigateToPoseBehaviorTree::clear, this, std::placeholders::_1));
 
   const BT::NodeParameters message_params {{"msg", "unknown"}};
   registerSimpleActionWithParameters("Message",
@@ -62,6 +58,9 @@ BehaviorTreeEngine::BehaviorTreeEngine()
   registerSimpleActionWithParameters("SetCondition",
     std::bind(&BehaviorTreeEngine::setCondition, this, std::placeholders::_1),
     set_condition_params);
+
+  // Register our custom action nodes so that they can be included in XML description
+  // factory_.registerNodeType<ros2_behavior_tree::ComputePathToPoseAction>("ComputePathToPose");
 }
 
 BtStatus
@@ -145,11 +144,11 @@ BehaviorTreeEngine::registerSimpleActionWithParameters(
 BT::NodeStatus
 BehaviorTreeEngine::message(BT::TreeNode & tree_node)
 {
-  //std::string msg;
-  //tree_node.getParam<std::string>("msg", msg);
+  // std::string msg;
+  // tree_node.getParam<std::string>("msg", msg);
 
-  //RCLCPP_INFO(service_client_node_->get_logger(),
-    //ANSI_COLOR_BLUE "\33[1m%s\33[0m" ANSI_COLOR_RESET, msg.c_str());
+  // RCLCPP_INFO(service_client_node_->get_logger(),
+  //   ANSI_COLOR_BLUE "\33[1m%s\33[0m" ANSI_COLOR_RESET, msg.c_str());
 
   return BT::NodeStatus::SUCCESS;
 }

@@ -20,9 +20,9 @@ namespace ros2_behavior_tree
 {
 
 RecoveryNode::RecoveryNode(const std::string & name, const BT::NodeParameters & params)
-: BT::ControlNode::ControlNode(name, params), current_child_idx_(0), retry_count_(0)
+: BT::ControlNode::ControlNode(name, params)
 {
-  getParam<unsigned int>("number_of_retries", number_of_retries_);
+  getParam<unsigned int>("retries", num_retries_);
 }
 
 BT::NodeStatus
@@ -36,7 +36,7 @@ RecoveryNode::tick()
 
   setStatus(BT::NodeStatus::RUNNING);
 
-  while (current_child_idx_ < children_count && retry_count_ < number_of_retries_) {
+  while (current_child_idx_ < children_count && retry_count_ < num_retries_) {
     TreeNode * child_node = children_nodes_[current_child_idx_];
     const BT::NodeStatus child_status = child_node->executeTick();
 
@@ -52,7 +52,7 @@ RecoveryNode::tick()
         case BT::NodeStatus::FAILURE:
           {
             // tick second child
-            if (retry_count_ <= number_of_retries_) {
+            if (retry_count_ <= num_retries_) {
               current_child_idx_++;
               break;
             } else {

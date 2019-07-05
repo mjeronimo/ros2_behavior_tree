@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_tree_node.hpp"
+#include "bt_executor.hpp"
 
 #include <fstream>
 #include <memory>
@@ -26,12 +26,12 @@ namespace ros2_behavior_tree
 {
 
 BtExecutor::BtExecutor()
-: rclcpp_lifecycle::LifecycleNode("bt_navigator")
+: rclcpp_lifecycle::LifecycleNode("bt_executor")
 {
   RCLCPP_INFO(get_logger(), "Creating");
 
   // Declare this node's parameters
-  declare_parameter("bt_xml_filename", rclcpp::ParameterValue(std::string("bt_navigator.xml")));
+  declare_parameter("bt_xml_filename", rclcpp::ParameterValue(std::string("bt_executor.xml")));
 }
 
 BtExecutor::~BtExecutor()
@@ -50,12 +50,12 @@ BtExecutor::on_configure(const rclcpp_lifecycle::State & /*state*/)
   // Support for handling the topic-based goal pose from rviz
   client_node_ = std::make_shared<rclcpp::Node>("_", options);
 
-  // Create an action server that we implement with our navigateToPose method
-  action_server_ = std::make_unique<ActionServer>(rclcpp_node_, "NavigateToPose",
-      std::bind(&BtExecutor::navigateToPose, this), false);
+  // Create an action server that we implement with our executeBehaviorTree method
+  action_server_ = std::make_unique<ActionServer>(rclcpp_node_, "ExecuteBehaviorTree",
+      std::bind(&BtExecutor::executeBehaviorTree, this), false);
 
   // Create the class that registers our custom nodes and executes the BT
-  bt_ = std::make_unique<NavigateToPoseBehaviorTree>();
+  bt_ = std::make_unique<BehaviorTreeEngine>();
 
   // Create the path that will be returned from ComputePath and sent to FollowPath
   goal_ = std::make_shared<geometry_msgs::msg::PoseStamped>();
@@ -150,7 +150,7 @@ BtExecutor::on_shutdown(const rclcpp_lifecycle::State & /*state*/)
 }
 
 void
-BtExecutor::navigateToPose()
+BtExecutor::executeBehaviorTree()
 {
   auto is_canceling = [this]() {return action_server_->is_cancel_requested();};
 

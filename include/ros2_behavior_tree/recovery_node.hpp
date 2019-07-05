@@ -26,7 +26,7 @@ namespace ros2_behavior_tree
  * returns SUCCESS.
  *
  * - If the first child returns FAILURE, the second child will be executed.  After that the first
- * child is executed again if the second child returns SUCCESS.
+ *   child is executed again if the second child returns SUCCESS.
  *
  * - If the first or second child returns RUNNING, this node returns RUNNING.
  *
@@ -37,21 +37,25 @@ class RecoveryNode : public BT::ControlNode
 {
 public:
   RecoveryNode(const std::string & name, const BT::NodeParameters & params);
+  RecoveryNode() = delete;
+
   ~RecoveryNode() override = default;
 
   // Any BT node that accepts parameters must provide a requiredNodeParameters method
   static const BT::NodeParameters & requiredNodeParameters()
   {
-    static BT::NodeParameters params = {{"number_of_retries", "1"}};
+    static BT::NodeParameters params = {{"retries", "1"}};
     return params;
   }
 
 private:
-  unsigned int current_child_idx_;
-  unsigned int number_of_retries_;
-  unsigned int retry_count_;
   BT::NodeStatus tick() override;
+
+  unsigned int current_child_idx_{0};
+  unsigned int num_retries_{0};
+  unsigned int retry_count_{0};
 };
+
 }  // namespace ros2_behavior_tree
 
 #endif  // ROS2_BEHAVIOR_TREE__RECOVERY_NODE_HPP_

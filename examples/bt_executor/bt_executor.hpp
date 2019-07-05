@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROS2_BEHAVIOR_TREE__BT_NAVIGATOR_HPP_
-#define ROS2_BEHAVIOR_TREE__BT_NAVIGATOR_HPP_
+#ifndef EXAMPLES__BT_EXECUTOR__BT_EXECUTOR_HPP_
+#define EXAMPLES__BT_EXECUTOR__BT_EXECUTOR_HPP_
 
 #include <memory>
 #include <string>
@@ -21,9 +21,9 @@
 #include "behaviortree_cpp/blackboard/blackboard_local.h"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
-#include "ros2_behavior_treee/behavior_tree_engine.hpp"
+#include "ros2_behavior_tree/behavior_tree_engine.hpp"
 
-namespace ros2_behavior_treee
+namespace ros2_behavior_tree
 {
 
 class BtExecutor : public rclcpp_lifecycle::LifecycleNode
@@ -47,7 +47,9 @@ protected:
   std::unique_ptr<ActionServer> action_server_;
 
   // The action server callback
-  void navigateToPose();
+  // TODO(mjeronimo: optional string. If receive string, set xml string (on parameter?) and execute.
+  // If no string, get parameter and execute
+  void executeBehaviorTree();
 
   // The blackboard shared by all of the nodes in the tree
   BT::Blackboard::Ptr blackboard_;
@@ -59,7 +61,7 @@ protected:
   std::string xml_string_;
 
   // The wrapper class for the BT functionality
-  std::unique_ptr<NavigateToPoseBehaviorTree> bt_;
+  std::unique_ptr<BehaviorTreeEngine> bt_;
 
   // The complete behavior tree that results from parsing the incoming XML
   std::unique_ptr<BT::Tree> tree_;
@@ -68,6 +70,6 @@ protected:
   rclcpp::Node::SharedPtr client_node_;
 };
 
-}  // namespace ros2_behavior_treee
+}  // namespace ros2_behavior_tree
 
-#endif  // ROS2_BEHAVIOR_TREE__BT_NAVIGATOR_HPP_
+#endif  // EXAMPLES__BT_EXECUTOR__BT_EXECUTOR_HPP_

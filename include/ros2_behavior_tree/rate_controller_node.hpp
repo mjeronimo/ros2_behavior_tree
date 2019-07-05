@@ -34,6 +34,8 @@ public:
     period_ = 1.0 / hz;
   }
 
+  RateController() = delete;
+
   // Any BT node that accepts parameters must provide a requiredNodeParameters method
   static const BT::NodeParameters & requiredNodeParameters()
   {

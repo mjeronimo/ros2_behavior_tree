@@ -48,7 +48,6 @@ BehaviorTreeEngine::BehaviorTreeEngine()
 
 BtStatus
 BehaviorTreeEngine::run(
-  BT::Blackboard::Ptr & blackboard,
   const std::string & behavior_tree_xml,
   std::function<void()> onLoop,
   std::function<bool()> cancelRequested,

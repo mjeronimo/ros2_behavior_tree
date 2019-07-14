@@ -34,7 +34,6 @@ public:
   virtual ~BehaviorTreeEngine() {}
 
   BtStatus run(
-    BT::Blackboard::Ptr & blackboard,
     const std::string & behavior_tree_xml,
     std::function<void()> onLoop,
     std::function<bool()> cancelRequested,
@@ -66,10 +65,6 @@ public:
       };
     BT::applyRecursiveVisitor(root_node, visitor);
   }
-
-  //void registerSimpleActionWithParameters(
-    //const std::string & ID,
-    //const BT::SimpleActionNode::TickFunctor & tick_functor, const BT::NodeConfiguration & cfg);
 
   BT::NodeStatus message(BT::TreeNode & tree_node);
   BT::NodeStatus setCondition(BT::TreeNode & tree_node);

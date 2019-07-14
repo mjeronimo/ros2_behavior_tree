@@ -39,17 +39,21 @@ set(dependencies
   tf2_geometry_msgs
 )
 
+ament_target_dependencies(${library_name}
+  ${dependencies}
+)
+
 add_executable(bt_executor
   examples/bt_executor/bt_executor.cpp
   examples/bt_executor/main.cpp
 )
 
-ament_target_dependencies(${library_name}
+ament_target_dependencies(bt_executor
   ${dependencies}
 )
 
-ament_target_dependencies(bt_executor
-  ${dependencies}
+target_link_libraries(bt_executor
+  ${library_name} 
 )
 
 install(TARGETS ${library_name} bt_executor

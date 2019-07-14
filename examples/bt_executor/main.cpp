@@ -15,11 +15,12 @@
 #include <memory>
 
 #include "bt_executor.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<nav2_behavior_tree::BtExecutor>();
+  auto node = std::make_shared<ros2_behavior_tree::BtExecutor>();
   rclcpp::spin(node->get_node_base_interface());
   rclcpp::shutdown();
 

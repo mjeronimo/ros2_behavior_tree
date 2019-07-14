@@ -15,6 +15,7 @@
 #ifndef ROS2_BEHAVIOR_TREE__BT_CONVERSIONS_HPP_
 #define ROS2_BEHAVIOR_TREE__BT_CONVERSIONS_HPP_
 
+#include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/behavior_tree.h"
 #include "geometry_msgs/msg/point.hpp"
 #include "geometry_msgs/msg/quaternion.hpp"
@@ -27,7 +28,7 @@ namespace BT
 // data type.
 
 template<>
-inline geometry_msgs::msg::Point convertFromString(const StringView & key)
+geometry_msgs::msg::Point convertFromString(StringView key)
 {
   // three real numbers separated by semicolons
   auto parts = BT::splitString(key, ';');
@@ -43,7 +44,7 @@ inline geometry_msgs::msg::Point convertFromString(const StringView & key)
 }
 
 template<>
-inline geometry_msgs::msg::Quaternion convertFromString(const StringView & key)
+geometry_msgs::msg::Quaternion convertFromString(StringView key)
 {
   // three real numbers separated by semicolons
   auto parts = BT::splitString(key, ';');

@@ -2,12 +2,12 @@ cmake_minimum_required(VERSION 3.5)
 project(ros2_behavior_tree)
 
 find_package(ament_cmake REQUIRED)
-find_package(behaviortree_cpp REQUIRED)
+find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(nav2_common REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -27,10 +27,11 @@ add_library(${library_name} SHARED
 )
 
 set(dependencies
-  behaviortree_cpp
+  behaviortree_cpp_v3
   geometry_msgs
   rclcpp
   rclcpp_action
+  rclcpp_lifecycle
   rosidl_default_generators
   std_msgs
   std_srvs
@@ -38,11 +39,20 @@ set(dependencies
   tf2_geometry_msgs
 )
 
+add_executable(bt_executor
+  examples/bt_executor/bt_executor.cpp
+  examples/bt_executor/main.cpp
+)
+
 ament_target_dependencies(${library_name}
   ${dependencies}
 )
 
-install(TARGETS ${library_name}
+ament_target_dependencies(bt_executor
+  ${dependencies}
+)
+
+install(TARGETS ${library_name} bt_executor
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
@@ -62,6 +72,6 @@ endif()
 ament_export_include_directories(include)
 ament_export_libraries(${library_name})
 #  This package publishes messages from tf2_geometry_msgs
-ament_export_dependencies(tf2_geometry_msgs nav2_util)
+ament_export_dependencies(tf2_geometry_msgs)
 
 ament_package()

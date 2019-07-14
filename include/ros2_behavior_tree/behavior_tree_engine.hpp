@@ -19,7 +19,6 @@
 #include <string>
 
 #include "behaviortree_cpp/behavior_tree.h"
-#include "behaviortree_cpp/blackboard/blackboard_local.h"
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/xml_parsing.h"
 
@@ -47,7 +46,7 @@ public:
     std::function<bool()> cancelRequested,
     std::chrono::milliseconds loopTimeout = std::chrono::milliseconds(10));
 
-  BT::Tree buildTreeFromText(std::string & xml_string, BT::Blackboard::Ptr blackboard);
+  BT::Tree buildTreeFromText(std::string & xml_string);
 
   void haltAllActions(BT::TreeNode * root_node)
   {
@@ -68,9 +67,9 @@ public:
     BT::applyRecursiveVisitor(root_node, visitor);
   }
 
-  void registerSimpleActionWithParameters(
-    const std::string & ID,
-    const BT::SimpleActionNode::TickFunctor & tick_functor, const BT::NodeParameters & params);
+  //void registerSimpleActionWithParameters(
+    //const std::string & ID,
+    //const BT::SimpleActionNode::TickFunctor & tick_functor, const BT::NodeConfiguration & cfg);
 
   BT::NodeStatus message(BT::TreeNode & tree_node);
   BT::NodeStatus setCondition(BT::TreeNode & tree_node);

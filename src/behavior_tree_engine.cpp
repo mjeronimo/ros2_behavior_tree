@@ -17,8 +17,6 @@
 #include <memory>
 #include <string>
 
-#include "behaviortree_cpp/blackboard/blackboard_local.h"
-#include "ros2_behavior_tree/bt_conversions.hpp"
 #include "ros2_behavior_tree/conditional_loop_node.hpp"
 #include "ros2_behavior_tree/rate_controller_node.hpp"
 #include "ros2_behavior_tree/recovery_node.hpp"
@@ -31,36 +29,21 @@ namespace ros2_behavior_tree
 
 BehaviorTreeEngine::BehaviorTreeEngine()
 {
-  // Register our custom control nodes
-  factory_.registerNodeType<RecoveryNode>("RecoveryNode");
+  // Register our custom node types
 
-  // Register our custom decorator nodes
+  factory_.registerNodeType<RecoveryNode>("RecoveryNode");
   factory_.registerNodeType<RateController>("RateController");
   factory_.registerNodeType<ConditionalLoop>("ConditionalLoop");
 
-  // Register our simple condition nodes
-  // factory_.registerSimpleCondition("initialPoseReceived",
-  //    std::bind(&NavigateToPoseBehaviorTree::initialPoseReceived, this, std::placeholders::_1));
-
-  // Register our custom condition nodes
-  // factory_.registerNodeType<ros2_behavior_tree::IsStuckCondition>("IsStuck");
-
-  // Register our simple action nodes
-  // factory_.registerSimpleAction("clearEntirely",
-  //   std::bind(&NavigateToPoseBehaviorTree::clear, this, std::placeholders::_1));
-
-  const BT::NodeParameters message_params {{"msg", "unknown"}};
-  registerSimpleActionWithParameters("Message",
+  BT::PortsList message_ports{ BT::InputPort<std::string>("msg", "The message to output") };
+  factory_.registerSimpleAction("Message",
     std::bind(&BehaviorTreeEngine::message, this, std::placeholders::_1),
-    message_params);
+    message_ports);
 
-  const BT::NodeParameters set_condition_params {{"key", "unknown"}, {"value", "unknown"}};
-  registerSimpleActionWithParameters("SetCondition",
+  BT::PortsList set_condition_ports{ BT::InputPort<std::string>("key", "The key to use"), BT::OutputPort<std::string>("value") };
+  factory_.registerSimpleAction("SetCondition",
     std::bind(&BehaviorTreeEngine::setCondition, this, std::placeholders::_1),
-    set_condition_params);
-
-  // Register our custom action nodes so that they can be included in XML description
-  // factory_.registerNodeType<ros2_behavior_tree::ComputePathToPoseAction>("ComputePathToPose");
+    set_condition_ports);
 }
 
 BtStatus
@@ -72,7 +55,7 @@ BehaviorTreeEngine::run(
   std::chrono::milliseconds loopTimeout)
 {
   // Parse the input XML and create the corresponding Behavior Tree
-  BT::Tree tree = BT::buildTreeFromText(factory_, behavior_tree_xml, blackboard);
+  BT::Tree tree = factory_.createTreeFromText(behavior_tree_xml);
 
   rclcpp::WallRate loopRate(loopTimeout);
   BT::NodeStatus result = BT::NodeStatus::RUNNING;
@@ -118,24 +101,9 @@ BehaviorTreeEngine::run(
 }
 
 BT::Tree
-BehaviorTreeEngine::buildTreeFromText(std::string & xml_string, BT::Blackboard::Ptr blackboard)
+BehaviorTreeEngine::buildTreeFromText(std::string & xml_string)
 {
-  return BT::buildTreeFromText(factory_, xml_string, blackboard);
-}
-
-void
-BehaviorTreeEngine::registerSimpleActionWithParameters(
-  const std::string & ID,
-  const BT::SimpleActionNode::TickFunctor & tick_functor,
-  const BT::NodeParameters & params)
-{
-  BT::NodeBuilder builder =
-    [tick_functor, ID](const std::string & name, const BT::NodeParameters & params) {
-      return std::unique_ptr<BT::TreeNode>(new BT::SimpleActionNode(name, tick_functor, params));
-    };
-
-  BT::TreeNodeManifest manifest = {BT::NodeType::ACTION, ID, params};
-  factory_.registerBuilder(manifest, builder);
+  return factory_.createTreeFromText(xml_string);
 }
 
 #define ANSI_COLOR_RESET    "\x1b[0m"
@@ -144,11 +112,12 @@ BehaviorTreeEngine::registerSimpleActionWithParameters(
 BT::NodeStatus
 BehaviorTreeEngine::message(BT::TreeNode & tree_node)
 {
-  // std::string msg;
+  std::string msg;
   // tree_node.getParam<std::string>("msg", msg);
+  tree_node.getInput<std::string>("msg", msg);
 
-  // RCLCPP_INFO(service_client_node_->get_logger(),
-  //   ANSI_COLOR_BLUE "\33[1m%s\33[0m" ANSI_COLOR_RESET, msg.c_str());
+  RCLCPP_INFO(rclcpp::get_logger("BehaviorTreeEngine"),
+     ANSI_COLOR_BLUE "\33[1m%s\33[0m" ANSI_COLOR_RESET, msg.c_str());
 
   return BT::NodeStatus::SUCCESS;
 }
@@ -157,12 +126,15 @@ BT::NodeStatus
 BehaviorTreeEngine::setCondition(BT::TreeNode & tree_node)
 {
   std::string key;
-  tree_node.getParam<std::string>("key", key);
+  //tree_node.getParam<std::string>("key", key);
+  tree_node.getInput<std::string>("key", key);
 
-  std::string value;
-  tree_node.getParam<std::string>("value", value);
+  //std::string value;
+  //tree_node.getInput<std::string>("value", value);
 
-  tree_node.blackboard()->template set<bool>(key, (value == "true") ? true : false);  // NOLINT
+  //tree_node.blackboard()->template set<bool>(key, (value == "true") ? true : false);  // NOLINT
+  //TODO:
+  //tree_node.setOutput<std::string>("value", value);
 
   return BT::NodeStatus::SUCCESS;
 }

@@ -26,21 +26,21 @@ namespace ros2_behavior_tree
 class RateController : public BT::DecoratorNode
 {
 public:
-  RateController(const std::string & name, const BT::NodeParameters & params)
-  : BT::DecoratorNode(name, params)
+  RateController(const std::string & name, const BT::NodeConfiguration & cfg)
+  : BT::DecoratorNode(name, cfg)
   {
     double hz = 1.0;
-    getParam<double>("hz", hz);
+    //getParam<double>("hz", hz);
+    getInput<double>("hz", hz);
     period_ = 1.0 / hz;
   }
 
   RateController() = delete;
 
   // Any BT node that accepts parameters must provide a requiredNodeParameters method
-  static const BT::NodeParameters & requiredNodeParameters()
+  static BT::PortsList providedPorts()
   {
-    static BT::NodeParameters params = {{"hz", "10"}};
-    return params;
+    return { BT::InputPort<double>("hz", "Number of ticks per second") };
   }
 
 private:

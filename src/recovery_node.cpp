@@ -19,10 +19,10 @@
 namespace ros2_behavior_tree
 {
 
-RecoveryNode::RecoveryNode(const std::string & name, const BT::NodeParameters & params)
-: BT::ControlNode::ControlNode(name, params)
+RecoveryNode::RecoveryNode(const std::string & name, const BT::NodeConfiguration & cfg)
+: BT::ControlNode::ControlNode(name, cfg)
 {
-  getParam<unsigned int>("retries", num_retries_);
+  getInput<unsigned int>("retries", num_retries_);
 }
 
 BT::NodeStatus

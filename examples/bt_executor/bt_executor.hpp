@@ -18,7 +18,6 @@
 #include <memory>
 #include <string>
 
-#include "behaviortree_cpp/blackboard/blackboard_local.h"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "ros2_behavior_tree/behavior_tree_engine.hpp"
@@ -26,36 +25,35 @@
 namespace ros2_behavior_tree
 {
 
+using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+
 class BtExecutor : public rclcpp_lifecycle::LifecycleNode
 {
 public:
   BtExecutor();
   virtual ~BtExecutor();
 
-protected:
-  // The lifecycle node interface
-  nav2_util::CallbackReturn on_configure(const rclcpp_lifecycle::State & state) override;
-  nav2_util::CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override;
-  nav2_util::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & state) override;
-  nav2_util::CallbackReturn on_cleanup(const rclcpp_lifecycle::State & state) override;
-  nav2_util::CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
-  nav2_util::CallbackReturn on_error(const rclcpp_lifecycle::State & state) override;
+  void executeBehaviorTree();
 
-  using ActionServer = nav2_util::SimpleActionServer<nav2_msgs::action::NavigateToPose>;
+protected:
+
+  // The lifecycle node interface
+  CallbackReturn on_configure(const rclcpp_lifecycle::State & state) override;
+  CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override;
+  CallbackReturn on_deactivate(const rclcpp_lifecycle::State & state) override;
+  CallbackReturn on_cleanup(const rclcpp_lifecycle::State & state) override;
+  CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
+  CallbackReturn on_error(const rclcpp_lifecycle::State & state) override;
+
+  //using ActionServer = nav2_util::SimpleActionServer<nav2_msgs::action::NavigateToPose>;
 
   // Our action server implements the NavigateToPose action
-  std::unique_ptr<ActionServer> action_server_;
+  //std::unique_ptr<ActionServer> action_server_;
 
   // The action server callback
   // TODO(mjeronimo: optional string. If receive string, set xml string (on parameter?) and execute.
   // If no string, get parameter and execute
-  void executeBehaviorTree();
-
-  // The blackboard shared by all of the nodes in the tree
-  BT::Blackboard::Ptr blackboard_;
-
-  // The goal (on the blackboard) to be passed to ComputePath
-  std::shared_ptr<geometry_msgs::msg::PoseStamped> goal_;
+  //void executeBehaviorTree();
 
   // The XML string that defines the Behavior Tree to create
   std::string xml_string_;

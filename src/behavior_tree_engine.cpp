@@ -29,8 +29,6 @@ namespace ros2_behavior_tree
 
 BehaviorTreeEngine::BehaviorTreeEngine()
 {
-  // Register our custom node types
-
   factory_.registerNodeType<RecoveryNode>("RecoveryNode");
   factory_.registerNodeType<RateController>("RateController");
   factory_.registerNodeType<ConditionalLoop>("ConditionalLoop");
@@ -53,7 +51,6 @@ BehaviorTreeEngine::run(
   std::function<bool()> cancelRequested,
   std::chrono::milliseconds loopTimeout)
 {
-  // Parse the input XML and create the corresponding Behavior Tree
   BT::Tree tree = factory_.createTreeFromText(behavior_tree_xml);
 
   rclcpp::WallRate loopRate(loopTimeout);

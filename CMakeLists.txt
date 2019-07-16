@@ -49,12 +49,20 @@ add_executable(bt_executor
 )
 
 ament_target_dependencies(bt_executor
-  ${dependencies}
+  ${dependencies} ${library_name}
 )
 
 target_link_libraries(bt_executor
   ${library_name} 
 )
+
+rosidl_generate_interfaces(${PROJECT_NAME}_interfaces
+  "msgs/action/ExecuteBehaviorTree.action"
+  DEPENDENCIES builtin_interfaces std_msgs action_msgs
+)
+
+rosidl_target_interfaces(bt_executor
+      ${PROJECT_NAME}_interfaces "rosidl_typesupport_cpp")
 
 install(TARGETS ${library_name} bt_executor
   ARCHIVE DESTINATION lib

@@ -50,9 +50,21 @@ BtExecutor::on_configure(const rclcpp_lifecycle::State & /*state*/)
   // Support for handling the topic-based goal pose from rviz
   client_node_ = std::make_shared<rclcpp::Node>("_", options);
 
+  using namespace std::placeholders;
+
   // Create an action server that we implement with our executeBehaviorTree method
   //action_server_ = std::make_unique<ActionServer>(rclcpp_node_, "ExecuteBehaviorTree",
       //std::bind(&BtExecutor::executeBehaviorTree, this), false);
+  action_server_ = rclcpp_action::create_server<ActionServer>(
+    this->get_node_base_interface(),
+    this->get_node_clock_interface(),
+    this->get_node_logging_interface(),
+    this->get_node_waitables_interface(),
+    "execute_behavior_tree",
+    std::bind(&BtExecutor::handle_goal, this, _1, _2),
+    std::bind(&BtExecutor::handle_cancel, this, _1),
+    std::bind(&BtExecutor::handle_accepted, this, _1)
+	);
 
   // Create the class that registers our custom nodes and executes the BT
   bt_ = std::make_unique<BehaviorTreeEngine>();

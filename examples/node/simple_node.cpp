@@ -42,9 +42,6 @@ SimpleNode::SimpleNode()
 
 SimpleNode::~SimpleNode()
 {
-  // TODO(mjeronimo):
-  // bt_engine_.halt();
-
   thread_->join();
 }
 

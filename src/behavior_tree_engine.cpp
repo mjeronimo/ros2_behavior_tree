@@ -54,9 +54,7 @@ BehaviorTreeEngine::run(
     }
 
     onLoop();
-
     result = tree.root_node->executeTick();
-
     loopRate.sleep();
   }
 
@@ -65,7 +63,7 @@ BehaviorTreeEngine::run(
 
 BtStatus
 BehaviorTreeEngine::run(
-  std::unique_ptr<BT::Tree> & tree,
+  BT::Tree * tree,
   std::function<void()> onLoop,
   std::function<bool()> cancelRequested,
   std::chrono::milliseconds loopTimeout)
@@ -81,9 +79,7 @@ BehaviorTreeEngine::run(
     }
 
     onLoop();
-
     result = tree->root_node->executeTick();
-
     loopRate.sleep();
   }
 

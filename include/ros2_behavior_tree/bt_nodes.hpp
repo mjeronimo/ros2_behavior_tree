@@ -21,7 +21,25 @@
 namespace ros2_behavior_tree
 {
 
-void RegisterNodes(BT::BehaviorTreeFactory & factory);
+class BtRegistrar
+{
+public:
+  static void RegisterNodes(BT::BehaviorTreeFactory & factory);
+
+private:
+  // Simple action nodes to be registered
+  static BT::NodeStatus message(BT::TreeNode & tree_node);
+  static BT::NodeStatus setCondition(BT::TreeNode & tree_node);
+
+#if 0
+  // Support functions
+  static void registerSimpleActionWithParameters(
+    BT::BehaviorTreeFactory & factory,
+    const std::string & ID,
+    const BT::SimpleActionNode::TickFunctor & tick_functor,
+    const BT::PortsList & ports);
+#endif
+};
 
 }  // namespace ros2_behavior_tree
 

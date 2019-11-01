@@ -25,75 +25,54 @@ using namespace std::chrono_literals;
 namespace ros2_behavior_tree
 {
 
-BehaviorTreeEngine::BehaviorTreeEngine(const std::vector<std::string> & plugin_libraries)
+BehaviorTreeEngine::BehaviorTreeEngine(const std::vector<std::string> & plugin_library_names)
 {
-  for (const auto & p : plugin_libraries) {
-    factory_.registerFromPlugin(std::string{"lib" + p + ".so"});
+  // Load any specified BT plugins
+  for (const auto & library_name : plugin_library_names) {
+    factory_.registerFromPlugin(std::string{"lib" + library_name + ".so"});
   }
+
+  // Create a blackboard for this Behavior Tree
+  blackboard_ = BT::Blackboard::create();
 }
 
 BtStatus
 BehaviorTreeEngine::run(
-  BT::Blackboard::Ptr & blackboard,
   const std::string & behavior_tree_xml,
-  std::function<void()> onLoop,
-  std::function<bool()> cancelRequested,
-  std::chrono::milliseconds loopTimeout)
+  std::function<void()> on_loop_iteration,
+  std::function<bool()> cancel_requested,
+  std::chrono::milliseconds tick_period)
 {
   // Parse the input XML and create the corresponding Behavior Tree
-  BT::Tree tree = buildTreeFromText(behavior_tree_xml, blackboard);
+  BT::Tree tree = buildTreeFromText(behavior_tree_xml);
 
-  rclcpp::WallRate loopRate(loopTimeout);
-  BT::NodeStatus result = BT::NodeStatus::RUNNING;
+  // Set up a loop rate controller based on the desired tick period
+  rclcpp::WallRate loop_rate(tick_period);
 
   // Loop until something happens with ROS or the node completes
+  BT::NodeStatus result = BT::NodeStatus::RUNNING;
   while (rclcpp::ok() && result == BT::NodeStatus::RUNNING) {
-    if (cancelRequested()) {
+    if (cancel_requested()) {
       tree.root_node->halt();
       return BtStatus::CANCELED;
     }
 
-    onLoop();
+    // Give the caller a chance to do something on each loop iteration
+    on_loop_iteration();
+
     result = tree.root_node->executeTick();
-    loopRate.sleep();
-  }
-
-  return (result == BT::NodeStatus::SUCCESS) ? BtStatus::SUCCEEDED : BtStatus::FAILED;
-}
-
-BtStatus
-BehaviorTreeEngine::run(
-  BT::Tree * tree,
-  std::function<void()> onLoop,
-  std::function<bool()> cancelRequested,
-  std::chrono::milliseconds loopTimeout)
-{
-  rclcpp::WallRate loopRate(loopTimeout);
-  BT::NodeStatus result = BT::NodeStatus::RUNNING;
-
-  // Loop until something happens with ROS or the node completes
-  while (rclcpp::ok() && result == BT::NodeStatus::RUNNING) {
-    if (cancelRequested()) {
-      tree->root_node->halt();
-      return BtStatus::CANCELED;
-    }
-
-    onLoop();
-    result = tree->root_node->executeTick();
-    loopRate.sleep();
+    loop_rate.sleep();
   }
 
   return (result == BT::NodeStatus::SUCCESS) ? BtStatus::SUCCEEDED : BtStatus::FAILED;
 }
 
 BT::Tree
-BehaviorTreeEngine::buildTreeFromText(
-  const std::string & xml_string,
-  BT::Blackboard::Ptr blackboard)
+BehaviorTreeEngine::buildTreeFromText(const std::string & xml_string)
 {
   BT::XMLParser p(factory_);
   p.loadFromText(xml_string);
-  return p.instantiateTree(blackboard);
+  return p.instantiateTree(blackboard_);
 }
 
 }  // namespace ros2_behavior_tree

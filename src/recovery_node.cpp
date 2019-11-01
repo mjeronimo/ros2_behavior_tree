@@ -13,10 +13,12 @@
 // limitations under the License.
 
 #include <string>
+
 #include "ros2_behavior_tree/recovery_node.hpp"
 
 namespace ros2_behavior_tree
 {
+
 RecoveryNode::RecoveryNode(
   const std::string & name,
   const BT::NodeConfiguration & conf)
@@ -25,14 +27,16 @@ RecoveryNode::RecoveryNode(
   getInput("number_of_retries", number_of_retries_);
 }
 
-void RecoveryNode::halt()
+void
+RecoveryNode::halt()
 {
   ControlNode::halt();
   current_child_idx_ = 0;
   retry_count_ = 0;
 }
 
-BT::NodeStatus RecoveryNode::tick()
+BT::NodeStatus
+RecoveryNode::tick()
 {
   const unsigned children_count = children_nodes_.size();
 
@@ -78,7 +82,7 @@ BT::NodeStatus RecoveryNode::tick()
         default:
           {
           }
-      }  // end switch
+      }
 
     } else if (current_child_idx_ == 1) {
       switch (child_status) {
@@ -108,9 +112,10 @@ BT::NodeStatus RecoveryNode::tick()
         default:
           {
           }
-      }  // end switch
+      }
     }
-  }  // end while loop
+  }
+
   retry_count_ = 0;
   halt();
   return BT::NodeStatus::FAILURE;

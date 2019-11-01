@@ -24,7 +24,7 @@ add_library(${library_name} SHARED
 )
 
 add_library(ros2_behavior_tree_nodes SHARED
-  src/bt_nodes.cpp
+  src/bt_registrar.cpp
 )
 
 add_executable(simple examples/simple/main.cpp)

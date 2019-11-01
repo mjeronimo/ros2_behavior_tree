@@ -12,61 +12,56 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
+#include <stdexcept>
+
 #include "rclcpp/rclcpp.hpp"
 #include "ros2_behavior_tree/behavior_tree_engine.hpp"
 
-static const std::string xml_text = R"(
-
+// The Behavior Tree to execute
+static const char xml_text[] =
+  R"(
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
-    <Sequence name="root">
-      <Message msg="Hello, World!"/>
-      <Message msg="Hello, World!"/>
-      <Message msg="Hello, World!"/>
+    <WhileCondition key="foobar" value="true">
       <RateController hz="1.0">
-        <Message msg="Hello, World!"/>
+        <Sequence name="root">
+          <Message msg="Hello, World 1!"/>
+          <Message msg="Hello, World 2!"/>
+          <SetCondition key="foobar" value="true"/>
+        </Sequence>
       </RateController>
-    </Sequence>
+    </WhileCondition>
   </BehaviorTree>
 </root>
-
 )";
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 
+  // Create a Behavior Tree Engine to run the BT XML, specifying which plugins to use
   ros2_behavior_tree::BehaviorTreeEngine bt_engine({"ros2_behavior_tree_nodes"});
 
-  // Create the blackboard that will be shared by all of the nodes in the tree
-  auto blackboard = BT::Blackboard::create();
-
-  // Put items on the blackboard
-  //blackboard_->set<rclcpp::Node::SharedPtr>("node", client_node_);  // NOLINT
-  //blackboard_->set<std::chrono::milliseconds>("server_timeout", std::chrono::milliseconds(10));  // NOLINT
-
-  BT::Tree tree = bt_engine.buildTreeFromText(xml_text, blackboard);
-
-  auto is_canceling = []() {return false;};
-  auto on_loop = []() {};
-
-  auto rc = bt_engine.run(&tree, on_loop, is_canceling);
+  // Run the BT and determine the result
+  auto rc = bt_engine.run(xml_text);
 
   switch (rc) {
     case ros2_behavior_tree::BtStatus::SUCCEEDED:
       break;
 
     case ros2_behavior_tree::BtStatus::FAILED:
+      printf("BT failed\n");
       break;
 
     case ros2_behavior_tree::BtStatus::CANCELED:
+      printf("BT was canceled\n");
       break;
 
     default:
-      break; // throw std::logic_error("Invalid status return from BT");
+      throw std::logic_error("Invalid return value from the BT");
   }
 
   rclcpp::shutdown();
-
   return 0;
 }

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROS2_BEHAVIOR_TREE__CONDITIONAL_LOOP_NODE_HPP_
-#define ROS2_BEHAVIOR_TREE__CONDITIONAL_LOOP_NODE_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__WHILE_CONDITION_NODE_HPP_
+#define ROS2_BEHAVIOR_TREE__WHILE_CONDITION_NODE_HPP_
 
 #include <string>
 
@@ -22,10 +22,10 @@
 namespace ros2_behavior_tree
 {
 
-class ConditionalLoop : public BT::DecoratorNode
+class WhileConditionNode : public BT::DecoratorNode
 {
 public:
-  ConditionalLoop(const std::string & name, const BT::NodeConfiguration & cfg)
+  WhileConditionNode(const std::string & name, const BT::NodeConfiguration & cfg)
   : BT::DecoratorNode(name, cfg)
   {
     getInput<std::string>("key", key_);
@@ -48,21 +48,18 @@ private:
   bool target_value_;
 };
 
-inline BT::NodeStatus ConditionalLoop::tick()
+inline BT::NodeStatus WhileConditionNode::tick()
 {
   setStatus(BT::NodeStatus::RUNNING);
   child_node_->executeTick();
 
-  // We're waiting for the value on the blackboard to match the target
   bool current_value = false;
+  config().blackboard->get<bool>(key_, current_value);
 
-  // TODO(mjeronimo):
-  // blackboard()->get<bool>(key_, current_value);
-  getInput<bool>(key_, current_value);
-
+  // We're waiting for the value on the blackboard to match the target
   return (current_value == target_value_) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::RUNNING;
 }
 
 }  // namespace ros2_behavior_tree
 
-#endif  // ROS2_BEHAVIOR_TREE__CONDITIONAL_LOOP_NODE_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__WHILE_CONDITION_NODE_HPP_

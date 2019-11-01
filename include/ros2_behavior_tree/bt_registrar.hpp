@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROS2_BEHAVIOR_TREE__BT_NODES_HPP_
-#define ROS2_BEHAVIOR_TREE__BT_NODES_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__BT_REGISTRAR_HPP_
+#define ROS2_BEHAVIOR_TREE__BT_REGISTRAR_HPP_
+
+#include <string>
 
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/bt_factory.h"
@@ -30,17 +32,8 @@ private:
   // Simple action nodes to be registered
   static BT::NodeStatus message(BT::TreeNode & tree_node);
   static BT::NodeStatus setCondition(BT::TreeNode & tree_node);
-
-#if 0
-  // Support functions
-  static void registerSimpleActionWithParameters(
-    BT::BehaviorTreeFactory & factory,
-    const std::string & ID,
-    const BT::SimpleActionNode::TickFunctor & tick_functor,
-    const BT::PortsList & ports);
-#endif
 };
 
 }  // namespace ros2_behavior_tree
 
-#endif  // ROS2_BEHAVIOR_TREE__BT_NODES_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__BT_REGISTRAR_HPP_

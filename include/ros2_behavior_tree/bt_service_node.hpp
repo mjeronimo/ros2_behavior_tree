@@ -30,8 +30,8 @@ class BtServiceNode : public BT::CoroActionNode
 public:
   BtServiceNode(
     const std::string & service_node_name,
-    const BT::NodeConfiguration & conf)
-  : BT::CoroActionNode(service_node_name, conf), service_node_name_(service_node_name)
+    const BT::NodeConfiguration & config)
+  : BT::CoroActionNode(service_node_name, config), service_node_name_(service_node_name)
   {
     node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node");
 

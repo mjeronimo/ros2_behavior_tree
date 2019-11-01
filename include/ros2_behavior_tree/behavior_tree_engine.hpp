@@ -31,48 +31,24 @@ enum class BtStatus { SUCCEEDED, FAILED, CANCELED };
 class BehaviorTreeEngine
 {
 public:
-  explicit BehaviorTreeEngine(const std::vector<std::string> & plugin_libraries);
+  explicit BehaviorTreeEngine(const std::vector<std::string> & plugin_library_names);
+  BehaviorTreeEngine() = delete;
+
   virtual ~BehaviorTreeEngine() {}
 
   BtStatus run(
-    BT::Blackboard::Ptr & blackboard,
     const std::string & behavior_tree_xml,
-    std::function<void()> onLoop,
-    std::function<bool()> cancelRequested,
-    std::chrono::milliseconds loopTimeout = std::chrono::milliseconds(10));
-
-  BtStatus run(
-    BT::Tree * tree,
-    std::function<void()> onLoop,
-    std::function<bool()> cancelRequested,
-    std::chrono::milliseconds loopTimeout = std::chrono::milliseconds(10));
-
-  BT::Tree buildTreeFromText(
-    const std::string & xml_string,
-    BT::Blackboard::Ptr blackboard);
-
-  void haltAllActions(BT::TreeNode * root_node)
-  {
-    auto visitor = [](BT::TreeNode * node) {
-        if (auto action = dynamic_cast<BT::CoroActionNode *>(node)) {
-          action->halt();
-        }
-      };
-    BT::applyRecursiveVisitor(root_node, visitor);
-  }
-
-  // In order to re-run a Behavior Tree, we must be able to reset all nodes to the initial state
-  void resetTree(BT::TreeNode * root_node)
-  {
-    auto visitor = [](BT::TreeNode * node) {
-        node->setStatus(BT::NodeStatus::IDLE);
-      };
-    BT::applyRecursiveVisitor(root_node, visitor);
-  }
+    std::function<void()> on_loop_iteration = []() {},
+    std::function<bool()> cancel_requested = []() {return false;},
+    std::chrono::milliseconds tick_period = std::chrono::milliseconds(10));
 
 protected:
-  // The factory that will be used to dynamically construct the behavior tree
+  BT::Tree buildTreeFromText(const std::string & xml_string);
+
+  // The factory and blackboard that will be used to dynamically construct the
+  // behavior tree from the XML specification
   BT::BehaviorTreeFactory factory_;
+  BT::Blackboard::Ptr blackboard_;
 };
 
 }  // namespace ros2_behavior_tree

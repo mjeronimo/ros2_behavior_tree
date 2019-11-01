@@ -29,6 +29,11 @@ add_library(ros2_behavior_tree_nodes SHARED
 
 add_executable(simple examples/simple/main.cpp)
 
+add_executable(simple_node
+  examples/simple_node/main.cpp
+  examples/simple_node/simple_node.cpp
+  )
+
 set(dependencies
   behaviortree_cpp_v3
   geometry_msgs
@@ -51,13 +56,18 @@ ament_target_dependencies(simple
   ${dependencies}
 )
 
+ament_target_dependencies(simple_node
+  ${dependencies}
+)
+
 target_link_libraries(simple ${library_name})
+target_link_libraries(simple_node ${library_name})
 
 target_compile_definitions(ros2_behavior_tree_nodes PRIVATE
   BT_PLUGIN_EXPORT
 )
 
-install(TARGETS ${library_name} ros2_behavior_tree_nodes simple
+install(TARGETS ${library_name} ros2_behavior_tree_nodes simple simple_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}

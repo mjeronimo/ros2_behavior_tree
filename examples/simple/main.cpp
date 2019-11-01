@@ -23,15 +23,10 @@ static const char xml_text[] =
   R"(
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
-    <WhileCondition key="foobar" value="true">
-      <RateController hz="1.0">
-        <Sequence name="root">
-          <Message msg="Hello, World 1!"/>
-          <Message msg="Hello, World 2!"/>
-          <SetCondition key="foobar" value="true"/>
-        </Sequence>
-      </RateController>
-    </WhileCondition>
+    <Sequence name="say_hello">
+      <Message msg="Hello,"/>
+      <Message msg="World!"/>
+    </Sequence>
   </BehaviorTree>
 </root>
 )";
@@ -40,7 +35,7 @@ int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 
-  // Create a Behavior Tree Engine to run the BT XML, specifying which plugins to use
+  // Create a behavior tree engine to run the BT XML, specifying which plugins to use
   ros2_behavior_tree::BehaviorTreeEngine bt_engine({"ros2_behavior_tree_nodes"});
 
   // Run the BT and determine the result

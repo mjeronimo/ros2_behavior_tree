@@ -28,8 +28,8 @@ class RateController : public BT::DecoratorNode
 public:
   RateController(
     const std::string & name,
-    const BT::NodeConfiguration & conf)
-  : BT::DecoratorNode(name, conf)
+    const BT::NodeConfiguration & config)
+  : BT::DecoratorNode(name, config)
   {
     double hz = 1.0;
     getInput("hz", hz);
@@ -39,18 +39,16 @@ public:
   // Any BT node that accepts parameters must provide a requiredNodeParameters method
   static BT::PortsList providedPorts()
   {
-    return {
-      BT::InputPort<double>("hz", 10.0, "Rate")
-    };
+    return { BT::InputPort<double>("hz", 10.0, "Rate") };
   }
 
 private:
   BT::NodeStatus tick() override;
-
   std::chrono::time_point<std::chrono::high_resolution_clock> start_;
   double period_;
 };
 
+// TODO(mjeronimo): make this a member variable
 static bool first_time{false};
 
 inline BT::NodeStatus RateController::tick()

@@ -14,6 +14,8 @@
 
 #include "simple_node.hpp"
 
+#include <memory>
+
 namespace ros2_behavior_tree
 {
 
@@ -40,6 +42,9 @@ SimpleNode::SimpleNode()
 
 SimpleNode::~SimpleNode()
 {
+  // TODO(mjeronimo):
+  // bt_engine_.halt();
+
   thread_->join();
 }
 
@@ -49,4 +54,4 @@ SimpleNode::run()
   return bt_engine_.run(xml_text);
 }
 
-}
+}  // namespace ros2_behavior_tree

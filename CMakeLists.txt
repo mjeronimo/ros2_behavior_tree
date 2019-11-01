@@ -27,11 +27,11 @@ add_library(ros2_behavior_tree_nodes SHARED
   src/bt_registrar.cpp
 )
 
-add_executable(simple examples/simple/main.cpp)
+add_executable(minimal examples/minimal/main.cpp)
 
-add_executable(simple_node
-  examples/simple_node/main.cpp
-  examples/simple_node/simple_node.cpp
+add_executable(node
+  examples/node/main.cpp
+  examples/node/simple_node.cpp
   )
 
 set(dependencies
@@ -52,22 +52,22 @@ ament_target_dependencies(ros2_behavior_tree_nodes
   ${dependencies}
 )
 
-ament_target_dependencies(simple
+ament_target_dependencies(minimal
   ${dependencies}
 )
 
-ament_target_dependencies(simple_node
+ament_target_dependencies(node
   ${dependencies}
 )
 
-target_link_libraries(simple ${library_name})
-target_link_libraries(simple_node ${library_name})
+target_link_libraries(minimal ${library_name})
+target_link_libraries(node ${library_name})
 
 target_compile_definitions(ros2_behavior_tree_nodes PRIVATE
   BT_PLUGIN_EXPORT
 )
 
-install(TARGETS ${library_name} ros2_behavior_tree_nodes simple simple_node
+install(TARGETS ${library_name} ros2_behavior_tree_nodes minimal node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}

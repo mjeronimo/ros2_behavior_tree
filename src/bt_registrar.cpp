@@ -16,7 +16,6 @@
 
 #include <string>
 
-#include "ros2_behavior_tree/bt_conversions.hpp"
 #include "ros2_behavior_tree/rate_controller_node.hpp"
 #include "ros2_behavior_tree/recovery_node.hpp"
 #include "ros2_behavior_tree/while_condition_node.hpp"

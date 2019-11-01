@@ -4,7 +4,6 @@ project(ros2_behavior_tree)
 find_package(ament_cmake REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(builtin_interfaces REQUIRED)
-find_package(geometry_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -36,7 +35,6 @@ add_executable(node
 
 set(dependencies
   behaviortree_cpp_v3
-  geometry_msgs
   rclcpp
   rclcpp_action
   rclcpp_lifecycle

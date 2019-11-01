@@ -5,15 +5,12 @@ find_package(ament_cmake REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
+find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(tf2_ros REQUIRED)
 
 include_directories(
   include
@@ -26,45 +23,33 @@ add_library(${library_name} SHARED
   src/recovery_node.cpp
 )
 
+add_library(ros2_behavior_tree_nodes SHARED
+  src/bt_nodes.cpp
+)
+
 set(dependencies
   behaviortree_cpp_v3
   geometry_msgs
   rclcpp
   rclcpp_action
   rclcpp_lifecycle
-  rosidl_default_generators
   std_msgs
   std_srvs
-  tf2
-  tf2_geometry_msgs
 )
 
 ament_target_dependencies(${library_name}
   ${dependencies}
 )
 
-add_executable(bt_executor
-  examples/bt_executor/bt_executor.cpp
-  examples/bt_executor/main.cpp
+ament_target_dependencies(ros2_behavior_tree_nodes
+  ${dependencies}
 )
 
-ament_target_dependencies(bt_executor
-  ${dependencies} ${library_name}
+target_compile_definitions(ros2_behavior_tree_nodes PRIVATE
+  BT_PLUGIN_EXPORT
 )
 
-target_link_libraries(bt_executor
-  ${library_name} 
-)
-
-rosidl_generate_interfaces(${PROJECT_NAME}_interfaces
-  "msgs/action/ExecuteBehaviorTree.action"
-  DEPENDENCIES builtin_interfaces std_msgs action_msgs
-)
-
-rosidl_target_interfaces(bt_executor
-      ${PROJECT_NAME}_interfaces "rosidl_typesupport_cpp")
-
-install(TARGETS ${library_name} bt_executor
+install(TARGETS ${library_name} ros2_behavior_tree_nodes
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
@@ -76,14 +61,16 @@ install(DIRECTORY include/
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  find_package(ament_cmake_gtest REQUIRED)
-
   ament_lint_auto_find_test_dependencies()
 endif()
 
 ament_export_include_directories(include)
-ament_export_libraries(${library_name})
-#  This package publishes messages from tf2_geometry_msgs
-ament_export_dependencies(tf2_geometry_msgs)
+
+ament_export_libraries(
+  ${library_name}
+  ros2_behavior_tree_nodes
+)
+
+ament_export_dependencies(${dependencies})
 
 ament_package()

@@ -45,7 +45,8 @@ BtExecutor::on_configure(const rclcpp_lifecycle::State & /*state*/)
   RCLCPP_INFO(get_logger(), "Configuring");
   auto node = shared_from_this();
 
-  auto options = rclcpp::NodeOptions().arguments({std::string("__node:=") + get_name() + "_client_node"});
+  auto options = rclcpp::NodeOptions().arguments({std::string("__node:=") +
+        get_name() + "_client_node"});
 
   // Support for handling the topic-based goal pose from rviz
   client_node_ = std::make_shared<rclcpp::Node>("_", options);
@@ -53,8 +54,8 @@ BtExecutor::on_configure(const rclcpp_lifecycle::State & /*state*/)
   using namespace std::placeholders;
 
   // Create an action server that we implement with our executeBehaviorTree method
-  //action_server_ = std::make_unique<ActionServer>(rclcpp_node_, "ExecuteBehaviorTree",
-      //std::bind(&BtExecutor::executeBehaviorTree, this), false);
+  // action_server_ = std::make_unique<ActionServer>(rclcpp_node_, "ExecuteBehaviorTree",
+  // std::bind(&BtExecutor::executeBehaviorTree, this), false);
   action_server_ = rclcpp_action::create_server<ActionServer>(
     this->get_node_base_interface(),
     this->get_node_clock_interface(),
@@ -64,14 +65,14 @@ BtExecutor::on_configure(const rclcpp_lifecycle::State & /*state*/)
     std::bind(&BtExecutor::handle_goal, this, _1, _2),
     std::bind(&BtExecutor::handle_cancel, this, _1),
     std::bind(&BtExecutor::handle_accepted, this, _1)
-	);
+  );
 
   // Create the class that registers our custom nodes and executes the BT
   bt_ = std::make_unique<BehaviorTreeEngine>();
 
   // Put items on the blackboard
-  //blackboard_->set<rclcpp::Node::SharedPtr>("node", client_node_);  // NOLINT
-  //blackboard_->set<std::chrono::milliseconds>("node_loop_timeout", std::chrono::milliseconds(10));  // NOLINT
+  // blackboard_->set<rclcpp::Node::SharedPtr>("node", client_node_);  // NOLINT
+  // blackboard_->set<std::chrono::milliseconds>("node_loop_timeout", std::chrono::milliseconds(10));  // NOLINT
 
   // Get the BT filename to use from the node parameter
   std::string bt_xml_filename;
@@ -109,7 +110,7 @@ BtExecutor::on_activate(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Activating");
 
-  //action_server_->activate();
+  // action_server_->activate();
 
   return CallbackReturn::SUCCESS;
 }
@@ -119,7 +120,7 @@ BtExecutor::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Deactivating");
 
-  //action_server_->deactivate();
+  // action_server_->deactivate();
 
   return CallbackReturn::SUCCESS;
 }
@@ -130,7 +131,7 @@ BtExecutor::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
   RCLCPP_INFO(get_logger(), "Cleaning up");
 
   client_node_.reset();
-  //action_server_.reset();
+  // action_server_.reset();
   xml_string_.clear();
   tree_.reset();
   bt_.reset();
@@ -155,17 +156,17 @@ BtExecutor::on_shutdown(const rclcpp_lifecycle::State & /*state*/)
 void
 BtExecutor::executeBehaviorTree()
 {
-  //auto is_canceling = [this]() {return action_server_->is_cancel_requested();};
-  auto is_canceling = []() {return false; };
+  // auto is_canceling = [this]() {return action_server_->is_cancel_requested();};
+  auto is_canceling = []() {return false;};
 
-  //auto on_loop = [this]() {
-      //if (action_server_->preempt_requested()) {
-        //RCLCPP_INFO(get_logger(), "Received goal preemption request");
-        //action_server_->accept_pending_goal();
-      //}
-    //};
+  // auto on_loop = [this]() {
+  // if (action_server_->preempt_requested()) {
+  // RCLCPP_INFO(get_logger(), "Received goal preemption request");
+  // action_server_->accept_pending_goal();
+  // }
+  // };
 
-  auto on_loop = [](){};
+  auto on_loop = []() {};
 
   // Execute the BT that was previously created in the configure step
   ros2_behavior_tree::BtStatus rc = bt_->run(tree_, on_loop, is_canceling);
@@ -173,19 +174,17 @@ BtExecutor::executeBehaviorTree()
   switch (rc) {
     case ros2_behavior_tree::BtStatus::SUCCEEDED:
       RCLCPP_INFO(get_logger(), "Navigation succeeded");
-      //action_server_->succeeded_current();
+      // action_server_->succeeded_current();
       break;
 
     case ros2_behavior_tree::BtStatus::FAILED:
       RCLCPP_ERROR(get_logger(), "Navigation failed");
-      //action_server_->abort_all();
+      // action_server_->abort_all();
       break;
 
     case ros2_behavior_tree::BtStatus::CANCELED:
       RCLCPP_INFO(get_logger(), "Navigation canceled");
-      //action_server_->cancel_all();
-      // Reset the BT so that it can be run again in the future
-      bt_->resetTree(tree_->root_node);
+      // action_server_->cancel_all();
       break;
 
     default:

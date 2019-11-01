@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Intel Corporation
+// Copyright (c) 2018 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 #ifndef ROS2_BEHAVIOR_TREE__BT_CONVERSIONS_HPP_
 #define ROS2_BEHAVIOR_TREE__BT_CONVERSIONS_HPP_
 
-#include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/behavior_tree.h"
 #include "geometry_msgs/msg/point.hpp"
 #include "geometry_msgs/msg/quaternion.hpp"
@@ -28,7 +27,7 @@ namespace BT
 // data type.
 
 template<>
-geometry_msgs::msg::Point convertFromString(StringView key)
+inline geometry_msgs::msg::Point convertFromString(const StringView key)
 {
   // three real numbers separated by semicolons
   auto parts = BT::splitString(key, ';');
@@ -44,7 +43,7 @@ geometry_msgs::msg::Point convertFromString(StringView key)
 }
 
 template<>
-geometry_msgs::msg::Quaternion convertFromString(StringView key)
+inline geometry_msgs::msg::Quaternion convertFromString(const StringView key)
 {
   // three real numbers separated by semicolons
   auto parts = BT::splitString(key, ';');
@@ -58,6 +57,12 @@ geometry_msgs::msg::Quaternion convertFromString(StringView key)
     orientation.w = BT::convertFromString<double>(parts[3]);
     return orientation;
   }
+}
+
+template<>
+inline std::chrono::milliseconds convertFromString<std::chrono::milliseconds>(const StringView key)
+{
+  return std::chrono::milliseconds(std::stoul(key.data()));
 }
 
 }  // namespace BT

@@ -67,9 +67,9 @@ protected:
 
   void handle_accepted(const std::shared_ptr<GoalHandleFibonacci> goal_handle)
   {
-    //using namespace std::placeholders;
+    // using namespace std::placeholders;
     // this needs to return quickly to avoid blocking the executor, so spin up a new thread
-    //std::thread{std::bind(&BtExecutor::executeBehaviorTree, this, _1), goal_handle}.detach();
+    // std::thread{std::bind(&BtExecutor::executeBehaviorTree, this, _1), goal_handle}.detach();
     std::thread{std::bind(&BtExecutor::executeBehaviorTree, this), goal_handle}.detach();
   }
 

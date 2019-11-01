@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Intel Corporation
+// Copyright (c) 2018 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,21 +26,22 @@ namespace ros2_behavior_tree
 class RateController : public BT::DecoratorNode
 {
 public:
-  RateController(const std::string & name, const BT::NodeConfiguration & cfg)
-  : BT::DecoratorNode(name, cfg)
+  RateController(
+    const std::string & name,
+    const BT::NodeConfiguration & conf)
+  : BT::DecoratorNode(name, conf)
   {
     double hz = 1.0;
-    //getParam<double>("hz", hz);
-    getInput<double>("hz", hz);
+    getInput("hz", hz);
     period_ = 1.0 / hz;
   }
-
-  RateController() = delete;
 
   // Any BT node that accepts parameters must provide a requiredNodeParameters method
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<double>("hz", "Number of ticks per second") };
+    return {
+      BT::InputPort<double>("hz", 10.0, "Rate")
+    };
   }
 
 private:

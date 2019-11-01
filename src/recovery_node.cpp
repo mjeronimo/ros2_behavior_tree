@@ -12,21 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ros2_behavior_tree/recovery_node.hpp"
-
 #include <string>
+#include "ros2_behavior_tree/recovery_node.hpp"
 
 namespace ros2_behavior_tree
 {
-
-RecoveryNode::RecoveryNode(const std::string & name, const BT::NodeConfiguration & cfg)
-: BT::ControlNode::ControlNode(name, cfg)
+RecoveryNode::RecoveryNode(
+  const std::string & name,
+  const BT::NodeConfiguration & conf)
+: BT::ControlNode::ControlNode(name, conf), current_child_idx_(0), retry_count_(0)
 {
-  getInput<unsigned int>("retries", num_retries_);
+  getInput("number_of_retries", number_of_retries_);
 }
 
-BT::NodeStatus
-RecoveryNode::tick()
+void RecoveryNode::halt()
+{
+  ControlNode::halt();
+  current_child_idx_ = 0;
+  retry_count_ = 0;
+}
+
+BT::NodeStatus RecoveryNode::tick()
 {
   const unsigned children_count = children_nodes_.size();
 
@@ -36,7 +42,7 @@ RecoveryNode::tick()
 
   setStatus(BT::NodeStatus::RUNNING);
 
-  while (current_child_idx_ < children_count && retry_count_ < num_retries_) {
+  while (current_child_idx_ < children_count && retry_count_ < number_of_retries_) {
     TreeNode * child_node = children_nodes_[current_child_idx_];
     const BT::NodeStatus child_status = child_node->executeTick();
 
@@ -45,6 +51,7 @@ RecoveryNode::tick()
         case BT::NodeStatus::SUCCESS:
           {
             retry_count_ = 0;
+            halt();
             return BT::NodeStatus::SUCCESS;
           }
           break;
@@ -52,7 +59,7 @@ RecoveryNode::tick()
         case BT::NodeStatus::FAILURE:
           {
             // tick second child
-            if (retry_count_ <= num_retries_) {
+            if (retry_count_ <= number_of_retries_) {
               current_child_idx_++;
               break;
             } else {
@@ -71,7 +78,7 @@ RecoveryNode::tick()
         default:
           {
           }
-      }
+      }  // end switch
 
     } else if (current_child_idx_ == 1) {
       switch (child_status) {
@@ -87,6 +94,7 @@ RecoveryNode::tick()
           {
             current_child_idx_--;
             retry_count_ = 0;
+            halt();
             return BT::NodeStatus::FAILURE;
           }
           break;
@@ -100,11 +108,11 @@ RecoveryNode::tick()
         default:
           {
           }
-      }
+      }  // end switch
     }
-  }
-
+  }  // end while loop
   retry_count_ = 0;
+  halt();
   return BT::NodeStatus::FAILURE;
 }
 

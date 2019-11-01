@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Intel Corporation
+// Copyright (c) 2018 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/bt_factory.h"
@@ -30,10 +31,11 @@ enum class BtStatus { SUCCEEDED, FAILED, CANCELED };
 class BehaviorTreeEngine
 {
 public:
-  BehaviorTreeEngine();
+  explicit BehaviorTreeEngine(const std::vector<std::string> & plugin_libraries);
   virtual ~BehaviorTreeEngine() {}
 
   BtStatus run(
+    BT::Blackboard::Ptr & blackboard,
     const std::string & behavior_tree_xml,
     std::function<void()> onLoop,
     std::function<bool()> cancelRequested,
@@ -45,7 +47,9 @@ public:
     std::function<bool()> cancelRequested,
     std::chrono::milliseconds loopTimeout = std::chrono::milliseconds(10));
 
-  BT::Tree buildTreeFromText(std::string & xml_string);
+  BT::Tree buildTreeFromText(
+    const std::string & xml_string,
+    BT::Blackboard::Ptr blackboard);
 
   void haltAllActions(BT::TreeNode * root_node)
   {
@@ -65,9 +69,6 @@ public:
       };
     BT::applyRecursiveVisitor(root_node, visitor);
   }
-
-  BT::NodeStatus message(BT::TreeNode & tree_node);
-  BT::NodeStatus setCondition(BT::TreeNode & tree_node);
 
 protected:
   // The factory that will be used to dynamically construct the behavior tree

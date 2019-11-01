@@ -28,20 +28,17 @@ public:
   ConditionalLoop(const std::string & name, const BT::NodeConfiguration & cfg)
   : BT::DecoratorNode(name, cfg)
   {
-    //getParam<std::string>("key", key_);
     getInput<std::string>("key", key_);
 
     // Convert the XML string param to a boolean
-    //std::string temp_value;
-    //getParam<std::string>("value", temp_value);
-    //target_value_ = (temp_value == "true");
     getInput<bool>("value", target_value_);
   }
 
   // Any BT node that accepts parameters must provide a requiredNodeParameters method
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<std::string>("key", "The target key to use"), BT::InputPort<bool>("value", "The target value") };
+    return {BT::InputPort<std::string>("key", "The target key to use"),
+      BT::InputPort<bool>("value", "The target value")};
   }
 
 private:
@@ -59,8 +56,8 @@ inline BT::NodeStatus ConditionalLoop::tick()
   // We're waiting for the value on the blackboard to match the target
   bool current_value = false;
 
-  //TODO:
-  //blackboard()->get<bool>(key_, current_value);
+  // TODO(mjeronimo):
+  // blackboard()->get<bool>(key_, current_value);
   getInput<bool>(key_, current_value);
 
   return (current_value == target_value_) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::RUNNING;

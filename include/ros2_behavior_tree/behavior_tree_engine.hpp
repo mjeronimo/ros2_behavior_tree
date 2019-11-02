@@ -43,8 +43,6 @@ public:
     std::chrono::milliseconds tick_period = std::chrono::milliseconds(10));
 
 protected:
-  BT::Tree buildTreeFromText(const std::string & xml_string);
-
   // The factory and blackboard that will be used to dynamically construct the
   // behavior tree from the XML specification
   BT::BehaviorTreeFactory factory_;

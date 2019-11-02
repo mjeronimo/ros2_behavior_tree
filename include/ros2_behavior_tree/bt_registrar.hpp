@@ -29,7 +29,7 @@ public:
   static void RegisterNodes(BT::BehaviorTreeFactory & factory);
 
 private:
-  // Simple action nodes to be registered
+  // Simple nodes to be registered
   static BT::NodeStatus message(BT::TreeNode & tree_node);
   static BT::NodeStatus setCondition(BT::TreeNode & tree_node);
 };

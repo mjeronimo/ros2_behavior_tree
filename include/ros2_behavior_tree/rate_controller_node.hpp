@@ -39,7 +39,7 @@ public:
   // Any BT node that accepts parameters must provide a requiredNodeParameters method
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<double>("hz", 10.0, "Rate") };
+    return {BT::InputPort<double>("hz", 10.0, "Rate")};
   }
 
 private:

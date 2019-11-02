@@ -31,16 +31,7 @@ namespace ros2_behavior_tree
 void
 BtRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
 {
-  // Register our custom action nodes
-
   // Register our custom condition nodes
-
-  // Register our simple condition nodes
-
-  // Register our custom decorator nodes
-  factory.registerNodeType<ros2_behavior_tree::RateController>("RateController");
-  factory.registerNodeType<ros2_behavior_tree::WhileConditionNode>("WhileCondition");
-
   const BT::PortsList message_params {BT::InputPort<std::string>("msg")};
   factory.registerSimpleAction("Message",
     std::bind(&BtRegistrar::message, std::placeholders::_1), message_params);
@@ -49,6 +40,12 @@ BtRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
     BT::InputPort<std::string>("key"), BT::InputPort<std::string>("value")};
   factory.registerSimpleAction("SetCondition",
     std::bind(&BtRegistrar::setCondition, std::placeholders::_1), set_condition_params);
+
+  // Register our custom action nodes
+
+  // Register our custom decorator nodes
+  factory.registerNodeType<ros2_behavior_tree::RateController>("RateController");
+  factory.registerNodeType<ros2_behavior_tree::WhileConditionNode>("WhileCondition");
 
   // Register our custom control nodes
   factory.registerNodeType<ros2_behavior_tree::RecoveryNode>("RecoveryNode");

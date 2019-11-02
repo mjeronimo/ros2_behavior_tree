@@ -20,8 +20,6 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-using namespace std::chrono_literals;
-
 namespace ros2_behavior_tree
 {
 
@@ -43,8 +41,12 @@ BehaviorTreeEngine::run(
   std::function<bool()> cancel_requested,
   std::chrono::milliseconds tick_period)
 {
-  // Parse the input XML and create the corresponding Behavior Tree
-  BT::Tree tree = buildTreeFromText(behavior_tree_xml);
+  // Parse the input XML
+  BT::XMLParser p(factory_);
+  p.loadFromText(behavior_tree_xml);
+
+  // Create the corresponding Behavior Tree
+  BT::Tree tree = p.instantiateTree(blackboard_);
 
   // Set up a loop rate controller based on the desired tick period
   rclcpp::WallRate loop_rate(tick_period);
@@ -60,19 +62,12 @@ BehaviorTreeEngine::run(
     // Give the caller a chance to do something on each loop iteration
     on_loop_iteration();
 
+    // Execute one tick of the tree
     result = tree.root_node->executeTick();
     loop_rate.sleep();
   }
 
   return (result == BT::NodeStatus::SUCCESS) ? BtStatus::SUCCEEDED : BtStatus::FAILED;
-}
-
-BT::Tree
-BehaviorTreeEngine::buildTreeFromText(const std::string & xml_string)
-{
-  BT::XMLParser p(factory_);
-  p.loadFromText(xml_string);
-  return p.instantiateTree(blackboard_);
 }
 
 }  // namespace ros2_behavior_tree

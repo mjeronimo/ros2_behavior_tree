@@ -19,10 +19,8 @@
 namespace ros2_behavior_tree
 {
 
-RecoveryNode::RecoveryNode(
-  const std::string & name,
-  const BT::NodeConfiguration & conf)
-: BT::ControlNode::ControlNode(name, conf), current_child_idx_(0), retry_count_(0)
+RecoveryNode::RecoveryNode(const std::string & name, const BT::NodeConfiguration & config)
+: BT::ControlNode::ControlNode(name, config), current_child_idx_(0), retry_count_(0)
 {
   getInput("number_of_retries", number_of_retries_);
 }
@@ -53,65 +51,46 @@ RecoveryNode::tick()
     if (current_child_idx_ == 0) {
       switch (child_status) {
         case BT::NodeStatus::SUCCESS:
-          {
-            retry_count_ = 0;
-            halt();
-            return BT::NodeStatus::SUCCESS;
-          }
-          break;
+          retry_count_ = 0;
+          halt();
+          return BT::NodeStatus::SUCCESS;
 
         case BT::NodeStatus::FAILURE:
-          {
-            // tick second child
-            if (retry_count_ <= number_of_retries_) {
-              current_child_idx_++;
-              break;
-            } else {
-              haltChildren(0);
-              return BT::NodeStatus::FAILURE;
-            }
+          // tick second child
+          if (retry_count_ <= number_of_retries_) {
+            current_child_idx_++;
+            break;
+          } else {
+            haltChildren(0);
+            return BT::NodeStatus::FAILURE;
           }
-          break;
 
         case BT::NodeStatus::RUNNING:
-          {
-            return BT::NodeStatus::RUNNING;
-          }
-          break;
+          return BT::NodeStatus::RUNNING;
 
         default:
-          {
-          }
+          break;
       }
 
     } else if (current_child_idx_ == 1) {
       switch (child_status) {
         case BT::NodeStatus::SUCCESS:
-          {
-            retry_count_++;
-            current_child_idx_--;
-            haltChildren(1);
-          }
+          retry_count_++;
+          current_child_idx_--;
+          haltChildren(1);
           break;
 
         case BT::NodeStatus::FAILURE:
-          {
-            current_child_idx_--;
-            retry_count_ = 0;
-            halt();
-            return BT::NodeStatus::FAILURE;
-          }
-          break;
+          current_child_idx_--;
+          retry_count_ = 0;
+          halt();
+          return BT::NodeStatus::FAILURE;
 
         case BT::NodeStatus::RUNNING:
-          {
-            return BT::NodeStatus::RUNNING;
-          }
-          break;
+          return BT::NodeStatus::RUNNING;
 
         default:
-          {
-          }
+          break;
       }
     }
   }

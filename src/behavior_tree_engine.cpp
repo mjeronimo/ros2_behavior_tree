@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "behaviortree_cpp/xml_parsing.h"
 #include "rclcpp/rclcpp.hpp"
 
 namespace ros2_behavior_tree
@@ -59,11 +60,13 @@ BehaviorTreeEngine::run(
       return BtStatus::CANCELED;
     }
 
+    // Execute one tick of the tree
+    result = tree.root_node->executeTick();
+
     // Give the caller a chance to do something on each loop iteration
     on_loop_iteration();
 
-    // Execute one tick of the tree
-    result = tree.root_node->executeTick();
+    // Throttle the BT loop rate, based on the provided tick period value
     loop_rate.sleep();
   }
 

@@ -65,11 +65,8 @@ public:
   // and call providedBasicPorts in it.
   static BT::PortsList providedBasicPorts(BT::PortsList addition)
   {
-    BT::PortsList basic = {
-      BT::InputPort<std::chrono::milliseconds>("server_timeout")
-    };
+    BT::PortsList basic = { BT::InputPort<std::chrono::milliseconds>("server_timeout") };
     basic.insert(addition.begin(), addition.end());
-
     return basic;
   }
 

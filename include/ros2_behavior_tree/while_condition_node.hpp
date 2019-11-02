@@ -34,11 +34,13 @@ public:
     getInput<bool>("value", target_value_);
   }
 
-  // Any BT node that accepts parameters must provide a requiredNodeParameters method
+  // Any BT node that accepts parameters must provide a providedPorts method
   static BT::PortsList providedPorts()
   {
-    return {BT::InputPort<std::string>("key", "The target key to use"),
-      BT::InputPort<bool>("value", "The target value")};
+    return {
+      BT::InputPort<std::string>("key", "The target key to use"),
+      BT::InputPort<bool>("value", "The target value")
+    };
   }
 
 private:

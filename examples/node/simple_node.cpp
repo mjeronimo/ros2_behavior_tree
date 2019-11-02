@@ -37,6 +37,7 @@ static const char xml_text[] =
 SimpleNode::SimpleNode()
 : Node("simple_node"), bt_engine_({"ros2_behavior_tree_nodes"})
 {
+  // Run the Behavior Tree on a separate thread
   thread_ = std::make_unique<std::thread>(&SimpleNode::run, this);
 }
 

@@ -21,11 +21,11 @@
 
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/bt_factory.h"
-#include "behaviortree_cpp/xml_parsing.h"
 
 namespace ros2_behavior_tree
 {
 
+// The possible return values from running a Behavior Tree
 enum class BtStatus { SUCCEEDED, FAILED, CANCELED };
 
 class BehaviorTreeEngine
@@ -43,9 +43,10 @@ public:
     std::chrono::milliseconds tick_period = std::chrono::milliseconds(10));
 
 protected:
-  // The factory and blackboard that will be used to dynamically construct the
-  // behavior tree from the XML specification
+  // The factory used when dynamically constructing the Behavior Tree from the XML specification
   BT::BehaviorTreeFactory factory_;
+
+  // The blackboard to be shared by all of the Behavior Tree's nodes
   BT::Blackboard::Ptr blackboard_;
 };
 

@@ -12,30 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EXAMPLES__NODE__SIMPLE_NODE_HPP_
-#define EXAMPLES__NODE__SIMPLE_NODE_HPP_
-
 #include <memory>
-#include <thread>
 
-#include "ros2_behavior_tree/behavior_tree_engine.hpp"
+#include "bt_executor.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-namespace ros2_behavior_tree
+int main(int argc, char ** argv)
 {
+  rclcpp::init(argc, argv);
+  auto node = std::make_shared<ros2_behavior_tree::BtExecutor>();
+  rclcpp::spin(node->get_node_base_interface());
+  rclcpp::shutdown();
 
-class SimpleNode : public rclcpp::Node
-{
-public:
-  SimpleNode();
-  ~SimpleNode();
-
-protected:
-  BtStatus run();
-  BehaviorTreeEngine bt_engine_;
-  std::unique_ptr<std::thread> thread_;
-};
-
-}  // namespace ros2_behavior_tree
-
-#endif  // EXAMPLES__NODE__SIMPLE_NODE_HPP_
+  return 0;
+}

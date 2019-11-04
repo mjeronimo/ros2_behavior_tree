@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "simple_node.hpp"
+#include "sample_node.hpp"
 
 #include <memory>
+#include <string>
 
 namespace ros2_behavior_tree
 {
 
 // The Behavior Tree to execute
-static const char xml_text[] =
+const char SampleNode::bt_xml_[] =
   R"(
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
@@ -34,22 +35,22 @@ static const char xml_text[] =
 </root>
 )";
 
-SimpleNode::SimpleNode()
-: Node("simple_node"), bt_engine_({"ros2_behavior_tree_nodes"})
+SampleNode::SampleNode()
+: Node("sample_node"), bt_(bt_xml_)
 {
-  // Run the Behavior Tree on a separate thread
-  thread_ = std::make_unique<std::thread>(&SimpleNode::run, this);
+  // Execute the Behavior Tree on a separate thread
+  thread_ = std::make_unique<std::thread>(&SampleNode::executeBehaviorTree, this);
 }
 
-SimpleNode::~SimpleNode()
+SampleNode::~SampleNode()
 {
   thread_->join();
 }
 
 BtStatus
-SimpleNode::run()
+SampleNode::executeBehaviorTree()
 {
-  return bt_engine_.run(xml_text);
+  return bt_.execute();
 }
 
 }  // namespace ros2_behavior_tree

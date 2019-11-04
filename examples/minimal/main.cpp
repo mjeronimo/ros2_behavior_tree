@@ -16,10 +16,10 @@
 #include <stdexcept>
 
 #include "rclcpp/rclcpp.hpp"
-#include "ros2_behavior_tree/behavior_tree_engine.hpp"
+#include "ros2_behavior_tree/behavior_tree.hpp"
 
 // The Behavior Tree to execute
-static const char xml_text[] =
+static const char bt_xml[] =
   R"(
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
@@ -35,11 +35,11 @@ int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 
-  // Create a behavior tree engine to run the BT XML, specifying which plugins to use
-  ros2_behavior_tree::BehaviorTreeEngine bt_engine({"ros2_behavior_tree_nodes"});
+  // Create a behavior tree engine to run the BT XML, using the default plugin
+  ros2_behavior_tree::BehaviorTree bt(bt_xml);
 
   // Run the BT and determine the result
-  auto rc = bt_engine.run(xml_text);
+  auto rc = bt.execute();
 
   switch (rc) {
     case ros2_behavior_tree::BtStatus::SUCCEEDED:

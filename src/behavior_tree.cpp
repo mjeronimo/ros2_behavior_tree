@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ros2_behavior_tree/behavior_tree_engine.hpp"
+#include "ros2_behavior_tree/behavior_tree.hpp"
 
 #include <memory>
 #include <string>
@@ -24,30 +24,31 @@
 namespace ros2_behavior_tree
 {
 
-BehaviorTreeEngine::BehaviorTreeEngine(const std::vector<std::string> & plugin_library_names)
+BehaviorTree::BehaviorTree(
+  const std::string & bt_xml,
+  const std::vector<std::string> & plugin_library_names)
+: xml_parser_(factory_)
 {
   // Load any specified BT plugins
   for (const auto & library_name : plugin_library_names) {
     factory_.registerFromPlugin(std::string{"lib" + library_name + ".so"});
   }
 
+  // Parse the input XML
+  xml_parser_.loadFromText(bt_xml);
+
   // Create a blackboard for this Behavior Tree
   blackboard_ = BT::Blackboard::create();
 }
 
 BtStatus
-BehaviorTreeEngine::run(
-  const std::string & behavior_tree_xml,
-  std::function<void()> on_loop_iteration,
+BehaviorTree::execute(
   std::function<bool()> cancel_requested,
+  std::function<void()> on_loop_iteration,
   std::chrono::milliseconds tick_period)
 {
-  // Parse the input XML
-  BT::XMLParser p(factory_);
-  p.loadFromText(behavior_tree_xml);
-
   // Create the corresponding Behavior Tree
-  BT::Tree tree = p.instantiateTree(blackboard_);
+  BT::Tree tree = xml_parser_.instantiateTree(blackboard_);
 
   // Set up a loop rate controller based on the desired tick period
   rclcpp::WallRate loop_rate(tick_period);

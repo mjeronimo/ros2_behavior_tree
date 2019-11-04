@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROS2_BEHAVIOR_TREE__BEHAVIOR_TREE_ENGINE_HPP_
-#define ROS2_BEHAVIOR_TREE__BEHAVIOR_TREE_ENGINE_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__BEHAVIOR_TREE_HPP_
+#define ROS2_BEHAVIOR_TREE__BEHAVIOR_TREE_HPP_
 
 #include <memory>
 #include <string>
@@ -21,30 +21,35 @@
 
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/xml_parsing.h"
 
 namespace ros2_behavior_tree
 {
 
-// The possible return values from running a Behavior Tree
+// The possible return values from the execution of a Behavior Tree
 enum class BtStatus { SUCCEEDED, FAILED, CANCELED };
 
-class BehaviorTreeEngine
+class BehaviorTree
 {
 public:
-  explicit BehaviorTreeEngine(const std::vector<std::string> & plugin_library_names);
-  BehaviorTreeEngine() = delete;
+  explicit BehaviorTree(
+    const std::string & bt_xml,
+    const std::vector<std::string> & plugin_library_names = {"ros2_behavior_tree_nodes"}
+  );
+  BehaviorTree() = delete;
+  virtual ~BehaviorTree() {}
 
-  virtual ~BehaviorTreeEngine() {}
-
-  BtStatus run(
-    const std::string & behavior_tree_xml,
-    std::function<void()> on_loop_iteration = []() {},
+  BtStatus execute(
     std::function<bool()> cancel_requested = []() {return false;},
+    std::function<void()> on_loop_iteration = []() {},
     std::chrono::milliseconds tick_period = std::chrono::milliseconds(10));
 
 protected:
-  // The factory used when dynamically constructing the Behavior Tree from the XML specification
+  // The factory to use when dynamically constructing the Behavior Tree
   BT::BehaviorTreeFactory factory_;
+
+  // XML parser to parse the supplied BT XML input
+  BT::XMLParser xml_parser_;
 
   // The blackboard to be shared by all of the Behavior Tree's nodes
   BT::Blackboard::Ptr blackboard_;
@@ -52,4 +57,4 @@ protected:
 
 }  // namespace ros2_behavior_tree
 
-#endif  // ROS2_BEHAVIOR_TREE__BEHAVIOR_TREE_ENGINE_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__BEHAVIOR_TREE_HPP_

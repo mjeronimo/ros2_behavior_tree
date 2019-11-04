@@ -18,7 +18,7 @@ include_directories(
 set(library_name ${PROJECT_NAME})
 
 add_library(${library_name} SHARED
-  src/behavior_tree_engine.cpp
+  src/behavior_tree.cpp
   src/recovery_node.cpp
 )
 
@@ -30,7 +30,12 @@ add_executable(minimal examples/minimal/main.cpp)
 
 add_executable(node
   examples/node/main.cpp
-  examples/node/simple_node.cpp
+  examples/node/sample_node.cpp
+  )
+
+add_executable(lifecycle_node
+  examples/lifecycle_node/main.cpp
+  examples/lifecycle_node/sample_lifecycle_node.cpp
   )
 
 set(dependencies
@@ -58,14 +63,19 @@ ament_target_dependencies(node
   ${dependencies}
 )
 
+ament_target_dependencies(lifecycle_node
+  ${dependencies}
+)
+
 target_link_libraries(minimal ${library_name})
 target_link_libraries(node ${library_name})
+target_link_libraries(lifecycle_node ${library_name})
 
 target_compile_definitions(ros2_behavior_tree_nodes PRIVATE
   BT_PLUGIN_EXPORT
 )
 
-install(TARGETS ${library_name} ros2_behavior_tree_nodes minimal node
+install(TARGETS ${library_name} ros2_behavior_tree_nodes minimal node lifecycle_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}

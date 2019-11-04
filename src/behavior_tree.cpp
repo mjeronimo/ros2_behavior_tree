@@ -43,7 +43,7 @@ BehaviorTree::BehaviorTree(
 
 BtStatus
 BehaviorTree::execute(
-  std::function<bool()> halt_requested,
+  std::function<bool()> should_halt,
   std::function<void()> on_loop_iteration,
   std::chrono::milliseconds tick_period)
 {
@@ -56,7 +56,7 @@ BehaviorTree::execute(
   // Loop until something happens with ROS or the node completes
   BT::NodeStatus result = BT::NodeStatus::RUNNING;
   while (rclcpp::ok() && result == BT::NodeStatus::RUNNING) {
-    if (halt_requested()) {
+    if (should_halt()) {
       tree.root_node->halt();
       return BtStatus::HALTED;
     }

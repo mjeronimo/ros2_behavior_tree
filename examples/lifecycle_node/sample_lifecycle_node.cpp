@@ -49,8 +49,6 @@ CallbackReturn
 SampleLifecycleNode::on_configure(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Configuring");
-  bt_ = std::make_unique<BehaviorTree>(bt_xml_);
-
   return CallbackReturn::SUCCESS;
 }
 
@@ -58,7 +56,11 @@ CallbackReturn
 SampleLifecycleNode::on_activate(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Activating");
-  bt_->execute();
+
+  bt_ = std::make_unique<BehaviorTree>(bt_xml_);
+
+    // Execute the Behavior Tree on a separate thread
+  thread_ = std::make_unique<std::thread>(&SampleLifecycleNode::executeBehaviorTree, this);
 
   return CallbackReturn::SUCCESS;
 }
@@ -67,6 +69,11 @@ CallbackReturn
 SampleLifecycleNode::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Deactivating");
+
+  should_halt_ = true;
+  thread_->join();
+  bt_.reset();
+
   return CallbackReturn::SUCCESS;
 }
 
@@ -74,8 +81,6 @@ CallbackReturn
 SampleLifecycleNode::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Cleaning up");
-  bt_.reset();
-
   return CallbackReturn::SUCCESS;
 }
 
@@ -96,8 +101,10 @@ SampleLifecycleNode::on_shutdown(const rclcpp_lifecycle::State & /*state*/)
 void
 SampleLifecycleNode::executeBehaviorTree()
 {
-  auto should_halt = []() {return false;};
-  ros2_behavior_tree::BtStatus rc = bt_->execute(should_halt);
+  should_halt_ = false;
+  auto halt_requested = [this]() {return should_halt_.load();};
+
+  ros2_behavior_tree::BtStatus rc = bt_->execute(halt_requested);
 
   switch (rc) {
     case ros2_behavior_tree::BtStatus::SUCCEEDED:

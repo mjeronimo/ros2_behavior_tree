@@ -15,6 +15,7 @@
 #ifndef EXAMPLES__LIFECYCLE_NODE__SAMPLE_LIFECYCLE_NODE_HPP_
 #define EXAMPLES__LIFECYCLE_NODE__SAMPLE_LIFECYCLE_NODE_HPP_
 
+#include <atomic>
 #include <memory>
 
 #include "ros2_behavior_tree/behavior_tree.hpp"
@@ -48,6 +49,8 @@ protected:
 
   // This node executes the Behavior Tree on a separate thread
   std::unique_ptr<std::thread> thread_;
+
+  std::atomic<bool> should_halt_{false};
 
   // The routine to execute on the separate thread
   void executeBehaviorTree();

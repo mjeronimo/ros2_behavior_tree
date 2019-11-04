@@ -40,7 +40,7 @@ public:
   virtual ~BehaviorTree() {}
 
   BtStatus execute(
-    std::function<bool()> halt_requested = []() {return false;},
+    std::function<bool()> should_halt = []() {return false;},
     std::function<void()> on_loop_iteration = []() {},
     std::chrono::milliseconds tick_period = std::chrono::milliseconds(10));
 

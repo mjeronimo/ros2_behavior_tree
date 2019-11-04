@@ -156,8 +156,8 @@ BtExecutor::on_shutdown(const rclcpp_lifecycle::State & /*state*/)
 void
 BtExecutor::executeBehaviorTree()
 {
-  // auto is_canceling = [this]() {return action_server_->is_cancel_requested();};
-  auto is_canceling = []() {return false;};
+  // auto should_halt = [this]() {return action_server_->is_cancel_requested();};
+  auto should_halt = []() {return false;};
 
   // auto on_loop = [this]() {
   // if (action_server_->preempt_requested()) {
@@ -169,7 +169,7 @@ BtExecutor::executeBehaviorTree()
   auto on_loop = []() {};
 
   // Execute the BT that was previously created in the configure step
-  ros2_behavior_tree::BtStatus rc = bt_->run(tree_, on_loop, is_canceling);
+  ros2_behavior_tree::BtStatus rc = bt_->run(tree_, on_loop, should_halt);
 
   switch (rc) {
     case ros2_behavior_tree::BtStatus::SUCCEEDED:
@@ -182,8 +182,8 @@ BtExecutor::executeBehaviorTree()
       // action_server_->abort_all();
       break;
 
-    case ros2_behavior_tree::BtStatus::CANCELED:
-      RCLCPP_INFO(get_logger(), "Navigation canceled");
+    case ros2_behavior_tree::BtStatus::HALTED:
+      RCLCPP_INFO(get_logger(), "Navigation halted");
       // action_server_->cancel_all();
       break;
 

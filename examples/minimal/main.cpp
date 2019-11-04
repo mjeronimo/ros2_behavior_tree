@@ -35,10 +35,10 @@ int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 
-  // Create a behavior tree engine to run the BT XML, using the default plugin
+  // Create a behavior tree engine used to execute the BT XML, using the default plugin
   ros2_behavior_tree::BehaviorTree bt(bt_xml);
 
-  // Run the BT and determine the result
+  // Execute the BT and determine the result
   auto rc = bt.execute();
 
   switch (rc) {
@@ -49,8 +49,8 @@ int main(int argc, char ** argv)
       printf("BT failed\n");
       break;
 
-    case ros2_behavior_tree::BtStatus::CANCELED:
-      printf("BT was canceled\n");
+    case ros2_behavior_tree::BtStatus::HALTED:
+      printf("BT was halted\n");
       break;
 
     default:

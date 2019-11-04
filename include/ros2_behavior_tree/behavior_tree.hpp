@@ -27,7 +27,7 @@ namespace ros2_behavior_tree
 {
 
 // The possible return values from the execution of a Behavior Tree
-enum class BtStatus { SUCCEEDED, FAILED, CANCELED };
+enum class BtStatus { SUCCEEDED, FAILED, HALTED };
 
 class BehaviorTree
 {
@@ -40,7 +40,7 @@ public:
   virtual ~BehaviorTree() {}
 
   BtStatus execute(
-    std::function<bool()> cancel_requested = []() {return false;},
+    std::function<bool()> halt_requested = []() {return false;},
     std::function<void()> on_loop_iteration = []() {},
     std::chrono::milliseconds tick_period = std::chrono::milliseconds(10));
 

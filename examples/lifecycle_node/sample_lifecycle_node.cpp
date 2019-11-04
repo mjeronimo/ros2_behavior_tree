@@ -96,8 +96,8 @@ SampleLifecycleNode::on_shutdown(const rclcpp_lifecycle::State & /*state*/)
 void
 SampleLifecycleNode::executeBehaviorTree()
 {
-  auto is_canceling = []() {return false;};
-  ros2_behavior_tree::BtStatus rc = bt_->execute(is_canceling);
+  auto should_halt = []() {return false;};
+  ros2_behavior_tree::BtStatus rc = bt_->execute(should_halt);
 
   switch (rc) {
     case ros2_behavior_tree::BtStatus::SUCCEEDED:
@@ -108,8 +108,8 @@ SampleLifecycleNode::executeBehaviorTree()
       RCLCPP_ERROR(get_logger(), "Navigation failed");
       break;
 
-    case ros2_behavior_tree::BtStatus::CANCELED:
-      RCLCPP_INFO(get_logger(), "Navigation canceled");
+    case ros2_behavior_tree::BtStatus::HALTED:
+      RCLCPP_INFO(get_logger(), "Navigation halted");
       break;
 
     default:

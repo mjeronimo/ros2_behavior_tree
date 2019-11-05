@@ -24,12 +24,12 @@ const char SampleLifecycleNode::bt_xml_[] =
   R"(
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
-    <Sequence name="say_hello">
-      <SetCondition key="done" value="true"/>
-      <WhileCondition key="done" value="false">
+    <Forever>
+      <Sequence name="say_hello">
         <Message msg="Hello, World!"/>
-      </WhileCondition>
-    </Sequence>
+        <Wait msec="1000"/>
+      </Sequence>
+    </Forever>
   </BehaviorTree>
 </root>
 )";

@@ -34,7 +34,7 @@ int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 
-  // Create a behavior tree engine used to execute the BT XML, using the default plugin
+  // Create a behavior tree to execute the BT XML, using the default plugin
   ros2_behavior_tree::BehaviorTree bt(bt_xml);
 
   // Execute the BT and determine the result

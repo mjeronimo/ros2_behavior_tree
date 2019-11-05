@@ -46,10 +46,8 @@ private:
   BT::NodeStatus tick() override;
   std::chrono::time_point<std::chrono::high_resolution_clock> start_;
   double period_;
+  bool first_time{false};
 };
-
-// TODO(mjeronimo): make this a member variable
-static bool first_time{false};
 
 inline BT::NodeStatus RateController::tick()
 {

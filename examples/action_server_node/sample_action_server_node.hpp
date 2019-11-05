@@ -15,6 +15,8 @@
 #ifndef EXAMPLES__ACTION_SERVER_NODE__SAMPLE_ACTION_SERVER_NODE_HPP_
 #define EXAMPLES__ACTION_SERVER_NODE__SAMPLE_ACTION_SERVER_NODE_HPP_
 
+#include <memory>
+
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "ros2_behavior_tree/behavior_tree.hpp"
@@ -41,7 +43,7 @@ protected:
 
   rclcpp_action::CancelResponse handle_cancel(
     const std::shared_ptr<GoalHandle> goal_handle);
-  
+
   void handle_accepted(const std::shared_ptr<GoalHandle> goal_handle);
 #endif
   // The node executes a Behavior Tree

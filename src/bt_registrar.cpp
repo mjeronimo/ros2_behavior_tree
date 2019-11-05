@@ -16,9 +16,10 @@
 
 #include <string>
 
+#include "ros2_behavior_tree/forever_node.hpp"
 #include "ros2_behavior_tree/rate_controller_node.hpp"
 #include "ros2_behavior_tree/recovery_node.hpp"
-#include "ros2_behavior_tree/while_condition_node.hpp"
+#include "ros2_behavior_tree/repeat_until_node.hpp"
 
 BT_REGISTER_NODES(factory)
 {
@@ -32,6 +33,8 @@ void
 BtRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
 {
   // Register our custom condition nodes
+
+  // Register our custom action nodes
   const BT::PortsList message_params {BT::InputPort<std::string>("msg")};
   factory.registerSimpleAction("Message",
     std::bind(&BtRegistrar::message, std::placeholders::_1), message_params);
@@ -41,11 +44,14 @@ BtRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
   factory.registerSimpleAction("SetCondition",
     std::bind(&BtRegistrar::setCondition, std::placeholders::_1), set_condition_params);
 
-  // Register our custom action nodes
+  const BT::PortsList wait_params {BT::InputPort<double>("msec")};
+  factory.registerSimpleAction("Wait",
+    std::bind(&BtRegistrar::wait, std::placeholders::_1), wait_params);
 
   // Register our custom decorator nodes
+  factory.registerNodeType<ros2_behavior_tree::Forever>("Forever");
   factory.registerNodeType<ros2_behavior_tree::RateController>("RateController");
-  factory.registerNodeType<ros2_behavior_tree::WhileConditionNode>("WhileCondition");
+  factory.registerNodeType<ros2_behavior_tree::RepeatUntilNode>("RepeatUntil");
 
   // Register our custom control nodes
   factory.registerNodeType<ros2_behavior_tree::RecoveryNode>("RecoveryNode");
@@ -75,6 +81,16 @@ BtRegistrar::setCondition(BT::TreeNode & tree_node)
   tree_node.getInput<std::string>("value", value);
 
   tree_node.config().blackboard->template set<bool>(key, (value == "true") ? true : false);  // NOLINT
+
+  return BT::NodeStatus::SUCCESS;
+}
+
+BT::NodeStatus
+BtRegistrar::wait(BT::TreeNode & tree_node)
+{
+  int msec = 0;
+  tree_node.getInput<int>("msec", msec);
+  std::this_thread::sleep_for(std::chrono::milliseconds(msec));
 
   return BT::NodeStatus::SUCCESS;
 }

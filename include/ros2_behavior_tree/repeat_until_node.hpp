@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROS2_BEHAVIOR_TREE__WHILE_CONDITION_NODE_HPP_
-#define ROS2_BEHAVIOR_TREE__WHILE_CONDITION_NODE_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__REPEAT_UNTIL_NODE_HPP_
+#define ROS2_BEHAVIOR_TREE__REPEAT_UNTIL_NODE_HPP_
 
 #include <string>
 
@@ -22,10 +22,10 @@
 namespace ros2_behavior_tree
 {
 
-class WhileConditionNode : public BT::DecoratorNode
+class RepeatUntilNode : public BT::DecoratorNode
 {
 public:
-  WhileConditionNode(const std::string & name, const BT::NodeConfiguration & cfg)
+  RepeatUntilNode(const std::string & name, const BT::NodeConfiguration & cfg)
   : BT::DecoratorNode(name, cfg)
   {
     getInput<std::string>("key", key_);
@@ -50,7 +50,7 @@ private:
   bool target_value_;
 };
 
-inline BT::NodeStatus WhileConditionNode::tick()
+inline BT::NodeStatus RepeatUntilNode::tick()
 {
   setStatus(BT::NodeStatus::RUNNING);
   child_node_->executeTick();
@@ -64,4 +64,4 @@ inline BT::NodeStatus WhileConditionNode::tick()
 
 }  // namespace ros2_behavior_tree
 
-#endif  // ROS2_BEHAVIOR_TREE__WHILE_CONDITION_NODE_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__REPEAT_UNTIL_NODE_HPP_

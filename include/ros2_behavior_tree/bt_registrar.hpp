@@ -32,6 +32,7 @@ private:
   // Simple nodes to be registered
   static BT::NodeStatus message(BT::TreeNode & tree_node);
   static BT::NodeStatus setCondition(BT::TreeNode & tree_node);
+  static BT::NodeStatus wait(BT::TreeNode & tree_node);
 };
 
 }  // namespace ros2_behavior_tree

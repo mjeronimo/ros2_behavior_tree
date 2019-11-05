@@ -26,10 +26,11 @@ namespace ros2_behavior_tree
 class Forever : public BT::DecoratorNode
 {
 public:
-  Forever(const std::string & name)
+  explicit Forever(const std::string & name)
   : BT::DecoratorNode(name, {})
   {
   }
+  Forever() = delete;
 
 private:
   BT::NodeStatus tick() override;

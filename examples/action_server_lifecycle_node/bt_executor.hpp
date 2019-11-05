@@ -44,7 +44,7 @@ protected:
   CallbackReturn on_error(const rclcpp_lifecycle::State & state) override;
 
   using ActionServer = ros2_behavior_tree::action::ExecuteBehaviorTree;
-  using GoalHandleFibonacci = rclcpp_action::ServerGoalHandle<ActionServer>;
+  using GoalHandle = rclcpp_action::ServerGoalHandle<ActionServer>;
 
   rclcpp_action::Server<ActionServer>::SharedPtr action_server_;
 
@@ -58,14 +58,14 @@ protected:
   }
 
   rclcpp_action::CancelResponse handle_cancel(
-    const std::shared_ptr<GoalHandleFibonacci> goal_handle)
+    const std::shared_ptr<GoalHandle> goal_handle)
   {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
     (void)goal_handle;
     return rclcpp_action::CancelResponse::ACCEPT;
   }
 
-  void handle_accepted(const std::shared_ptr<GoalHandleFibonacci> goal_handle)
+  void handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
   {
     // using namespace std::placeholders;
     // this needs to return quickly to avoid blocking the executor, so spin up a new thread

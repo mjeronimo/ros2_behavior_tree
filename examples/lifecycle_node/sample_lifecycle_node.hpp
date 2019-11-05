@@ -50,10 +50,11 @@ protected:
   // This node executes the Behavior Tree on a separate thread
   std::unique_ptr<std::thread> thread_;
 
-  std::atomic<bool> should_halt_{false};
-
   // The routine to execute on the separate thread
   void executeBehaviorTree();
+
+  // Whether to halt the currently executing Behavior Tree
+  std::atomic<bool> should_halt_{false};
 };
 
 }  // namespace ros2_behavior_tree

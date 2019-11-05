@@ -59,7 +59,7 @@ SampleLifecycleNode::on_activate(const rclcpp_lifecycle::State & /*state*/)
 
   bt_ = std::make_unique<BehaviorTree>(bt_xml_);
 
-    // Execute the Behavior Tree on a separate thread
+  // Execute the Behavior Tree on a separate thread
   thread_ = std::make_unique<std::thread>(&SampleLifecycleNode::executeBehaviorTree, this);
 
   return CallbackReturn::SUCCESS;

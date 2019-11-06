@@ -15,12 +15,12 @@
 #include "sample_node.hpp"
 
 #include <memory>
-#include <string>
 
 namespace ros2_behavior_tree
 {
 
-// The Behavior Tree to execute
+// The Behavior Tree to execute. This Behavior Tree will endlessly print
+// "Hello, World!" at 1 second intervals
 const char SampleNode::bt_xml_[] =
   R"(
 <root main_tree_to_execute="MainTree">

@@ -18,8 +18,8 @@
 #include <atomic>
 #include <memory>
 
-#include "ros2_behavior_tree/behavior_tree.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "ros2_behavior_tree/behavior_tree.hpp"
 
 namespace ros2_behavior_tree
 {

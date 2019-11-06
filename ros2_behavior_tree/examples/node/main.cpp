@@ -14,8 +14,8 @@
 
 #include <memory>
 
-#include "sample_node.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "sample_node.hpp"
 
 int main(int argc, char ** argv)
 {

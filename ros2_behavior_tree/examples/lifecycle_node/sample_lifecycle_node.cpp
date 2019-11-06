@@ -19,7 +19,8 @@
 namespace ros2_behavior_tree
 {
 
-// The Behavior Tree to execute
+// The Behavior Tree to execute. This Behavior Tree will endlessly print
+// "Hello, World!" at 1 second intervals
 const char SampleLifecycleNode::bt_xml_[] =
   R"(
 <root main_tree_to_execute="MainTree">
@@ -101,7 +102,10 @@ SampleLifecycleNode::on_shutdown(const rclcpp_lifecycle::State & /*state*/)
 void
 SampleLifecycleNode::executeBehaviorTree()
 {
+  // Reinitialize the member variable used to tell the BT loop to exit
   should_halt_ = false;
+
+  // The lambda function used in the BT loop
   auto halt_requested = [this]() {return should_halt_.load();};
 
   ros2_behavior_tree::BtStatus rc = bt_->execute(halt_requested);

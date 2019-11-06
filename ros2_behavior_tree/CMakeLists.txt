@@ -18,14 +18,16 @@ set(library_name ${PROJECT_NAME})
 
 add_library(${library_name} SHARED
   src/behavior_tree.cpp
-  src/recovery_node.cpp
 )
 
 add_library(ros2_behavior_tree_nodes SHARED
-  src/bt_registrar.cpp
+  src/node_registrar.cpp
+  src/recovery_node.cpp
 )
 
-add_executable(minimal examples/minimal/main.cpp)
+add_executable(minimal
+  examples/minimal/main.cpp
+)
 
 add_executable(node
   examples/node/main.cpp

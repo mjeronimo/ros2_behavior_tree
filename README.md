@@ -1,2 +1,2 @@
-# ros2_behavior_tree
-Behavior Trees for ROS.
+# ROS2 Behavior Tree
+Behavior Trees for ROS 2.

@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROS2_BEHAVIOR_TREE__BT_SERVICE_NODE_HPP_
-#define ROS2_BEHAVIOR_TREE__BT_SERVICE_NODE_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__ROS2_SERVICE_NODE_HPP_
+#define ROS2_BEHAVIOR_TREE__ROS2_SERVICE_NODE_HPP_
 
 #include <string>
 #include <memory>
@@ -26,10 +26,10 @@ namespace ros2_behavior_tree
 {
 
 template<class ServiceT>
-class BtServiceNode : public BT::CoroActionNode
+class ROS2ServiceNode : public BT::CoroActionNode
 {
 public:
-  BtServiceNode(
+  ROS2ServiceNode(
     const std::string & service_node_name,
     const BT::NodeConfiguration & config)
   : BT::CoroActionNode(service_node_name, config), service_node_name_(service_node_name)
@@ -50,17 +50,17 @@ public:
       service_name_.c_str());
     service_client_->wait_for_service();
 
-    RCLCPP_INFO(node_->get_logger(), "\"%s\" BtServiceNode initialized",
+    RCLCPP_INFO(node_->get_logger(), "\"%s\" ROS2ServiceNode initialized",
       service_node_name_.c_str());
   }
 
-  BtServiceNode() = delete;
+  ROS2ServiceNode() = delete;
 
-  virtual ~BtServiceNode()
+  virtual ~ROS2ServiceNode()
   {
   }
 
-  // Any subclass of BtServiceNode that accepts parameters must provide a providedPorts method
+  // Any subclass of ROS2ServiceNode that accepts parameters must provide a providedPorts method
   // and call providedBasicPorts in it.
   static BT::PortsList providedBasicPorts(BT::PortsList addition)
   {
@@ -124,4 +124,4 @@ protected:
 
 }  // namespace ros2_behavior_tree
 
-#endif  // ROS2_BEHAVIOR_TREE__BT_SERVICE_NODE_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__ROS2_SERVICE_NODE_HPP_

@@ -12,10 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROS2_BEHAVIOR_TREE__BT_REGISTRAR_HPP_
-#define ROS2_BEHAVIOR_TREE__BT_REGISTRAR_HPP_
-
-#include <string>
+#ifndef ROS2_BEHAVIOR_TREE__NODE_REGISTRAR_HPP_
+#define ROS2_BEHAVIOR_TREE__NODE_REGISTRAR_HPP_
 
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/bt_factory.h"
@@ -23,7 +21,7 @@
 namespace ros2_behavior_tree
 {
 
-class BtRegistrar
+class NodeRegistrar
 {
 public:
   static void RegisterNodes(BT::BehaviorTreeFactory & factory);
@@ -37,4 +35,4 @@ private:
 
 }  // namespace ros2_behavior_tree
 
-#endif  // ROS2_BEHAVIOR_TREE__BT_REGISTRAR_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__NODE_REGISTRAR_HPP_

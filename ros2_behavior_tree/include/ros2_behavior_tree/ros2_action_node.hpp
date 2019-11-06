@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROS2_BEHAVIOR_TREE__BT_ACTION_NODE_HPP_
-#define ROS2_BEHAVIOR_TREE__BT_ACTION_NODE_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__ROS2_ACTION_NODE_HPP_
+#define ROS2_BEHAVIOR_TREE__ROS2_ACTION_NODE_HPP_
 
 #include <memory>
 #include <string>
@@ -25,21 +25,20 @@ namespace ros2_behavior_tree
 {
 
 template<class ActionT>
-class BtActionNode : public BT::CoroActionNode
+class ROS2ActionNode : public BT::CoroActionNode
 {
 public:
-  BtActionNode(
+  ROS2ActionNode(
     const std::string & action_name,
     const BT::NodeConfiguration & conf)
   : BT::CoroActionNode(action_name, conf), action_name_(action_name)
   {
-    node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node");
-
     // Initialize the input and output messages
     goal_ = typename ActionT::Goal();
     result_ = typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult();
 
     // Get the required items from the blackboard
+    node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node");
     server_timeout_ =
       config().blackboard->get<std::chrono::milliseconds>("server_timeout");
     getInput<std::chrono::milliseconds>("server_timeout", server_timeout_);
@@ -52,22 +51,22 @@ public:
     action_client_->wait_for_action_server();
 
     // Give the derive class a chance to do any initialization
-    RCLCPP_INFO(node_->get_logger(), "\"%s\" BtActionNode initialized", action_name_.c_str());
+    RCLCPP_INFO(node_->get_logger(), "\"%s\" ROS2ActionNode initialized", action_name_.c_str());
   }
 
-  BtActionNode() = delete;
+  ROS2ActionNode() = delete;
 
-  virtual ~BtActionNode()
+  virtual ~ROS2ActionNode()
   {
   }
 
-  // Any subclass of BtActionNode that accepts parameters must provide a providedPorts method
+  // Any subclass of ROS2ActionNode that accepts parameters must provide a providedPorts method
   // and call providedBasicPorts in it.
   static BT::PortsList providedBasicPorts(BT::PortsList addition)
   {
-    BT::PortsList basic = {BT::InputPort<std::chrono::milliseconds>("server_timeout")};
-    basic.insert(addition.begin(), addition.end());
-    return basic;
+    BT::PortsList basic_ports = {BT::InputPort<std::chrono::milliseconds>("server_timeout")};
+    basic_ports.insert(addition.begin(), addition.end());
+    return basic_ports;
   }
 
   static BT::PortsList providedPorts()
@@ -154,7 +153,7 @@ new_goal_received:
         return BT::NodeStatus::SUCCESS;
 
       default:
-        throw std::logic_error("BtActionNode::Tick: invalid status value");
+        throw std::logic_error("ROS2ActionNode::Tick: invalid status value");
     }
   }
 
@@ -202,9 +201,10 @@ protected:
 
   // All ROS2 actions have a goal and a result
   typename ActionT::Goal goal_;
+  typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult result_;
+
   bool goal_updated_{false};
   typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle_;
-  typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult result_;
 
   // The node that will be used for any ROS operations
   rclcpp::Node::SharedPtr node_;
@@ -216,4 +216,4 @@ protected:
 
 }  // namespace ros2_behavior_tree
 
-#endif  // ROS2_BEHAVIOR_TREE__BT_ACTION_NODE_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__ROS2_ACTION_NODE_HPP_

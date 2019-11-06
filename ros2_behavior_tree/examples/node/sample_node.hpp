@@ -37,10 +37,10 @@ protected:
   // The XML string that defines the Behavior Tree to create and execute
   static const char bt_xml_[];
 
-  // This node executes the Behavior Tree on a separate thread
+  // The thread on which to execute the Behavior Tree
   std::unique_ptr<std::thread> thread_;
 
-  // The routine to run on the separate thread
+  // The routine to run on the thread
   BtStatus executeBehaviorTree();
 };
 

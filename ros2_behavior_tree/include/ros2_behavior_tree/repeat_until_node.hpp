@@ -29,8 +29,6 @@ public:
   : BT::DecoratorNode(name, cfg)
   {
     getInput<std::string>("key", key_);
-
-    // Convert the XML string param to a boolean
     getInput<bool>("value", target_value_);
   }
 
@@ -39,7 +37,7 @@ public:
   {
     return {
       BT::InputPort<std::string>("key", "The target key to use"),
-      BT::InputPort<bool>("value", "The target value")
+      BT::InputPort<bool>("value", "The target value to match")
     };
   }
 

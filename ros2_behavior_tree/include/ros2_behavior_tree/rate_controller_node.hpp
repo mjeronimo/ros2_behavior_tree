@@ -64,11 +64,11 @@ inline BT::NodeStatus RateController::tick()
   auto now = std::chrono::high_resolution_clock::now();
   auto elapsed = now - start_;
 
-  // Now, get that in seconds
+  // Now, get that elapsed time in seconds
   typedef std::chrono::duration<float> float_seconds;
   auto seconds = std::chrono::duration_cast<float_seconds>(elapsed);
 
-  // If we've exceed the specified period, execute the child node
+  // If we've reached or exceed the specified period, execute the child node
   if (first_time || seconds.count() >= period_) {
     first_time = false;
     const BT::NodeStatus child_state = child_node_->executeTick();
@@ -79,7 +79,7 @@ inline BT::NodeStatus RateController::tick()
 
       case BT::NodeStatus::SUCCESS:
         child_node_->setStatus(BT::NodeStatus::IDLE);
-        start_ = std::chrono::high_resolution_clock::now();  // Reset the timer
+        start_ = std::chrono::high_resolution_clock::now();  // Reset the starting time
         return BT::NodeStatus::SUCCESS;
 
       case BT::NodeStatus::FAILURE:

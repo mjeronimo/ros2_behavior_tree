@@ -17,7 +17,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "ros2_behavior_tree/behavior_tree.hpp"
 
-// The Behavior Tree to execute
+// The Behavior Tree to execute. This tree simple prints "Hello," and
+// "World!" on separate lines and then terminates.
 static const char bt_xml[] =
   R"(
 <root main_tree_to_execute="MainTree">
@@ -34,13 +35,11 @@ int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 
-  // Create a behavior tree to execute the BT XML, using the default plugin
+  // Create a behavior tree using the input XML
   ros2_behavior_tree::BehaviorTree bt(bt_xml);
 
   // Execute the BT and determine the result
-  auto rc = bt.execute();
-
-  switch (rc) {
+  switch (bt.execute()) {
     case ros2_behavior_tree::BtStatus::SUCCEEDED:
       break;
 

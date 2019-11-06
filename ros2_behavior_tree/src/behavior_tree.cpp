@@ -57,6 +57,7 @@ BehaviorTree::execute(
   BT::NodeStatus result = BT::NodeStatus::RUNNING;
   while (rclcpp::ok() && result == BT::NodeStatus::RUNNING) {
     if (should_halt()) {
+      printf("BehaviorTree::execute: should_halt is true, returning HALTED\n");
       tree.root_node->halt();
       return BtStatus::HALTED;
     }

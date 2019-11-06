@@ -47,14 +47,11 @@ protected:
   void handle_accepted(
     const std::shared_ptr<GoalHandle> goal_handle);
 
-  // The node executes a Behavior Tree
-  BehaviorTree bt_;
-
   // The XML string that defines the Behavior Tree to create and execute
   static const char bt_xml_[];
 
   // The routine to run on the separate thread
-  BtStatus executeBehaviorTree();
+  void executeBehaviorTree(const std::shared_ptr<GoalHandle> goal_handle);
 };
 
 }  // namespace ros2_behavior_tree

@@ -20,6 +20,7 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "ros2_behavior_tree/behavior_tree.hpp"
+#include "ros2_behavior_tree_msgs/action/execute_behavior_tree.hpp"
 
 namespace ros2_behavior_tree
 {
@@ -31,8 +32,7 @@ public:
   ~SampleActionServerNode();
 
 protected:
-#if 0
-  using ActionServer = ros2_behavior_tree::action::ExecuteBehaviorTree;
+  using ActionServer = ros2_behavior_tree_msgs::action::ExecuteBehaviorTree;
   using GoalHandle = rclcpp_action::ServerGoalHandle<ActionServer>;
 
   rclcpp_action::Server<ActionServer>::SharedPtr action_server_;
@@ -44,8 +44,9 @@ protected:
   rclcpp_action::CancelResponse handle_cancel(
     const std::shared_ptr<GoalHandle> goal_handle);
 
-  void handle_accepted(const std::shared_ptr<GoalHandle> goal_handle);
-#endif
+  void handle_accepted(
+    const std::shared_ptr<GoalHandle> goal_handle);
+
   // The node executes a Behavior Tree
   BehaviorTree bt_;
 

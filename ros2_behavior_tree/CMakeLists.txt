@@ -7,6 +7,7 @@ find_package(builtin_interfaces REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(ros2_behavior_tree_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 
@@ -49,6 +50,7 @@ set(dependencies
   rclcpp
   rclcpp_action
   rclcpp_lifecycle
+  ros2_behavior_tree_msgs
   std_msgs
   std_srvs
 )

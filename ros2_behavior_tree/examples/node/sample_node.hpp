@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EXAMPLES__NODE__SAMPLE_NODE_HPP_
-#define EXAMPLES__NODE__SAMPLE_NODE_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__EXAMPLES__NODE__SAMPLE_NODE_HPP_
+#define ROS2_BEHAVIOR_TREE__EXAMPLES__NODE__SAMPLE_NODE_HPP_
 
 #include <memory>
 #include <thread>
@@ -46,4 +46,4 @@ protected:
 
 }  // namespace ros2_behavior_tree
 
-#endif  // EXAMPLES__NODE__SAMPLE_NODE_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__EXAMPLES__NODE__SAMPLE_NODE_HPP_

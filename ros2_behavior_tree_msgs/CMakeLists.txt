@@ -16,6 +16,7 @@ set(dependencies
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/ExecuteBehaviorTree.action"
+  "action/PrintMessage.action"
   DEPENDENCIES ${dependencies}
 )
 

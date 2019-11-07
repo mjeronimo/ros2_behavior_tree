@@ -22,6 +22,8 @@ using namespace std::placeholders;
 namespace ros2_behavior_tree
 {
 
+// <Message msg="Doing some work..."/>
+
 // The Behavior Tree to execute
 const char SampleActionServerNode::bt_xml_[] =
   R"(
@@ -29,7 +31,7 @@ const char SampleActionServerNode::bt_xml_[] =
   <BehaviorTree ID="MainTree">
     <Repeat num_cycles="5">
       <Sequence name="do_work">
-        <Message msg="Doing some work..."/>
+        <Message msg="{message}"/>
         <Wait msec="1000"/>
       </Sequence>
     </Repeat>
@@ -91,7 +93,14 @@ SampleActionServerNode::executeBehaviorTree(const std::shared_ptr<GoalHandle> go
   BehaviorTree bt(bt_xml_);
   auto result = std::make_shared<ActionServer::Result>();
 
-  switch (bt.execute())
+  // TODO(mjeronimo): get some values from the incoming action request
+  bt.blackboard()->set<std::string>("message", "Doing some work...");
+
+  auto should_cancel = [goal_handle]() {
+    printf("SampleActionServerNode::executeBehaviorTree: is_canceling: %d\n", (int) goal_handle->is_canceling());
+    return goal_handle->is_canceling();};
+
+  switch (bt.execute(should_cancel))
   {
     case ros2_behavior_tree::BtStatus::SUCCEEDED:
       RCLCPP_INFO(get_logger(), "Behavior Tree execution succeeded");

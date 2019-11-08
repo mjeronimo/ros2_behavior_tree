@@ -20,7 +20,7 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "ros2_behavior_tree/behavior_tree.hpp"
-#include "ros2_behavior_tree_msgs/action/execute_behavior_tree.hpp"
+#include "ros2_behavior_tree_msgs/action/print_message.hpp"
 
 namespace ros2_behavior_tree
 {
@@ -32,7 +32,7 @@ public:
   ~SampleActionServerNode();
 
 protected:
-  using ActionServer = ros2_behavior_tree_msgs::action::ExecuteBehaviorTree;
+  using ActionServer = ros2_behavior_tree_msgs::action::PrintMessage;
   using GoalHandle = rclcpp_action::ServerGoalHandle<ActionServer>;
 
   rclcpp_action::Server<ActionServer>::SharedPtr action_server_;
@@ -47,11 +47,11 @@ protected:
   void handle_accepted(
     const std::shared_ptr<GoalHandle> goal_handle);
 
-  // The XML string that defines the Behavior Tree to create and execute
-  static const char bt_xml_[];
-
   // The routine to run on the separate thread
-  void executeBehaviorTree(const std::shared_ptr<GoalHandle> goal_handle);
+  void printMessage(const std::shared_ptr<GoalHandle> goal_handle);
+
+  // The XML string that defines the Behavior Tree used to implement the printMessage action
+  static const char bt_xml_[];
 };
 
 }  // namespace ros2_behavior_tree

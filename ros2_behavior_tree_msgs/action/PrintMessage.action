@@ -1,5 +1,7 @@
 #goal definition
 string message
+uint32 iterations
+uint32 pause_ms
 ---
 #result definition
 std_msgs/Empty result

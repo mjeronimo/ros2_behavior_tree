@@ -27,29 +27,28 @@ const char SampleActionServerNode::bt_xml_[] =
   R"(
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
-    <Repeat num_cycles="5">
+    <Repeat num_cycles="{iterations}">
       <SequenceStar name="do_work">
         <Message msg="{message}"/>
-        <AsyncWait msec="{msec}"/>
+        <AsyncWait msec="{pause_ms}"/>
       </SequenceStar>
     </Repeat>
   </BehaviorTree>
 </root>
 )";
 
-
 SampleActionServerNode::SampleActionServerNode()
 : Node("sample_action_server_node")
 {
   RCLCPP_INFO(get_logger(), "Creating");
 
-  // Create an action server that we implement with our executeBehaviorTree method
+  // Create an action server that we implement with our printMessage method
   action_server_ = rclcpp_action::create_server<ActionServer>(
     get_node_base_interface(),
     get_node_clock_interface(),
     get_node_logging_interface(),
     get_node_waitables_interface(),
-    "ExecuteBehaviorTree",
+    "PrintMessage",
     std::bind(&SampleActionServerNode::handle_goal, this, _1, _2),
     std::bind(&SampleActionServerNode::handle_cancel, this, _1),
     std::bind(&SampleActionServerNode::handle_accepted, this, _1)
@@ -84,19 +83,23 @@ SampleActionServerNode::handle_accepted(
   const std::shared_ptr<GoalHandle> goal_handle)
 {
   std::thread{
-    std::bind(&SampleActionServerNode::executeBehaviorTree, this, _1), goal_handle
+    std::bind(&SampleActionServerNode::printMessage, this, _1), goal_handle
   }.detach();
 }
 
 void
-SampleActionServerNode::executeBehaviorTree(const std::shared_ptr<GoalHandle> goal_handle)
+SampleActionServerNode::printMessage(const std::shared_ptr<GoalHandle> goal_handle)
 {
   BehaviorTree bt(bt_xml_);
   auto result = std::make_shared<ActionServer::Result>();
 
-  // TODO(mjeronimo): get some values from the incoming action request
-  bt.blackboard()->set<std::string>("message", "Doing some work.......................");  // NOLINT
-  bt.blackboard()->set<int>("msec", 500);  // NOLINT
+  // Get the incoming goal from the goal handle
+  auto goal = goal_handle->get_goal();
+
+  // Pass the values from the goal to the Behavior Tree via the blackboard
+  bt.blackboard()->set<std::string>("message", goal->message);  // NOLINT
+  bt.blackboard()->set<int>("iterations", goal->iterations);  // NOLINT
+  bt.blackboard()->set<int>("pause_ms", goal->pause_ms);  // NOLINT
 
   auto should_cancel = [goal_handle]() {return goal_handle->is_canceling();};
 

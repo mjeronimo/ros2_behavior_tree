@@ -45,6 +45,11 @@ add_executable(lifecycle_node
   examples/lifecycle_node/sample_lifecycle_node.cpp
 )
 
+add_executable(action_server_lifecycle_node
+  examples/action_server_lifecycle_node/main.cpp
+  examples/action_server_lifecycle_node/sample_action_server_lifecycle_node.cpp
+)
+
 set(dependencies
   behaviortree_cpp_v3
   rclcpp
@@ -79,16 +84,21 @@ ament_target_dependencies(lifecycle_node
   ${dependencies}
 )
 
+ament_target_dependencies(action_server_lifecycle_node
+  ${dependencies}
+)
+
 target_link_libraries(minimal ${library_name})
 target_link_libraries(node ${library_name})
-target_link_libraries(lifecycle_node ${library_name})
 target_link_libraries(action_server_node ${library_name})
+target_link_libraries(lifecycle_node ${library_name})
+target_link_libraries(action_server_lifecycle_node ${library_name})
 
 target_compile_definitions(ros2_behavior_tree_nodes PRIVATE
   BT_PLUGIN_EXPORT
 )
 
-install(TARGETS ${library_name} ros2_behavior_tree_nodes minimal node action_server_node lifecycle_node
+install(TARGETS ${library_name} ros2_behavior_tree_nodes minimal node action_server_node lifecycle_node action_server_lifecycle_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}

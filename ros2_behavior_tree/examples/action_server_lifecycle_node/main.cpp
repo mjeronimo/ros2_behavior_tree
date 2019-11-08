@@ -14,13 +14,13 @@
 
 #include <memory>
 
-#include "bt_executor.hpp"
+#include "sample_action_server_lifecycle_node.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<ros2_behavior_tree::BtExecutor>();
+  auto node = std::make_shared<ros2_behavior_tree::SampleActionServerLifecycleNode>();
   rclcpp::spin(node->get_node_base_interface());
   rclcpp::shutdown();
 

@@ -22,22 +22,21 @@ using namespace std::placeholders;
 namespace ros2_behavior_tree
 {
 
-// <Message msg="Doing some work..."/>
-
 // The Behavior Tree to execute
 const char SampleActionServerNode::bt_xml_[] =
   R"(
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
     <Repeat num_cycles="5">
-      <Sequence name="do_work">
+      <SequenceStar name="do_work">
         <Message msg="{message}"/>
-        <Wait msec="1000"/>
-      </Sequence>
+        <AsyncWait msec="{msec}"/>
+      </SequenceStar>
     </Repeat>
   </BehaviorTree>
 </root>
 )";
+
 
 SampleActionServerNode::SampleActionServerNode()
 : Node("sample_action_server_node")
@@ -62,7 +61,7 @@ SampleActionServerNode::~SampleActionServerNode()
   RCLCPP_INFO(get_logger(), "Destroying");
 }
 
-rclcpp_action::GoalResponse 
+rclcpp_action::GoalResponse
 SampleActionServerNode::handle_goal(
   const rclcpp_action::GoalUUID & uuid,
   std::shared_ptr<const ActionServer::Goal> goal)
@@ -84,7 +83,9 @@ void
 SampleActionServerNode::handle_accepted(
   const std::shared_ptr<GoalHandle> goal_handle)
 {
-  std::thread{std::bind(&SampleActionServerNode::executeBehaviorTree, this, _1), goal_handle}.detach();
+  std::thread{
+    std::bind(&SampleActionServerNode::executeBehaviorTree, this, _1), goal_handle
+  }.detach();
 }
 
 void
@@ -94,14 +95,12 @@ SampleActionServerNode::executeBehaviorTree(const std::shared_ptr<GoalHandle> go
   auto result = std::make_shared<ActionServer::Result>();
 
   // TODO(mjeronimo): get some values from the incoming action request
-  bt.blackboard()->set<std::string>("message", "Doing some work...");
+  bt.blackboard()->set<std::string>("message", "Doing some work.......................");  // NOLINT
+  bt.blackboard()->set<int>("msec", 500);  // NOLINT
 
-  auto should_cancel = [goal_handle]() {
-    printf("SampleActionServerNode::executeBehaviorTree: is_canceling: %d\n", (int) goal_handle->is_canceling());
-    return goal_handle->is_canceling();};
+  auto should_cancel = [goal_handle]() {return goal_handle->is_canceling();};
 
-  switch (bt.execute(should_cancel))
-  {
+  switch (bt.execute(should_cancel)) {
     case ros2_behavior_tree::BtStatus::SUCCEEDED:
       RCLCPP_INFO(get_logger(), "Behavior Tree execution succeeded");
       goal_handle->succeed(result);

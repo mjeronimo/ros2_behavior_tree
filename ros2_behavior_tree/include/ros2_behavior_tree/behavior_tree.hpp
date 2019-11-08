@@ -44,7 +44,7 @@ public:
     std::function<void()> on_loop_iteration = []() {},
     std::chrono::milliseconds tick_period = std::chrono::milliseconds(10));
 
-  BT::Blackboard::Ptr blackboard() { return blackboard_; }
+  BT::Blackboard::Ptr blackboard() {return blackboard_;}
 
 protected:
   // The factory to use when dynamically constructing the Behavior Tree

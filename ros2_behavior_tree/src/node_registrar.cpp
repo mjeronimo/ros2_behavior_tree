@@ -16,6 +16,7 @@
 
 #include <string>
 
+#include "ros2_behavior_tree/async_wait_node.hpp"
 #include "ros2_behavior_tree/forever_node.hpp"
 #include "ros2_behavior_tree/rate_controller_node.hpp"
 #include "ros2_behavior_tree/recovery_node.hpp"
@@ -32,9 +33,11 @@ namespace ros2_behavior_tree
 void
 NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
 {
-  // Register our custom condition nodes
+  // Condition nodes
 
-  // Register our custom action nodes
+  // Action nodes
+  factory.registerNodeType<ros2_behavior_tree::AsyncWait>("AsyncWait");
+
   const BT::PortsList message_params {BT::InputPort<std::string>("msg")};
   factory.registerSimpleAction("Message",
     std::bind(&NodeRegistrar::message, std::placeholders::_1), message_params);
@@ -44,16 +47,16 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
   factory.registerSimpleAction("SetCondition",
     std::bind(&NodeRegistrar::setCondition, std::placeholders::_1), set_condition_params);
 
-  const BT::PortsList wait_params {BT::InputPort<double>("msec")};
+  const BT::PortsList wait_params {BT::InputPort<int>("msec")};
   factory.registerSimpleAction("Wait",
     std::bind(&NodeRegistrar::wait, std::placeholders::_1), wait_params);
 
-  // Register our custom decorator nodes
+  // Decorator nodes
   factory.registerNodeType<ros2_behavior_tree::Forever>("Forever");
   factory.registerNodeType<ros2_behavior_tree::RateController>("RateController");
   factory.registerNodeType<ros2_behavior_tree::RepeatUntilNode>("RepeatUntil");
 
-  // Register our custom control nodes
+  // Control nodes
   factory.registerNodeType<ros2_behavior_tree::RecoveryNode>("RecoveryNode");
 }
 

@@ -51,7 +51,7 @@ protected:
   std::unique_ptr<std::thread> thread_;
 
   // The routine to execute on the separate thread
-  void executeBehaviorTree();
+  void print_message_forever();
 
   // Whether to halt the currently executing Behavior Tree
   std::atomic<bool> should_halt_{false};

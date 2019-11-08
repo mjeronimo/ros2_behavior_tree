@@ -42,7 +42,7 @@ SampleActionServerNode::SampleActionServerNode()
 {
   RCLCPP_INFO(get_logger(), "Creating");
 
-  // Create an action server that we implement with our printMessage method
+  // Create an action server that we implement with our print_message method
   action_server_ = rclcpp_action::create_server<ActionServer>(
     get_node_base_interface(),
     get_node_clock_interface(),
@@ -83,12 +83,12 @@ SampleActionServerNode::handle_accepted(
   const std::shared_ptr<GoalHandle> goal_handle)
 {
   std::thread{
-    std::bind(&SampleActionServerNode::printMessage, this, _1), goal_handle
+    std::bind(&SampleActionServerNode::print_message, this, _1), goal_handle
   }.detach();
 }
 
 void
-SampleActionServerNode::printMessage(const std::shared_ptr<GoalHandle> goal_handle)
+SampleActionServerNode::print_message(const std::shared_ptr<GoalHandle> goal_handle)
 {
   BehaviorTree bt(bt_xml_);
   auto result = std::make_shared<ActionServer::Result>();
@@ -110,7 +110,7 @@ SampleActionServerNode::printMessage(const std::shared_ptr<GoalHandle> goal_hand
       break;
 
     case ros2_behavior_tree::BtStatus::FAILED:
-      RCLCPP_INFO(get_logger(), "Behavior Tree execution failed!");
+      RCLCPP_ERROR(get_logger(), "Behavior Tree execution failed!");
       goal_handle->abort(result);
       break;
 

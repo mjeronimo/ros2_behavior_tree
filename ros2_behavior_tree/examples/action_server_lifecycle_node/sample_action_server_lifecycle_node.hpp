@@ -42,14 +42,16 @@ protected:
   CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
   CallbackReturn on_error(const rclcpp_lifecycle::State & state) override;
 
+  // A couple declarations for convenince
   using ActionServer = ros2_behavior_tree_msgs::action::PrintMessage;
   using GoalHandle = rclcpp_action::ServerGoalHandle<ActionServer>;
 
+  // The action server presented by this node
   rclcpp_action::Server<ActionServer>::SharedPtr action_server_;
 
+  // The three callbacks required for an action server
   rclcpp_action::GoalResponse handle_goal(
-    const rclcpp_action::GoalUUID & uuid,
-    std::shared_ptr<const ActionServer::Goal> goal);
+    const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const ActionServer::Goal> goal);
 
   rclcpp_action::CancelResponse handle_cancel(
     const std::shared_ptr<GoalHandle> goal_handle);

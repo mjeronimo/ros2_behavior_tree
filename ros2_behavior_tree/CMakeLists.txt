@@ -26,6 +26,10 @@ add_library(ros2_behavior_tree_nodes SHARED
   src/recovery_node.cpp
 )
 
+add_library(example_custom_nodes SHARED
+  examples/custom_nodes/sample_node_registrar.cpp
+)
+
 add_executable(minimal
   examples/minimal/main.cpp
 )
@@ -68,6 +72,10 @@ ament_target_dependencies(ros2_behavior_tree_nodes
   ${dependencies}
 )
 
+ament_target_dependencies(example_custom_nodes
+  ${dependencies}
+)
+
 ament_target_dependencies(minimal
   ${dependencies}
 )
@@ -98,7 +106,7 @@ target_compile_definitions(ros2_behavior_tree_nodes PRIVATE
   BT_PLUGIN_EXPORT
 )
 
-install(TARGETS ${library_name} ros2_behavior_tree_nodes minimal node action_server_node lifecycle_node action_server_lifecycle_node
+install(TARGETS ${library_name} ros2_behavior_tree_nodes example_custom_nodes minimal node action_server_node lifecycle_node action_server_lifecycle_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}

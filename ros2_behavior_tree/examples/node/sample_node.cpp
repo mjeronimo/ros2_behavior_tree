@@ -39,7 +39,7 @@ SampleNode::SampleNode()
 : Node("sample_node"), bt_(bt_xml_)
 {
   // Execute the Behavior Tree on a separate thread
-  thread_ = std::make_unique<std::thread>(&SampleNode::executeBehaviorTree, this);
+  thread_ = std::make_unique<std::thread>(&SampleNode::print_message, this);
 }
 
 SampleNode::~SampleNode()
@@ -48,7 +48,7 @@ SampleNode::~SampleNode()
 }
 
 BtStatus
-SampleNode::executeBehaviorTree()
+SampleNode::print_message()
 {
   return bt_.execute();
 }

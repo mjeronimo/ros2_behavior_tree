@@ -41,7 +41,7 @@ protected:
   std::unique_ptr<std::thread> thread_;
 
   // The routine to run on the thread
-  BtStatus executeBehaviorTree();
+  BtStatus print_message();
 };
 
 }  // namespace ros2_behavior_tree

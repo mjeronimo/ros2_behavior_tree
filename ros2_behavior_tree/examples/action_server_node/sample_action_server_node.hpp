@@ -32,14 +32,16 @@ public:
   ~SampleActionServerNode();
 
 protected:
+  // A couple declarations for convenince
   using ActionServer = ros2_behavior_tree_msgs::action::PrintMessage;
   using GoalHandle = rclcpp_action::ServerGoalHandle<ActionServer>;
 
+  // The action server presented by this node
   rclcpp_action::Server<ActionServer>::SharedPtr action_server_;
 
+  // The three callbacks required for an action server
   rclcpp_action::GoalResponse handle_goal(
-    const rclcpp_action::GoalUUID & uuid,
-    std::shared_ptr<const ActionServer::Goal> goal);
+    const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const ActionServer::Goal> goal);
 
   rclcpp_action::CancelResponse handle_cancel(
     const std::shared_ptr<GoalHandle> goal_handle);
@@ -48,9 +50,9 @@ protected:
     const std::shared_ptr<GoalHandle> goal_handle);
 
   // The routine to run on the separate thread
-  void printMessage(const std::shared_ptr<GoalHandle> goal_handle);
+  void print_message(const std::shared_ptr<GoalHandle> goal_handle);
 
-  // The XML string that defines the Behavior Tree used to implement the printMessage action
+  // The XML string that defines the Behavior Tree used to implement the print_message action
   static const char bt_xml_[];
 };
 

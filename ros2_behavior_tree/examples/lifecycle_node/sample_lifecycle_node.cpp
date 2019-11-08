@@ -61,7 +61,7 @@ SampleLifecycleNode::on_activate(const rclcpp_lifecycle::State & /*state*/)
   bt_ = std::make_unique<BehaviorTree>(bt_xml_);
 
   // Execute the Behavior Tree on a separate thread
-  thread_ = std::make_unique<std::thread>(&SampleLifecycleNode::executeBehaviorTree, this);
+  thread_ = std::make_unique<std::thread>(&SampleLifecycleNode::print_message_forever, this);
 
   return CallbackReturn::SUCCESS;
 }
@@ -100,7 +100,7 @@ SampleLifecycleNode::on_shutdown(const rclcpp_lifecycle::State & /*state*/)
 }
 
 void
-SampleLifecycleNode::executeBehaviorTree()
+SampleLifecycleNode::print_message_forever()
 {
   // Reinitialize the member variable used to tell the BT loop to exit
   should_halt_ = false;

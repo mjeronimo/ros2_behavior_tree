@@ -52,9 +52,15 @@ CallbackReturn
 SampleActionServerLifecycleNode::on_configure(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Configuring");
+  return CallbackReturn::SUCCESS;
+}
+
+CallbackReturn
+SampleActionServerLifecycleNode::on_activate(const rclcpp_lifecycle::State & /*state*/)
+{
+  RCLCPP_INFO(get_logger(), "Activating");
 
   // Create an action server that we implement with our printMessage method
-  // TODO: use the correct creation function for lifecycle
   action_server_ = rclcpp_action::create_server<ActionServer>(
     get_node_base_interface(),
     get_node_clock_interface(),
@@ -70,19 +76,10 @@ SampleActionServerLifecycleNode::on_configure(const rclcpp_lifecycle::State & /*
 }
 
 CallbackReturn
-SampleActionServerLifecycleNode::on_activate(const rclcpp_lifecycle::State & /*state*/)
-{
-  RCLCPP_INFO(get_logger(), "Activating");
-  // action_server_->activate();
-
-  return CallbackReturn::SUCCESS;
-}
-
-CallbackReturn
 SampleActionServerLifecycleNode::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Deactivating");
-  // action_server_->deactivate();
+  action_server_.reset();
 
   return CallbackReturn::SUCCESS;
 }
@@ -91,8 +88,6 @@ CallbackReturn
 SampleActionServerLifecycleNode::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Cleaning up");
-  action_server_.reset();
-
   return CallbackReturn::SUCCESS;
 }
 
@@ -160,7 +155,7 @@ SampleActionServerLifecycleNode::printMessage(const std::shared_ptr<GoalHandle> 
       break;
 
     case ros2_behavior_tree::BtStatus::FAILED:
-      RCLCPP_INFO(get_logger(), "Behavior Tree execution failed!");
+      RCLCPP_ERROR(get_logger(), "Behavior Tree execution failed!");
       goal_handle->abort(result);
       break;
 

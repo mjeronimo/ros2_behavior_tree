@@ -1,0 +1,15 @@
+Node name: <>
+
+[ ] Lifecycle Node or Normal Node
+[ ] Action Server yes/no
+( ) 	Pre-empt
+( )		One-at-a-time
+[ ] 	Action type ("ros2_behavior_tree/ExecuteBehaviorTree")
+[ ] Which BT node libraries to load for the XML?
+[ ] Custom BT nodes?
+[ ] Blackboard
+[ ] 	ROS Client node (service calls from BT nodes?)
+[ ]  	ROS transform
+[ ] BT source
+[ ] 	From file
+[ ] 	From string literal in code

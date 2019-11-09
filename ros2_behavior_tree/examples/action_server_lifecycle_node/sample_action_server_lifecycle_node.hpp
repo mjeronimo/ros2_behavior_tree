@@ -59,8 +59,8 @@ protected:
   void handle_accepted(
     const std::shared_ptr<GoalHandle> goal_handle);
 
-  // The routine to run on the separate thread
-  void printMessage(const std::shared_ptr<GoalHandle> goal_handle);
+  // The action server routine
+  void print_message(const std::shared_ptr<GoalHandle> goal_handle);
 
   // The XML string that defines the Behavior Tree used to implement the printMessage action
   static const char bt_xml_[];

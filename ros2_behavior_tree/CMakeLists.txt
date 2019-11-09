@@ -4,6 +4,7 @@ project(ros2_behavior_tree)
 find_package(ament_cmake REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(builtin_interfaces REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -56,6 +57,7 @@ add_executable(action_server_lifecycle_node
 
 set(dependencies
   behaviortree_cpp_v3
+  geometry_msgs
   rclcpp
   rclcpp_action
   rclcpp_lifecycle
@@ -64,37 +66,14 @@ set(dependencies
   std_srvs
 )
 
-ament_target_dependencies(${library_name}
-  ${dependencies}
-)
-
-ament_target_dependencies(ros2_behavior_tree_nodes
-  ${dependencies}
-)
-
-ament_target_dependencies(example_custom_nodes
-  ${dependencies}
-)
-
-ament_target_dependencies(minimal
-  ${dependencies}
-)
-
-ament_target_dependencies(node
-  ${dependencies}
-)
-
-ament_target_dependencies(action_server_node
-  ${dependencies}
-)
-
-ament_target_dependencies(lifecycle_node
-  ${dependencies}
-)
-
-ament_target_dependencies(action_server_lifecycle_node
-  ${dependencies}
-)
+ament_target_dependencies(${library_name} ${dependencies})
+ament_target_dependencies(ros2_behavior_tree_nodes ${dependencies})
+ament_target_dependencies(example_custom_nodes ${dependencies})
+ament_target_dependencies(minimal ${dependencies})
+ament_target_dependencies(node ${dependencies})
+ament_target_dependencies(action_server_node ${dependencies})
+ament_target_dependencies(lifecycle_node ${dependencies})
+ament_target_dependencies(action_server_lifecycle_node ${dependencies})
 
 target_link_libraries(minimal ${library_name})
 target_link_libraries(node ${library_name})

@@ -19,6 +19,7 @@
 #include <string>
 
 #include "behaviortree_cpp/action_node.h"
+#include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 
 namespace ros2_behavior_tree

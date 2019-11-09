@@ -128,12 +128,12 @@ SampleActionServerLifecycleNode::handle_accepted(
   const std::shared_ptr<GoalHandle> goal_handle)
 {
   std::thread{
-    std::bind(&SampleActionServerLifecycleNode::printMessage, this, _1), goal_handle
+    std::bind(&SampleActionServerLifecycleNode::print_message, this, _1), goal_handle
   }.detach();
 }
 
 void
-SampleActionServerLifecycleNode::printMessage(const std::shared_ptr<GoalHandle> goal_handle)
+SampleActionServerLifecycleNode::print_message(const std::shared_ptr<GoalHandle> goal_handle)
 {
   BehaviorTree bt(bt_xml_);
   auto result = std::make_shared<ActionServer::Result>();

@@ -16,7 +16,7 @@
 
 #include <string>
 
-//#include "ros2_behavior_tree/async_wait_node.hpp"
+#include "navigate_to_pose_action.hpp"
 
 BT_REGISTER_NODES(factory)
 {
@@ -29,12 +29,12 @@ namespace ros2_behavior_tree
 void
 SampleNodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
 {
-#if 0
   // Condition nodes
 
   // Action nodes
-  factory.registerNodeType<ros2_behavior_tree::AsyncWait>("AsyncWait");
+  factory.registerNodeType<ros2_behavior_tree::NavigateToPoseAction>("NavigateToPose");
 
+#if 0
   const BT::PortsList message_params {BT::InputPort<std::string>("msg")};
   factory.registerSimpleAction("Message",
     std::bind(&SampleNodeRegistrar::message, std::placeholders::_1), message_params);
@@ -59,20 +59,6 @@ SampleNodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
 }
 
 #if 0
-BT::NodeStatus
-SampleNodeRegistrar::setCondition(BT::TreeNode & tree_node)
-{
-  std::string key;
-  tree_node.getInput<std::string>("key", key);
-
-  std::string value;
-  tree_node.getInput<std::string>("value", value);
-
-  tree_node.config().blackboard->template set<bool>(key, (value == "true") ? true : false);  // NOLINT
-
-  return BT::NodeStatus::SUCCESS;
-}
-
 BT::NodeStatus
 SampleNodeRegistrar::wait(BT::TreeNode & tree_node)
 {

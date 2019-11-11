@@ -27,8 +27,9 @@ public:
   static void RegisterNodes(BT::BehaviorTreeFactory & factory);
 
 private:
-  // Simple condition nodes to be registered
-  // Simple action nodes to be registered
+  // Simple nodes to be registered
+  static BT::NodeStatus say_hello(BT::TreeNode & tree_node);
+  static BT::NodeStatus say_something(BT::TreeNode & tree_node);
 };
 
 }  // namespace ros2_behavior_tree

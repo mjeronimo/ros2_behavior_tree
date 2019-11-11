@@ -40,6 +40,11 @@ add_executable(node
   examples/node/sample_node.cpp
 )
 
+add_executable(custom_nodes
+  examples/custom_nodes/main.cpp
+  examples/custom_nodes/sample_node.cpp
+)
+
 add_executable(action_server_node
   examples/action_server_node/main.cpp
   examples/action_server_node/sample_action_server_node.cpp
@@ -71,12 +76,14 @@ ament_target_dependencies(ros2_behavior_tree_nodes ${dependencies})
 ament_target_dependencies(example_custom_nodes ${dependencies})
 ament_target_dependencies(minimal ${dependencies})
 ament_target_dependencies(node ${dependencies})
+ament_target_dependencies(custom_nodes ${dependencies})
 ament_target_dependencies(action_server_node ${dependencies})
 ament_target_dependencies(lifecycle_node ${dependencies})
 ament_target_dependencies(action_server_lifecycle_node ${dependencies})
 
 target_link_libraries(minimal ${library_name})
 target_link_libraries(node ${library_name})
+target_link_libraries(custom_nodes ${library_name})
 target_link_libraries(action_server_node ${library_name})
 target_link_libraries(lifecycle_node ${library_name})
 target_link_libraries(action_server_lifecycle_node ${library_name})
@@ -85,7 +92,11 @@ target_compile_definitions(ros2_behavior_tree_nodes PRIVATE
   BT_PLUGIN_EXPORT
 )
 
-install(TARGETS ${library_name} ros2_behavior_tree_nodes example_custom_nodes minimal node action_server_node lifecycle_node action_server_lifecycle_node
+target_compile_definitions(example_custom_nodes PRIVATE
+  BT_PLUGIN_EXPORT
+)
+
+install(TARGETS ${library_name} ros2_behavior_tree_nodes example_custom_nodes minimal node custom_nodes action_server_node lifecycle_node action_server_lifecycle_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}

@@ -16,7 +16,8 @@
 
 #include <string>
 
-#include "navigate_to_pose_action.hpp"
+#include "ghost_close_condition.hpp"
+#include "ghost_scared_condition.hpp"
 
 BT_REGISTER_NODES(factory)
 {
@@ -29,45 +30,37 @@ namespace ros2_behavior_tree
 void
 SampleNodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
 {
-  // Condition nodes
+  // Register any custom simple condition, action, or decorator nodes. These simply
+  // require a tick functor (function or method)
 
-  // Action nodes
-  factory.registerNodeType<ros2_behavior_tree::NavigateToPoseAction>("NavigateToPose");
+  // A simple action with no input ports
+  factory.registerSimpleAction("SayHello",
+    std::bind(&SampleNodeRegistrar::say_hello, std::placeholders::_1));
 
-#if 0
-  const BT::PortsList message_params {BT::InputPort<std::string>("msg")};
-  factory.registerSimpleAction("Message",
-    std::bind(&SampleNodeRegistrar::message, std::placeholders::_1), message_params);
+  // A simple action with an input port
+  const BT::PortsList say_something_ports {BT::InputPort<std::string>("msg")};
+  factory.registerSimpleAction("SaySomething",
+    std::bind(&SampleNodeRegistrar::say_something, std::placeholders::_1), say_something_ports);
 
-  const BT::PortsList set_condition_params {
-    BT::InputPort<std::string>("key"), BT::InputPort<std::string>("value")};
-  factory.registerSimpleAction("SetCondition",
-    std::bind(&SampleNodeRegistrar::setCondition, std::placeholders::_1), set_condition_params);
+  // Register any custom condition, action, decorator, or control nodes. These will
+  // be implemented using a class derived from one of the BT.CPP base classes.
 
-  const BT::PortsList wait_params {BT::InputPort<int>("msec")};
-  factory.registerSimpleAction("Wait",
-    std::bind(&SampleNodeRegistrar::wait, std::placeholders::_1), wait_params);
-
-  // Decorator nodes
-  factory.registerNodeType<ros2_behavior_tree::Forever>("Forever");
-  factory.registerNodeType<ros2_behavior_tree::RateController>("RateController");
-  factory.registerNodeType<ros2_behavior_tree::RepeatUntilNode>("RepeatUntil");
-
-  // Control nodes
-  factory.registerNodeType<ros2_behavior_tree::RecoveryNode>("RecoveryNode");
-#endif
+  factory.registerNodeType<ros2_behavior_tree::GhostCloseCondition>("GhostClose");
+  factory.registerNodeType<ros2_behavior_tree::GhostScaredCondition>("GhostScared");
 }
 
-#if 0
 BT::NodeStatus
-SampleNodeRegistrar::wait(BT::TreeNode & tree_node)
+SampleNodeRegistrar::say_hello(BT::TreeNode & tree_node)
 {
-  int msec = 0;
-  tree_node.getInput<int>("msec", msec);
-  std::this_thread::sleep_for(std::chrono::milliseconds(msec));
-
+  printf("Hello!\n");
   return BT::NodeStatus::SUCCESS;
 }
-#endif
+
+BT::NodeStatus
+SampleNodeRegistrar::say_something(BT::TreeNode & tree_node)
+{
+  printf("Say Something!\n");
+  return BT::NodeStatus::SUCCESS;
+}
 
 }  // namespace ros2_behavior_tree

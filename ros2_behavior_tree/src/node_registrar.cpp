@@ -45,7 +45,7 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
   const BT::PortsList set_condition_params {
     BT::InputPort<std::string>("key"), BT::InputPort<std::string>("value")};
   factory.registerSimpleAction("SetCondition",
-    std::bind(&NodeRegistrar::setCondition, std::placeholders::_1), set_condition_params);
+    std::bind(&NodeRegistrar::set_condition, std::placeholders::_1), set_condition_params);
 
   const BT::PortsList wait_params {BT::InputPort<int>("msec")};
   factory.registerSimpleAction("Wait",
@@ -75,7 +75,7 @@ NodeRegistrar::message(BT::TreeNode & tree_node)
 }
 
 BT::NodeStatus
-NodeRegistrar::setCondition(BT::TreeNode & tree_node)
+NodeRegistrar::set_condition(BT::TreeNode & tree_node)
 {
   std::string key;
   tree_node.getInput<std::string>("key", key);

@@ -28,7 +28,7 @@ add_library(ros2_behavior_tree_nodes SHARED
 )
 
 add_library(example_custom_nodes SHARED
-  examples/custom_nodes/sample_node_registrar.cpp
+  examples/custom_nodes/sample_bt_node_registrar.cpp
 )
 
 add_executable(minimal

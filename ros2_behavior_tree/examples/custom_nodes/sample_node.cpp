@@ -25,19 +25,19 @@ const char SampleNode::bt_xml_[] =
 <root main_tree_to_execute="PacMan">
   <BehaviorTree ID="PacMan">
     <Forever>
-	    <Fallback>
+      <Fallback>
         <Sequence>
           <GhostClose/>
           <Fallback>
-		        <Sequence>
-			        <GhostScared/>
-			        <ChaseGhost/>
-		        </Sequence>
-			      <AvoidGhost/>
+            <Sequence>
+              <GhostScared/>
+              <ChaseGhost/>
+            </Sequence>
+            <AvoidGhost/>
           </Fallback>
         </Sequence>
         <EatPills/>
-	    </Fallback>
+      </Fallback>
     </Forever>
   </BehaviorTree>
 </root>

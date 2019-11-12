@@ -15,6 +15,8 @@
 #ifndef ROS2_BEHAVIOR_TREE__EXAMPLES__CUSTOM_NODES__GHOST_SCARED_CONDITION_HPP_
 #define ROS2_BEHAVIOR_TREE__EXAMPLES__CUSTOM_NODES__GHOST_SCARED_CONDITION_HPP_
 
+#include <iostream>
+#include <random>
 #include <string>
 
 #include "behaviortree_cpp/condition_node.h"

@@ -15,6 +15,7 @@
 #ifndef ROS2_BEHAVIOR_TREE__EXAMPLES__CUSTOM_NODES__EAT_PILLS_ACTION_HPP_
 #define ROS2_BEHAVIOR_TREE__EXAMPLES__CUSTOM_NODES__EAT_PILLS_ACTION_HPP_
 
+#include <iostream>
 #include <string>
 
 #include "behaviortree_cpp/action_node.h"

@@ -15,6 +15,7 @@
 #ifndef ROS2_BEHAVIOR_TREE__EXAMPLES__CUSTOM_NODES__GHOST_CLOSE_CONDITION_HPP_
 #define ROS2_BEHAVIOR_TREE__EXAMPLES__CUSTOM_NODES__GHOST_CLOSE_CONDITION_HPP_
 
+#include <iostream>
 #include <random>
 #include <string>
 

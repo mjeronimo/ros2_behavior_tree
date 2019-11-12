@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "sample_node_registrar.hpp"
+#include "sample_bt_node_registrar.hpp"
 
 #include "avoid_ghost_action.hpp"
 #include "chase_ghost_action.hpp"
@@ -22,14 +22,14 @@
 
 BT_REGISTER_NODES(factory)
 {
-  ros2_behavior_tree::SampleNodeRegistrar::RegisterNodes(factory);
+  ros2_behavior_tree::SampleBtNodeRegistrar::RegisterNodes(factory);
 }
 
 namespace ros2_behavior_tree
 {
 
 void
-SampleNodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
+SampleBtNodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
 {
   // Register any custom condition, action, decorator, or control nodes. These will
   // be implemented using a class derived from one of the BT.CPP base classes. You can

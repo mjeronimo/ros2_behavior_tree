@@ -19,11 +19,11 @@
 
 struct RepeatUntilTest : testing::Test
 {
-public:
   RepeatUntilTest() 
-  : root_("repeat_until", "name", "value")
+  : root_("repeat_until", "name", "value"),
+    child_("child", std::bind(&RepeatUntilTest::simple_action, this, std::placeholders::_1), {})
   {
-    // root_.setChild(&action);
+    root_.setChild(&child_);
   }
 
   ~RepeatUntilTest()
@@ -31,12 +31,21 @@ public:
     BT::haltAllActions(&root_);
   }
 
-private:
+  BT::NodeStatus simple_action(BT::TreeNode & tree_node)
+  {
+    return BT::NodeStatus::SUCCESS;
+  }
+
   ros2_behavior_tree::RepeatUntilNode root_;
+  BT::SimpleActionNode child_;
 };
 
+// If a child returns SUCCESS, the root should return RUNNING
 TEST_F(RepeatUntilTest, ConditionTrue)
 {
-  // Create the tree 
+  root_.executeTick();
+
+  ASSERT_EQ(child_.status(), BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(root_.status(), BT::NodeStatus::RUNNING);
   ASSERT_EQ(true, true);
 }

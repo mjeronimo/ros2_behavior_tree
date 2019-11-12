@@ -16,6 +16,7 @@
 
 #include <string>
 
+#include "eat_pills_action.hpp"
 #include "ghost_close_condition.hpp"
 #include "ghost_scared_condition.hpp"
 
@@ -47,6 +48,7 @@ SampleNodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
 
   factory.registerNodeType<ros2_behavior_tree::GhostCloseCondition>("GhostClose");
   factory.registerNodeType<ros2_behavior_tree::GhostScaredCondition>("GhostScared");
+  factory.registerNodeType<ros2_behavior_tree::EatPillsAction>("EatPills");
 }
 
 BT::NodeStatus

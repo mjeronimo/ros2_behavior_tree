@@ -15,6 +15,7 @@
 #ifndef ROS2_BEHAVIOR_TREE__EXAMPLES__CUSTOM_NODES__GHOST_CLOSE_CONDITION_HPP_
 #define ROS2_BEHAVIOR_TREE__EXAMPLES__CUSTOM_NODES__GHOST_CLOSE_CONDITION_HPP_
 
+#include <random>
 #include <string>
 
 #include "behaviortree_cpp/condition_node.h"
@@ -25,26 +26,27 @@ namespace ros2_behavior_tree
 class GhostCloseCondition : public BT::ConditionNode
 {
 public:
-  GhostCloseCondition(
-    const std::string & condition_name,
-    const BT::NodeConfiguration & conf)
-  : BT::ConditionNode(condition_name, conf)
+  explicit GhostCloseCondition(const std::string & condition_name)
+  : BT::ConditionNode(condition_name, {}), gen_(rd_()), dis_(1, 6)
   {
   }
-
-  GhostCloseCondition() = delete;
-
-  ~GhostCloseCondition()
-  {
-  }
-
-  static BT::PortsList providedPorts() {return {};}
 
   BT::NodeStatus tick() override
   {
-    printf("GhostCloseCondition::tick\n");
-    return BT::NodeStatus::SUCCESS;
+    auto ghost_close = (dis_(gen_) == 1);
+
+    if (ghost_close) {
+      std::cerr << "The ghost is close!\n";
+      return BT::NodeStatus::SUCCESS;
+    }
+
+    return BT::NodeStatus::FAILURE;
   }
+
+private:
+  std::random_device rd_;
+  std::mt19937 gen_;
+  std::uniform_int_distribution<> dis_;
 };
 
 }  // namespace ros2_behavior_tree

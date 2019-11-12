@@ -22,13 +22,22 @@ namespace ros2_behavior_tree
 // The Behavior Tree to execute
 const char SampleNode::bt_xml_[] =
   R"(
-<root main_tree_to_execute="MainTree">
-  <BehaviorTree ID="MainTree">
+<root main_tree_to_execute="PacMan">
+  <BehaviorTree ID="PacMan">
     <Forever>
-      <Sequence name="say_hello">
-        <GhostClose/>
-        <GhostScared/>
-      </Sequence>
+	    <Fallback>
+        <Sequence>
+          <GhostClose/>
+          <Fallback>
+		        <Sequence>
+			        <GhostScared/>
+			        <ChaseGhost/>
+		        </Sequence>
+			      <AvoidGhost/>
+          </Fallback>
+        </Sequence>
+        <EatPills/>
+	    </Fallback>
     </Forever>
   </BehaviorTree>
 </root>

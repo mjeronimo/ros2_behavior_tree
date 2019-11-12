@@ -60,7 +60,7 @@ SampleActionServerLifecycleNode::on_activate(const rclcpp_lifecycle::State & /*s
 {
   RCLCPP_INFO(get_logger(), "Activating");
 
-  // Create an action server that we implement with our printMessage method
+  // Create an action server that we implement with our print_message method
   action_server_ = rclcpp_action::create_server<ActionServer>(
     get_node_base_interface(),
     get_node_clock_interface(),

@@ -39,7 +39,7 @@ protected:
   // The action server presented by this node
   rclcpp_action::Server<ActionServer>::SharedPtr action_server_;
 
-  // The three callbacks required for an action server
+  // The three action server callbacks
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const ActionServer::Goal> goal);
 

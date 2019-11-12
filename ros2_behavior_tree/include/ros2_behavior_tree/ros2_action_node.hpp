@@ -172,7 +172,6 @@ new_goal_received:
       }
     }
 
-    setStatus(BT::NodeStatus::IDLE);
     CoroActionNode::halt();
   }
 

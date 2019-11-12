@@ -22,36 +22,21 @@
 namespace ros2_behavior_tree
 {
 
-#if 1
-class EatPillsAction : public BT::CoroActionNode
+class EatPillsAction : public BT::SyncActionNode
 {
 public:
-  EatPillsAction(
-    const std::string & action_name,
-    const BT::NodeConfiguration & conf)
-  : BT::CoroActionNode(action_name, conf)
+  explicit EatPillsAction(const std::string & action_name)
+  : BT::SyncActionNode(action_name, {})
   {
   }
-
-  EatPillsAction() = delete;
-
-  ~EatPillsAction()
-  {
-  }
-
-  static BT::PortsList providedPorts() {return {};}
 
   BT::NodeStatus tick() override
   {
-    printf("EatPillsAction::tick\n");
+    std::cerr << "Eating pill\n";
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     return BT::NodeStatus::SUCCESS;
   }
-
-  void halt() override
-  {
-  }
 };
-#endif
 
 }  // namespace ros2_behavior_tree
 

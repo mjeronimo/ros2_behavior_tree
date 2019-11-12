@@ -25,26 +25,28 @@ namespace ros2_behavior_tree
 class GhostScaredCondition : public BT::ConditionNode
 {
 public:
-  GhostScaredCondition(
-    const std::string & condition_name,
-    const BT::NodeConfiguration & conf)
-  : BT::ConditionNode(condition_name, conf)
+  explicit GhostScaredCondition(const std::string & condition_name)
+  : BT::ConditionNode(condition_name, {}), gen_(rd_()), dis_(1, 2)
   {
   }
-
-  GhostScaredCondition() = delete;
-
-  ~GhostScaredCondition()
-  {
-  }
-
-  static BT::PortsList providedPorts() {return {};}
 
   BT::NodeStatus tick() override
   {
-    printf("GhostScaredCondition::tick\n");
-    return BT::NodeStatus::SUCCESS;
+    auto ghost_scared = (dis_(gen_) == 1);
+
+    if (ghost_scared) {
+      std::cerr << "The ghost is scared!\n";
+      return BT::NodeStatus::SUCCESS;
+    }
+
+    std::cerr << "The ghost is NOT scared!\n";
+    return BT::NodeStatus::FAILURE;
   }
+
+private:
+  std::random_device rd_;
+  std::mt19937 gen_;
+  std::uniform_int_distribution<> dis_;
 };
 
 }  // namespace ros2_behavior_tree

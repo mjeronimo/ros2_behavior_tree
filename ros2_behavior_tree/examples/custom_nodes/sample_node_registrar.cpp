@@ -14,8 +14,8 @@
 
 #include "sample_node_registrar.hpp"
 
-#include <string>
-
+#include "avoid_ghost_action.hpp"
+#include "chase_ghost_action.hpp"
 #include "eat_pills_action.hpp"
 #include "ghost_close_condition.hpp"
 #include "ghost_scared_condition.hpp"
@@ -31,38 +31,16 @@ namespace ros2_behavior_tree
 void
 SampleNodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
 {
-  // Register any custom simple condition, action, or decorator nodes. These simply
-  // require a tick functor (function or method)
-
-  // A simple action with no input ports
-  factory.registerSimpleAction("SayHello",
-    std::bind(&SampleNodeRegistrar::say_hello, std::placeholders::_1));
-
-  // A simple action with an input port
-  const BT::PortsList say_something_ports {BT::InputPort<std::string>("msg")};
-  factory.registerSimpleAction("SaySomething",
-    std::bind(&SampleNodeRegistrar::say_something, std::placeholders::_1), say_something_ports);
-
   // Register any custom condition, action, decorator, or control nodes. These will
-  // be implemented using a class derived from one of the BT.CPP base classes.
+  // be implemented using a class derived from one of the BT.CPP base classes. You can
+  // also register any custom simple condition, action, or decorator nodes. These simply
+  // require a tick functor (function or method) and not a separate class.
 
+  factory.registerNodeType<ros2_behavior_tree::AvoidGhostAction>("AvoidGhost");
+  factory.registerNodeType<ros2_behavior_tree::ChaseGhostAction>("ChaseGhost");
+  factory.registerNodeType<ros2_behavior_tree::EatPillsAction>("EatPills");
   factory.registerNodeType<ros2_behavior_tree::GhostCloseCondition>("GhostClose");
   factory.registerNodeType<ros2_behavior_tree::GhostScaredCondition>("GhostScared");
-  factory.registerNodeType<ros2_behavior_tree::EatPillsAction>("EatPills");
-}
-
-BT::NodeStatus
-SampleNodeRegistrar::say_hello(BT::TreeNode & tree_node)
-{
-  printf("Hello!\n");
-  return BT::NodeStatus::SUCCESS;
-}
-
-BT::NodeStatus
-SampleNodeRegistrar::say_something(BT::TreeNode & tree_node)
-{
-  printf("Say Something!\n");
-  return BT::NodeStatus::SUCCESS;
 }
 
 }  // namespace ros2_behavior_tree

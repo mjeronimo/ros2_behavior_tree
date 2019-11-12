@@ -25,6 +25,13 @@ namespace ros2_behavior_tree
 class RepeatUntilNode : public BT::DecoratorNode
 {
 public:
+  RepeatUntilNode(const std::string & name, const std::string & key, const bool value)
+  : BT::DecoratorNode(name, {}),
+    key_(key), target_value_(value), read_parameters_from_ports_(false)
+  {
+    // setRegistrationID("RepeatUntil");
+  }
+
   RepeatUntilNode(const std::string & name, const BT::NodeConfiguration & cfg)
   : BT::DecoratorNode(name, cfg)
   {
@@ -54,6 +61,7 @@ private:
     return (current_value == target_value_) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::RUNNING;
   }
 
+  bool read_parameters_from_ports_{true};
   std::string key_;
   bool target_value_;
 };

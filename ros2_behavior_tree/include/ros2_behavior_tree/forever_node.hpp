@@ -30,31 +30,28 @@ public:
   : BT::DecoratorNode(name, {})
   {
   }
-  Forever() = delete;
 
 private:
-  BT::NodeStatus tick() override;
-};
+  BT::NodeStatus tick() override
+  {
+    setStatus(BT::NodeStatus::RUNNING);
 
-inline BT::NodeStatus Forever::tick()
-{
-  setStatus(BT::NodeStatus::RUNNING);
+    const BT::NodeStatus child_state = child_node_->executeTick();
 
-  const BT::NodeStatus child_state = child_node_->executeTick();
+    switch (child_state) {
+      case BT::NodeStatus::SUCCESS:
+      case BT::NodeStatus::RUNNING:
+        return BT::NodeStatus::RUNNING;
 
-  switch (child_state) {
-    case BT::NodeStatus::SUCCESS:
-    case BT::NodeStatus::RUNNING:
-      return BT::NodeStatus::RUNNING;
+      case BT::NodeStatus::FAILURE:
+      default:
+        child_node_->setStatus(BT::NodeStatus::IDLE);
+        return BT::NodeStatus::FAILURE;
+    }
 
-    case BT::NodeStatus::FAILURE:
-    default:
-      child_node_->setStatus(BT::NodeStatus::IDLE);
-      return BT::NodeStatus::FAILURE;
+    return status();
   }
-
-  return status();
-}
+};
 
 }  // namespace ros2_behavior_tree
 

@@ -18,9 +18,9 @@
 
 #include "ros2_behavior_tree/async_wait_node.hpp"
 #include "ros2_behavior_tree/forever_node.hpp"
-#include "ros2_behavior_tree/rate_controller_node.hpp"
 #include "ros2_behavior_tree/recovery_node.hpp"
 #include "ros2_behavior_tree/repeat_until_node.hpp"
+#include "ros2_behavior_tree/throttle_tick_count.hpp"
 
 BT_REGISTER_NODES(factory)
 {
@@ -53,8 +53,8 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
 
   // Decorator nodes
   factory.registerNodeType<ros2_behavior_tree::Forever>("Forever");
-  factory.registerNodeType<ros2_behavior_tree::RateController>("RateController");
   factory.registerNodeType<ros2_behavior_tree::RepeatUntilNode>("RepeatUntil");
+  factory.registerNodeType<ros2_behavior_tree::ThrottleTickCount>("ThrottleTickCount");
 
   // Control nodes
   factory.registerNodeType<ros2_behavior_tree::RecoveryNode>("RecoveryNode");

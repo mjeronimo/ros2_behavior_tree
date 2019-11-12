@@ -32,7 +32,7 @@ public:
     getInput<bool>("value", target_value_);
   }
 
-  // Any BT node that accepts parameters must provide a providedPorts method
+  // Define this node's ports
   static BT::PortsList providedPorts()
   {
     return {
@@ -42,23 +42,21 @@ public:
   }
 
 private:
-  BT::NodeStatus tick() override;
+  BT::NodeStatus tick() override
+  {
+    setStatus(BT::NodeStatus::RUNNING);
+    child_node_->executeTick();
+
+    bool current_value = false;
+    config().blackboard->get<bool>(key_, current_value);
+
+    // We're waiting for the value on the blackboard to match the target
+    return (current_value == target_value_) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::RUNNING;
+  }
 
   std::string key_;
   bool target_value_;
 };
-
-inline BT::NodeStatus RepeatUntilNode::tick()
-{
-  setStatus(BT::NodeStatus::RUNNING);
-  child_node_->executeTick();
-
-  bool current_value = false;
-  config().blackboard->get<bool>(key_, current_value);
-
-  // We're waiting for the value on the blackboard to match the target
-  return (current_value == target_value_) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::RUNNING;
-}
 
 }  // namespace ros2_behavior_tree
 

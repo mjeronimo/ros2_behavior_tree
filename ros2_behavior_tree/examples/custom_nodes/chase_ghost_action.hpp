@@ -44,7 +44,6 @@ public:
 
     std::cerr << "Chasing ghost";
     while (!caught_ghost) {
-      // pretend that we received a reply
       if (Now() >= time_before_reply) {
         caught_ghost = true;
       }

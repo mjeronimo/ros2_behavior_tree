@@ -41,7 +41,7 @@ public:
   RecoveryNode(const std::string & name, const BT::NodeConfiguration & config);
   ~RecoveryNode() override = default;
 
-  // Any BT node that accepts parameters must provide a providedPorts method
+  // Define this node's ports
   static BT::PortsList providedPorts()
   {
     return {BT::InputPort<int>("number_of_retries", 1, "Number of retries")};

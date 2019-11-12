@@ -33,7 +33,7 @@ public:
   {
   }
 
-  // Any BT node that accepts parameters must provide a requiredNodeParameters method
+  // Define this node's ports
   static BT::PortsList providedPorts()
   {
     return {BT::InputPort<int>("msec")};

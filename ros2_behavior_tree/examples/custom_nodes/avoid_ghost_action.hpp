@@ -44,7 +44,6 @@ public:
 
     std::cerr << "Avoiding ghost";
     while (!ghost_avoided) {
-      // pretend that we received a reply
       if (Now() >= time_before_reply) {
         ghost_avoided = true;
       }

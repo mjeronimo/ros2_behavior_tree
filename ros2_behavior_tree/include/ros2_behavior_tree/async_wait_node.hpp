@@ -50,6 +50,7 @@ private:
     return BT::NodeStatus::SUCCESS;
   }
 
+  // An AsyncActionNode must provide a halt override
   void halt() override
   {
   }

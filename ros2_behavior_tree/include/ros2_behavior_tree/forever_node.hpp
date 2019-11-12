@@ -34,8 +34,6 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-    setStatus(BT::NodeStatus::RUNNING);
-
     const BT::NodeStatus child_state = child_node_->executeTick();
 
     // Run the child node forever unless there is a failure
@@ -49,8 +47,6 @@ private:
         child_node_->setStatus(BT::NodeStatus::IDLE);
         return BT::NodeStatus::FAILURE;
     }
-
-    return status();
   }
 };
 

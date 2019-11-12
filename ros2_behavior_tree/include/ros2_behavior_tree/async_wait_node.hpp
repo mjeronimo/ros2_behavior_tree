@@ -42,6 +42,8 @@ public:
 private:
   BT::NodeStatus tick() override
   {
+    // An AsyncActionNode's tick method is happening on a separate thread, so we can simply
+    // cause this thread to sleep for the specified duration
     int msec = 0;
     getInput<int>("msec", msec);
     std::this_thread::sleep_for(std::chrono::milliseconds(msec));

@@ -46,8 +46,8 @@ private:
   BT::NodeStatus tick() override
   {
     if (status() == BT::NodeStatus::IDLE) {
-      // Reset the starting point since we're starting a new iteration of
-      // the rate controller (moving from IDLE to RUNNING)
+      // Reset the starting point since we're starting a new iteration
+      // (moving from IDLE to RUNNING)
       start_ = std::chrono::high_resolution_clock::now();
       first_time = true;
     }

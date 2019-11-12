@@ -38,6 +38,7 @@ private:
 
     const BT::NodeStatus child_state = child_node_->executeTick();
 
+    // Run the child node forever unless there is a failure
     switch (child_state) {
       case BT::NodeStatus::SUCCESS:
       case BT::NodeStatus::RUNNING:

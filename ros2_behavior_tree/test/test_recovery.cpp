@@ -85,3 +85,37 @@ TEST_F(RecoveryWithStubActions, ChildReturnsFailure)
   ASSERT_EQ(recovery_action_->get_tick_count(), 2);
   ASSERT_EQ(recovery_action_->status(), BT::NodeStatus::IDLE);
 }
+
+TEST_F(RecoveryWithStubActions, RerunChildReturnsFailure)
+{
+  // If the child action fails every time and the recovery
+  // action succeeds each time, we will execute the child
+  // a total of three times: the first time and two retries.
+  blackboard_->set("number_of_retries", "2");
+  child_action_->set_return_value(BT::NodeStatus::FAILURE);
+  recovery_action_->set_return_value(BT::NodeStatus::SUCCESS);
+  auto status = root_->executeTick();
+
+  ASSERT_EQ(status, BT::NodeStatus::FAILURE);
+  ASSERT_EQ(child_action_->get_tick_count(), 3);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
+  ASSERT_EQ(recovery_action_->get_tick_count(), 2);
+  ASSERT_EQ(recovery_action_->status(), BT::NodeStatus::IDLE);
+
+  // Reset the tick counts (other state should be reset automatically)
+  child_action_->reset_tick_count();
+  recovery_action_->reset_tick_count();
+
+  // Halting the root (RecoveryNode) causes it to enter the IDLE state
+  root_->halt();
+
+  child_action_->set_return_value(BT::NodeStatus::FAILURE);
+  recovery_action_->set_return_value(BT::NodeStatus::SUCCESS);
+  status = root_->executeTick();
+
+  ASSERT_EQ(status, BT::NodeStatus::FAILURE);
+  ASSERT_EQ(child_action_->get_tick_count(), 3);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
+  ASSERT_EQ(recovery_action_->get_tick_count(), 2);
+  ASSERT_EQ(recovery_action_->status(), BT::NodeStatus::IDLE);
+}

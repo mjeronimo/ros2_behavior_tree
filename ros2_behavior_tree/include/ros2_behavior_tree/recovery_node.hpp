@@ -72,7 +72,11 @@ public:
       throw BT::BehaviorTreeException("Recovery Node '" + name() + "' must only have 2 children.");
     }
 
-    setStatus(BT::NodeStatus::RUNNING);
+    if (status() == BT::NodeStatus::IDLE) {
+      current_child_idx_ = 0;
+      retry_count_ = 0;
+      setStatus(BT::NodeStatus::RUNNING);
+    }
 
     while (current_child_idx_ < children_count && retry_count_ <= number_of_retries_) {
       TreeNode * child_node = children_nodes_[current_child_idx_];
@@ -81,8 +85,7 @@ public:
       if (current_child_idx_ == 0) {
         switch (child_status) {
           case BT::NodeStatus::SUCCESS:
-            retry_count_ = 0;
-            halt();
+            haltChildren(0);
             return BT::NodeStatus::SUCCESS;
 
           case BT::NodeStatus::FAILURE:
@@ -99,6 +102,7 @@ public:
             return BT::NodeStatus::RUNNING;
 
           default:
+            throw BT::RuntimeError("Invalid status return from BT node");
             break;
         }
 
@@ -110,22 +114,20 @@ public:
             break;
 
           case BT::NodeStatus::FAILURE:
-            current_child_idx_--;
-            retry_count_ = 0;
-            halt();
+            haltChildren(0);
             return BT::NodeStatus::FAILURE;
 
           case BT::NodeStatus::RUNNING:
             return BT::NodeStatus::RUNNING;
 
           default:
+            throw BT::RuntimeError("Invalid status return from BT node");
             break;
         }
       }
     }
 
-    retry_count_ = 0;
-    halt();
+    haltChildren(0);
     return BT::NodeStatus::FAILURE;
   }
 

@@ -29,7 +29,7 @@ struct ThrottleTickCountWithStubAction : testing::Test
     // Create a node configurand and populate the blackboard
     BT::NodeConfiguration config;
     config.blackboard = blackboard_;
-    blackboard_->set("hz", "4");
+    blackboard_->set("hz", "10");
 
     // Update the configuration with the child node's ports and tell the child node
     // to use this configuration
@@ -94,7 +94,7 @@ TEST_F(ThrottleTickCountWithStubAction, WaitForDurationWithRunning)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 
   // Wait a bit to exceed the time period
-  std::this_thread::sleep_for(std::chrono::milliseconds(300));
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   // Now, if the child returns RUNNING, the ThrottleTickCount decorator
   // will also return RUNNING, even though the period has expired
@@ -115,7 +115,7 @@ TEST_F(ThrottleTickCountWithStubAction, WaitForDurationWithSuccess)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 
   // Wait a bit to exceed the time period
-  std::this_thread::sleep_for(std::chrono::milliseconds(300));
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   // Now, if the child returns SUCCESS, the ThrottleTickCount decorator
   // will return SUCCESS
@@ -141,7 +141,7 @@ TEST_F(ThrottleTickCountWithStubAction, WaitForDurationWithFailure)
   // The Throttle node won't fire until the child returns SUCCESS or FAILURE
   // even if the period has expired
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(300));
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
 
   status = root_->executeTick();
@@ -169,7 +169,7 @@ TEST_F(ThrottleTickCountWithStubAction, CheckClockResetOnSuccess)
   // The Throttle node won't fire until the child returns SUCCESS or FAILURE
   // and the period has expired
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(300));
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   child_action_->set_return_value(BT::NodeStatus::SUCCESS);
 
   status = root_->executeTick();

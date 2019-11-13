@@ -26,9 +26,7 @@ namespace ros2_behavior_tree
 class AsyncWait : public BT::AsyncActionNode
 {
 public:
-  AsyncWait(
-    const std::string & name,
-    const BT::NodeConfiguration & config)
+  AsyncWait(const std::string & name, const BT::NodeConfiguration & config)
   : BT::AsyncActionNode(name, config)
   {
   }

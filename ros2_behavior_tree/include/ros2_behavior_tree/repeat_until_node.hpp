@@ -32,8 +32,8 @@ public:
     setRegistrationID("RepeatUntil");
   }
 
-  RepeatUntilNode(const std::string & name, const BT::NodeConfiguration & cfg)
-  : BT::DecoratorNode(name, cfg), read_parameters_from_ports_(true)
+  RepeatUntilNode(const std::string & name, const BT::NodeConfiguration & config)
+  : BT::DecoratorNode(name, config), read_parameters_from_ports_(true)
   {
   }
 

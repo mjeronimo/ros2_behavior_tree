@@ -24,7 +24,6 @@ add_library(${library_name} SHARED
 
 add_library(ros2_behavior_tree_nodes SHARED
   src/node_registrar.cpp
-  src/recovery_node.cpp
 )
 
 add_library(example_custom_nodes SHARED

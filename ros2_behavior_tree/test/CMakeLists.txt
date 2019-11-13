@@ -12,4 +12,4 @@ ament_add_gtest(test_ros2_behavior_tree
 
 ament_target_dependencies(test_ros2_behavior_tree ${dependencies})
 
-target_link_libraries(test_ros2_behavior_tree ${library_name})
+target_link_libraries(test_ros2_behavior_tree ${library_name} ros2_behavior_tree_nodes)

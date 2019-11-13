@@ -13,12 +13,86 @@
 // limitations under the License.
 
 #include <gtest/gtest.h>
+#include <memory>
+#include <string>
 
-struct ForeverTest : testing::Test
+#include "behaviortree_cpp/behavior_tree.h"
+#include "ros2_behavior_tree/forever_node.hpp"
+#include "stub_action_test_node.hpp"
+
+struct ForeverWithStubAction : testing::Test
 {
+  ForeverWithStubAction()
+  {
+    BT::NodeConfiguration config;
+
+    // Update the configuration with the child node's ports and tell the child node
+    // to use this configuration
+    BT::assignDefaultRemapping<StubActionTestNode>(config);
+    child_action_ = std::make_unique<StubActionTestNode>("child", config);
+
+    root_ = std::make_unique<ros2_behavior_tree::ForeverNode>("repeat_until");
+
+    // Create the tree structure
+    root_->setChild(child_action_.get());
+  }
+
+  ~ForeverWithStubAction()
+  {
+    BT::haltAllActions(root_.get());
+  }
+
+  std::unique_ptr<ros2_behavior_tree::ForeverNode> root_;
+  std::unique_ptr<StubActionTestNode> child_action_;
+
+  BT::Blackboard::Ptr blackboard_;
 };
 
-TEST_F(ForeverTest, ConditionTrue)
+TEST_F(ForeverWithStubAction, ChildReturnsSuccess)
 {
-  ASSERT_EQ(true, true);
+  // If the child returns SUCCESS, the root should return RUNNING
+  child_action_->set_return_value(BT::NodeStatus::SUCCESS);
+  auto status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::RUNNING);
+
+  // Check the status of the nodes directly too
+  ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
+}
+
+TEST_F(ForeverWithStubAction, ChildReturnsRunning)
+{
+  // If the child returns RUNNING, the root should return RUNNING
+  child_action_->set_return_value(BT::NodeStatus::RUNNING);
+  auto status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::RUNNING);
+
+  // Check the status of the nodes directly too
+  ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
+}
+
+TEST_F(ForeverWithStubAction, ChildReturnsFailure)
+{
+  // If the child returns FAILURE, the root should return FAILURE
+  child_action_->set_return_value(BT::NodeStatus::FAILURE);
+  auto status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::FAILURE);
+
+  // Check the status of the nodes directly too
+  ASSERT_EQ(root_->status(), BT::NodeStatus::FAILURE);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
+}
+
+TEST_F(ForeverWithStubAction, IdleAfterHalt)
+{
+  // If the child returns RUNNING, the root should return RUNNING
+  child_action_->set_return_value(BT::NodeStatus::RUNNING);
+  auto status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::RUNNING);
+
+  // After halting, all nodes should be IDLE
+  root_->halt();
+  ASSERT_EQ(root_->status(), BT::NodeStatus::IDLE);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }

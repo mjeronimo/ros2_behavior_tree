@@ -28,13 +28,7 @@ public:
   }
 
   // Define this node's ports
-  static BT::PortsList providedPorts()
-  {
-    return {
-      BT::InputPort<std::string>("key", "The target key to use"),
-      BT::InputPort<bool>("value", "The target value to match")
-    };
-  }
+  static BT::PortsList providedPorts() {return {};}
 
   void set_return_value(BT::NodeStatus return_value)
   {

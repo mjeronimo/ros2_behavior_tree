@@ -13,39 +13,86 @@
 // limitations under the License.
 
 #include <gtest/gtest.h>
+#include <memory>
 
 #include "behaviortree_cpp/behavior_tree.h"
 #include "ros2_behavior_tree/repeat_until_node.hpp"
+#include "stub_action_test_node.hpp"
 
-struct RepeatUntilTest : testing::Test
+struct RepeatUntilWithStubAction : testing::Test
 {
-  RepeatUntilTest() 
-  : root_("repeat_until", "name", "value"),
-    child_("child", std::bind(&RepeatUntilTest::simple_action, this, std::placeholders::_1), {})
+  RepeatUntilWithStubAction()
   {
-    root_.setChild(&child_);
+    blackboard_ = BT::Blackboard::create();
+
+    BT::NodeConfiguration config;
+    BT::assignDefaultRemapping<ros2_behavior_tree::RepeatUntilNode>(config);
+    config.blackboard = blackboard_;
+    blackboard_->set("key", "target_key");
+    blackboard_->set("value", "true");
+
+    child_action_ = std::make_unique<StubActionTestNode>("child");
+    root_ = std::make_unique<ros2_behavior_tree::RepeatUntilNode>("repeat_until", config);
+
+    root_->setChild(child_action_.get());
   }
 
-  ~RepeatUntilTest()
+  ~RepeatUntilWithStubAction()
   {
-    BT::haltAllActions(&root_);
+    BT::haltAllActions(root_.get());
   }
 
-  BT::NodeStatus simple_action(BT::TreeNode & tree_node)
-  {
-    return BT::NodeStatus::SUCCESS;
-  }
+  std::unique_ptr<ros2_behavior_tree::RepeatUntilNode> root_;
+  std::unique_ptr<StubActionTestNode> child_action_;
 
-  ros2_behavior_tree::RepeatUntilNode root_;
-  BT::SimpleActionNode child_;
+  BT::Blackboard::Ptr blackboard_;
 };
 
-// If a child returns SUCCESS, the root should return RUNNING
-TEST_F(RepeatUntilTest, ConditionTrue)
+TEST_F(RepeatUntilWithStubAction, RunningUponSuccess)
 {
-  root_.executeTick();
+  // If the child returns SUCCESS, the root should return RUNNING
+  child_action_->set_return_value(BT::NodeStatus::SUCCESS);
+  auto status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::RUNNING);
 
-  ASSERT_EQ(child_.status(), BT::NodeStatus::SUCCESS);
-  ASSERT_EQ(root_.status(), BT::NodeStatus::RUNNING);
-  ASSERT_EQ(true, true);
+  // Check the status of the nodes directly too
+  ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
+}
+
+TEST_F(RepeatUntilWithStubAction, RunningUponRunning)
+{
+  // If the child returns RUNNING, the root should return RUNNING
+  child_action_->set_return_value(BT::NodeStatus::RUNNING);
+  auto status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::RUNNING);
+
+  // Check the status of the nodes directly too
+  ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
+}
+
+TEST_F(RepeatUntilWithStubAction, FailureUponFailure)
+{
+  // If the child returns FAILURE, the root should return FAILURE
+  child_action_->set_return_value(BT::NodeStatus::FAILURE);
+  auto status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::FAILURE);
+
+  // Check the status of the nodes directly too
+  ASSERT_EQ(root_->status(), BT::NodeStatus::FAILURE);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
+}
+
+TEST_F(RepeatUntilWithStubAction, HaltAfterRunning)
+{
+  // If the nodes are halted after running, they should go IDLE
+  child_action_->set_return_value(BT::NodeStatus::RUNNING);
+  auto status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::RUNNING);
+  ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
+  root_->halt();
+  ASSERT_EQ(root_->status(), BT::NodeStatus::IDLE);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }

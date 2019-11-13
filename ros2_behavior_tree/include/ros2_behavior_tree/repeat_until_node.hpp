@@ -29,7 +29,7 @@ public:
   : BT::DecoratorNode(name, {}),
     key_(key), target_value_(value), read_parameters_from_ports_(false)
   {
-    // setRegistrationID("RepeatUntil");
+    setRegistrationID("RepeatUntil");
   }
 
   RepeatUntilNode(const std::string & name, const BT::NodeConfiguration & cfg)
@@ -48,11 +48,19 @@ public:
     };
   }
 
+  void halt() override
+  {
+    DecoratorNode::halt(); 
+  }
+
 private:
   BT::NodeStatus tick() override
   {
-    setStatus(BT::NodeStatus::RUNNING);
-    child_node_->executeTick();
+    auto status = child_node_->executeTick();
+
+    if (status == BT::NodeStatus::FAILURE) {
+      return BT::NodeStatus::FAILURE;
+    }
 
     bool current_value = false;
     config().blackboard->get<bool>(key_, current_value);

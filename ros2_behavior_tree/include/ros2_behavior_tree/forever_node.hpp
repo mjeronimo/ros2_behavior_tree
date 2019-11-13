@@ -23,10 +23,10 @@
 namespace ros2_behavior_tree
 {
 
-class Forever : public BT::DecoratorNode
+class ForeverNode : public BT::DecoratorNode
 {
 public:
-  explicit Forever(const std::string & name)
+  explicit ForeverNode(const std::string & name)
   : BT::DecoratorNode(name, {})
   {
   }

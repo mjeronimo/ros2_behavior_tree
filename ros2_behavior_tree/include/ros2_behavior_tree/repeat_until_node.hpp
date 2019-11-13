@@ -33,10 +33,8 @@ public:
   }
 
   RepeatUntilNode(const std::string & name, const BT::NodeConfiguration & cfg)
-  : BT::DecoratorNode(name, cfg)
+  : BT::DecoratorNode(name, cfg), read_parameters_from_ports_(true)
   {
-    getInput<std::string>("key", key_);
-    getInput<bool>("value", target_value_);
   }
 
   // Define this node's ports
@@ -50,12 +48,21 @@ public:
 
   void halt() override
   {
-    DecoratorNode::halt(); 
+    DecoratorNode::halt();
   }
 
 private:
   BT::NodeStatus tick() override
   {
+    if (read_parameters_from_ports_) {
+      if (!getInput<std::string>("key", key_)) {
+        throw BT::RuntimeError("Missing parameter [key] in RepeatUntil node");
+      }
+      if (!getInput<bool>("value", target_value_)) {
+        throw BT::RuntimeError("Missing parameter [value] in RepeatUntil node");
+      }
+    }
+
     auto status = child_node_->executeTick();
 
     if (status == BT::NodeStatus::FAILURE) {
@@ -69,9 +76,9 @@ private:
     return (current_value == target_value_) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::RUNNING;
   }
 
-  bool read_parameters_from_ports_{true};
+  bool read_parameters_from_ports_;
   std::string key_;
-  bool target_value_;
+  bool target_value_{true};
 };
 
 }  // namespace ros2_behavior_tree

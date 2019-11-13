@@ -22,9 +22,18 @@
 class StubActionTestNode : public BT::ActionNodeBase
 {
 public:
-  explicit StubActionTestNode(const std::string & name)
-  : BT::ActionNodeBase(name, {})
+  explicit StubActionTestNode(const std::string & name, const BT::NodeConfiguration & config)
+  : BT::ActionNodeBase(name, config)
   {
+  }
+
+  // Define this node's ports
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<std::string>("key", "The target key to use"),
+      BT::InputPort<bool>("value", "The target value to match")
+    };
   }
 
   void set_return_value(BT::NodeStatus return_value)

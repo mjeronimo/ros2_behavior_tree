@@ -14,6 +14,7 @@
 
 #include <gtest/gtest.h>
 #include <memory>
+#include <string>
 
 #include "behaviortree_cpp/behavior_tree.h"
 #include "ros2_behavior_tree/repeat_until_node.hpp"
@@ -23,17 +24,26 @@ struct RepeatUntilWithStubAction : testing::Test
 {
   RepeatUntilWithStubAction()
   {
+    // Create a blackboard which will be shared among the nodes
     blackboard_ = BT::Blackboard::create();
 
+    // Create a node configurand and populate the blackboard
     BT::NodeConfiguration config;
-    BT::assignDefaultRemapping<ros2_behavior_tree::RepeatUntilNode>(config);
     config.blackboard = blackboard_;
     blackboard_->set("key", "target_key");
     blackboard_->set("value", "true");
 
-    child_action_ = std::make_unique<StubActionTestNode>("child");
+    // Update the configuration with the child node's ports and tell the child node
+    // to use this configuration
+    BT::assignDefaultRemapping<StubActionTestNode>(config);
+    child_action_ = std::make_unique<StubActionTestNode>("child", config);
+
+    // Update the configuration with the parent node's ports and tell the parent node
+    // to use this configuration
+    BT::assignDefaultRemapping<ros2_behavior_tree::RepeatUntilNode>(config);
     root_ = std::make_unique<ros2_behavior_tree::RepeatUntilNode>("repeat_until", config);
 
+    // Create the tree structure
     root_->setChild(child_action_.get());
   }
 
@@ -92,6 +102,47 @@ TEST_F(RepeatUntilWithStubAction, HaltAfterRunning)
   ASSERT_EQ(status, BT::NodeStatus::RUNNING);
   ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
+  root_->halt();
+  ASSERT_EQ(root_->status(), BT::NodeStatus::IDLE);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
+}
+
+TEST_F(RepeatUntilWithStubAction, CheckValueOnBlackboard)
+{
+  // Start everything running
+  child_action_->set_return_value(BT::NodeStatus::RUNNING);
+  auto status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::RUNNING);
+  ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
+
+  // Set the flag on the blackboard
+  std::string key_name;
+  blackboard_->get<std::string>("key", key_name);
+  blackboard_->set<bool>(key_name, true);
+
+  // Which should cause the decorator to return SUCCESS. The
+  // child node, the fake action, is still running
+  status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(root_->status(), BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
+
+  // Turn off the flag and both should be RUNNING again
+  blackboard_->set<bool>(key_name, false);  // NOLINT
+  status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::RUNNING);
+  ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
+
+  // Turn it on one more time and check
+  blackboard_->set<bool>(key_name, true);  // NOLINT
+  status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(root_->status(), BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
+
+  // Upon halting, both should go IDLE
   root_->halt();
   ASSERT_EQ(root_->status(), BT::NodeStatus::IDLE);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);

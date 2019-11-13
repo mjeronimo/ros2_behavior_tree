@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROS2_BEHAVIOR_TREE__THROTTLE_TICK_COUNT_HPP_
-#define ROS2_BEHAVIOR_TREE__THROTTLE_TICK_COUNT_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__THROTTLE_TICK_COUNT_NODE_HPP_
+#define ROS2_BEHAVIOR_TREE__THROTTLE_TICK_COUNT_NODE_HPP_
 
 #include <chrono>
 #include <string>
@@ -23,17 +23,19 @@
 namespace ros2_behavior_tree
 {
 
-class ThrottleTickCount : public BT::DecoratorNode
+class ThrottleTickCountNode : public BT::DecoratorNode
 {
 public:
-  ThrottleTickCount(
-    const std::string & name,
-    const BT::NodeConfiguration & config)
-  : BT::DecoratorNode(name, config)
+  ThrottleTickCountNode(const std::string & name, double hz)
+  : BT::DecoratorNode(name, {}), read_parameters_from_ports_(false)
   {
-    double hz = 1.0;
-    getInput("hz", hz);
+    setRegistrationID("ThrottleTickCount");
     period_ = 1.0 / hz;
+  }
+
+  ThrottleTickCountNode(const std::string & name, const BT::NodeConfiguration & config)
+  : BT::DecoratorNode(name, config), read_parameters_from_ports_(true)
+  {
   }
 
   // Define this node's ports
@@ -45,9 +47,17 @@ public:
 private:
   BT::NodeStatus tick() override
   {
+    if (read_parameters_from_ports_) {
+      double hz = 1.0;
+      if (!getInput("hz", hz)) {
+        throw BT::RuntimeError("Missing parameter [hz] in ThrottleTickCount node");
+      }
+      period_ = 1.0 / hz;
+    }
+
     if (status() == BT::NodeStatus::IDLE) {
-      // Reset the starting point since we're starting a new iteration
-      // (moving from IDLE to RUNNING)
+      // Reset the start time since we're beginning a new iteration
+      // (transitioning from IDLE to RUNNING)
       start_ = std::chrono::high_resolution_clock::now();
       first_time = true;
     }
@@ -62,7 +72,7 @@ private:
     typedef std::chrono::duration<float> float_seconds;
     auto seconds = std::chrono::duration_cast<float_seconds>(elapsed);
 
-    // If we've reached or exceed the specified period, execute the child node
+    // If we've reached or exceeded the specified period, execute the child node
     if (first_time || seconds.count() >= period_) {
       first_time = false;
       const BT::NodeStatus child_state = child_node_->executeTick();
@@ -72,23 +82,24 @@ private:
           return BT::NodeStatus::RUNNING;
 
         case BT::NodeStatus::SUCCESS:
-          child_node_->setStatus(BT::NodeStatus::IDLE);
-          start_ = std::chrono::high_resolution_clock::now();  // Reset the starting time
+          start_ = std::chrono::high_resolution_clock::now();
           return BT::NodeStatus::SUCCESS;
 
         case BT::NodeStatus::FAILURE:
         default:
-          child_node_->setStatus(BT::NodeStatus::IDLE);
           return BT::NodeStatus::FAILURE;
       }
     }
+
+    return BT::NodeStatus::RUNNING;
   }
 
+  bool read_parameters_from_ports_;
   std::chrono::time_point<std::chrono::high_resolution_clock> start_;
-  double period_;
+  double period_{0.0};
   bool first_time{false};
 };
 
 }  // namespace ros2_behavior_tree
 
-#endif  // ROS2_BEHAVIOR_TREE__THROTTLE_TICK_COUNT_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__THROTTLE_TICK_COUNT_NODE_HPP_

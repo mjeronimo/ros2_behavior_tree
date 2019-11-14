@@ -42,14 +42,14 @@ public:
 
     bool caught_ghost = false;
 
-    std::cerr << "Chasing ghost";
+    std::cerr << "Chasing ghost ";
     while (!caught_ghost) {
       if (Now() >= time_before_reply) {
         caught_ghost = true;
       }
 
       if (!caught_ghost) {
-        std::cerr << ".";
+        std::cerr << ">";
 
         // Set status to RUNNING and "pause/sleep"
         // If halt() is called, we will NOT resume execution

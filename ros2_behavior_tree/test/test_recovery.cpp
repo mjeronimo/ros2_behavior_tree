@@ -62,23 +62,49 @@ TEST_F(RecoveryWithStubActions, ChildReturnsSuccess)
   recovery_action_->set_return_value(BT::NodeStatus::IDLE);
   auto status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
-
-  // Check the status of the nodes directly too
   ASSERT_EQ(root_->status(), BT::NodeStatus::SUCCESS);
+
+  // Because the child succeeded, it should become IDLE. The recovery
+  // should not be called and remains IDLE
+  ASSERT_EQ(child_action_->get_tick_count(), 1);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
+  ASSERT_EQ(recovery_action_->get_tick_count(), 0);
+  ASSERT_EQ(recovery_action_->status(), BT::NodeStatus::IDLE);
+}
+
+TEST_F(RecoveryWithStubActions, ChildReturnsRunning)
+{
+  // If the child returns RUNNING, the root should return RUNNING
+  blackboard_->set("number_of_retries", "1");
+  child_action_->set_return_value(BT::NodeStatus::RUNNING);
+  recovery_action_->set_return_value(BT::NodeStatus::IDLE);
+  auto status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::RUNNING);
+  ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
+
+  // The RecoveryNode returned RUNNING and the child should have
+  // only been ticked once and remains RUNNING. The recovery action
+  // was not invoked and remains IDLE
+  ASSERT_EQ(child_action_->get_tick_count(), 1);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
+  ASSERT_EQ(recovery_action_->get_tick_count(), 0);
   ASSERT_EQ(recovery_action_->status(), BT::NodeStatus::IDLE);
 }
 
 TEST_F(RecoveryWithStubActions, ChildReturnsFailure)
 {
-  // If the child action fails every time and the recovery
-  // action succeeds each time, we will execute the child
-  // a total of three times: the first time and two retries.
+  // If the child action fails each time, the recovery action
+  // and the original action will be invoked up to the # of retries
   blackboard_->set("number_of_retries", "2");
   child_action_->set_return_value(BT::NodeStatus::FAILURE);
   recovery_action_->set_return_value(BT::NodeStatus::SUCCESS);
   auto status = root_->executeTick();
 
+  // Because the original action never succeeds in this test, the
+  // RecoveryNode ultimately returns FAILURE. The child action will
+  // be invoked the first time + # of retries and will go IDLE
+  // because it failed. The recovery action will be invoked
+  // number_of_retries times.
   ASSERT_EQ(status, BT::NodeStatus::FAILURE);
   ASSERT_EQ(child_action_->get_tick_count(), 3);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
@@ -86,11 +112,25 @@ TEST_F(RecoveryWithStubActions, ChildReturnsFailure)
   ASSERT_EQ(recovery_action_->status(), BT::NodeStatus::IDLE);
 }
 
+TEST_F(RecoveryWithStubActions, RecoveryReturnsFailure)
+{
+  // If the recovery action returns FAILURE, the control node will return FAILURE
+  blackboard_->set("number_of_retries", "3");
+  child_action_->set_return_value(BT::NodeStatus::FAILURE);
+  recovery_action_->set_return_value(BT::NodeStatus::FAILURE);
+  auto status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::FAILURE);
+
+  // Both nodes would have been called once, since the recovery fails the first time
+  ASSERT_EQ(child_action_->get_tick_count(), 1);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
+  ASSERT_EQ(recovery_action_->get_tick_count(), 1);
+  ASSERT_EQ(recovery_action_->status(), BT::NodeStatus::IDLE);
+}
+
 TEST_F(RecoveryWithStubActions, RerunChildReturnsFailure)
 {
-  // If the child action fails every time and the recovery
-  // action succeeds each time, we will execute the child
-  // a total of three times: the first time and two retries.
+  // Try a test case so that we can then reset and try again
   blackboard_->set("number_of_retries", "2");
   child_action_->set_return_value(BT::NodeStatus::FAILURE);
   recovery_action_->set_return_value(BT::NodeStatus::SUCCESS);
@@ -109,6 +149,7 @@ TEST_F(RecoveryWithStubActions, RerunChildReturnsFailure)
   // Halting the root (RecoveryNode) causes it to enter the IDLE state
   root_->halt();
 
+  // Try the test again to make sure we get the same (correct) results
   child_action_->set_return_value(BT::NodeStatus::FAILURE);
   recovery_action_->set_return_value(BT::NodeStatus::SUCCESS);
   status = root_->executeTick();

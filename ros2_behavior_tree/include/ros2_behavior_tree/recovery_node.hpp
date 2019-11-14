@@ -75,8 +75,9 @@ public:
     if (status() == BT::NodeStatus::IDLE) {
       current_child_idx_ = 0;
       retry_count_ = 0;
-      setStatus(BT::NodeStatus::RUNNING);
     }
+
+    setStatus(BT::NodeStatus::RUNNING);
 
     while (current_child_idx_ < children_count && retry_count_ <= number_of_retries_) {
       TreeNode * child_node = children_nodes_[current_child_idx_];

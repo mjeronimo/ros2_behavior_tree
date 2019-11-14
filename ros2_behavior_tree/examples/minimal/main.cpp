@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <iostream>
 #include <stdexcept>
 
 #include "rclcpp/rclcpp.hpp"
@@ -44,11 +45,11 @@ int main(int argc, char ** argv)
       break;
 
     case ros2_behavior_tree::BtStatus::FAILED:
-      printf("BT failed\n");
+      std::cout << "BT failed\n";
       break;
 
     case ros2_behavior_tree::BtStatus::HALTED:
-      printf("BT was halted\n");
+      std::cout << "BT was halted\n";
       break;
 
     default:

@@ -42,14 +42,14 @@ public:
 
     bool ghost_avoided = false;
 
-    std::cerr << "Avoiding ghost";
+    std::cerr << "Avoiding ghost ";
     while (!ghost_avoided) {
       if (Now() >= time_before_reply) {
         ghost_avoided = true;
       }
 
       if (!ghost_avoided) {
-        std::cerr << ".";
+        std::cerr << "<";
 
         // Set status to RUNNING and "pause/sleep"
         // If halt() is called, we will NOT resume execution

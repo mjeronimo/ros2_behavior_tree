@@ -65,7 +65,7 @@ TEST_F(AsyncWaitWithStubAction, AfterExpiry)
   ASSERT_EQ(async_wait_node_->status(), BT::NodeStatus::RUNNING);
 
   // Wait for the wait duraction
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  std::this_thread::sleep_for(std::chrono::milliseconds(150));
 
   // Upon the next tick, the time will have been exceeded
   status = async_wait_node_->executeTick();
@@ -77,6 +77,7 @@ TEST_F(AsyncWaitWithStubAction, AfterExpiry)
 TEST_F(AsyncWaitWithStubAction, IdleUponHalt)
 {
   blackboard_->set("msec", "100");
+
   auto status = async_wait_node_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::RUNNING);
   ASSERT_EQ(async_wait_node_->status(), BT::NodeStatus::RUNNING);

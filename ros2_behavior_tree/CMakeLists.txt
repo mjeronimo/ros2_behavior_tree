@@ -11,6 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(ros2_behavior_tree_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(example_interfaces REQUIRED)
 
 include_directories(
   include
@@ -68,6 +69,7 @@ set(dependencies
   ros2_behavior_tree_msgs
   std_msgs
   std_srvs
+  example_interfaces
 )
 
 ament_target_dependencies(${library_name} ${dependencies})

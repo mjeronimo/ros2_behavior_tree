@@ -69,8 +69,8 @@ private:
     return BT::NodeStatus::SUCCESS;
   }
 
-    bool read_parameters_from_ports_;
-    int wait_duration_{0};
+  bool read_parameters_from_ports_;
+  int wait_duration_{0};
 };
 
 }  // namespace ros2_behavior_tree

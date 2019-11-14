@@ -34,6 +34,7 @@ public:
     const BT::NodeConfiguration & config)
   : BT::CoroActionNode(service_node_name, config), service_node_name_(service_node_name)
   {
+#if 0
     node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node");
 
     // Get the required items from the blackboard
@@ -52,6 +53,7 @@ public:
 
     RCLCPP_INFO(node_->get_logger(), "\"%s\" ROS2ServiceNode initialized",
       service_node_name_.c_str());
+#endif
   }
 
   ROS2ServiceNode() = delete;

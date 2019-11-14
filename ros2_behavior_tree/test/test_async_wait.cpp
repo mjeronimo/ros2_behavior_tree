@@ -13,12 +13,73 @@
 // limitations under the License.
 
 #include <gtest/gtest.h>
+#include <memory>
 
-struct AsyncWaitTest : testing::Test
+#include "behaviortree_cpp/behavior_tree.h"
+#include "ros2_behavior_tree/async_wait_node.hpp"
+
+struct AsyncWaitWithStubAction : testing::Test
 {
+  AsyncWaitWithStubAction()
+  {
+    // Create a blackboard which will be shared among the nodes
+    blackboard_ = BT::Blackboard::create();
+
+    // Create a node configurand and populate the blackboard
+    BT::NodeConfiguration config;
+    config.blackboard = blackboard_;
+    blackboard_->set("msec", "0");
+
+    BT::assignDefaultRemapping<ros2_behavior_tree::AsyncWaitNode>(config);
+    async_wait_node_ = std::make_unique<ros2_behavior_tree::AsyncWaitNode>("async_wait", config);
+  }
+
+  ~AsyncWaitWithStubAction()
+  {
+    BT::haltAllActions(async_wait_node_.get());
+  }
+
+  BT::Blackboard::Ptr blackboard_;
+  std::unique_ptr<ros2_behavior_tree::AsyncWaitNode> async_wait_node_;
 };
 
-TEST_F(AsyncWaitTest, ConditionTrue)
+// If the wait duration hasn't been exceeded, the node should return RUNNING
+TEST_F(AsyncWaitWithStubAction, BeforeExpiry)
 {
-  ASSERT_EQ(true, true);
+  blackboard_->set("msec", "100");
+
+  auto status = async_wait_node_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::RUNNING);
+  ASSERT_EQ(async_wait_node_->status(), BT::NodeStatus::RUNNING);
+}
+
+// If the wait duration has been exceeded, the node should return SUCCESS
+TEST_F(AsyncWaitWithStubAction, AfterExpiry)
+{
+  blackboard_->set("msec", "100");
+
+  // The first tick will cause the AsyncWait node to launch an async thread
+  // and return RUNNING
+  auto status = async_wait_node_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::RUNNING);
+  ASSERT_EQ(async_wait_node_->status(), BT::NodeStatus::RUNNING);
+
+  // Wait for the wait duraction
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+  // Upon the next tick, the time will have been exceeded
+  status = async_wait_node_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(async_wait_node_->status(), BT::NodeStatus::SUCCESS);
+}
+
+// Halting the AsyncWaitNode should cause it to go IDLE
+TEST_F(AsyncWaitWithStubAction, IdleUponHalt)
+{
+  blackboard_->set("msec", "100");
+  auto status = async_wait_node_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::RUNNING);
+  ASSERT_EQ(async_wait_node_->status(), BT::NodeStatus::RUNNING);
+  async_wait_node_->halt();
+  ASSERT_EQ(async_wait_node_->status(), BT::NodeStatus::IDLE);
 }

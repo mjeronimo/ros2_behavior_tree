@@ -36,7 +36,7 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
   // Condition nodes
 
   // Action nodes
-  factory.registerNodeType<ros2_behavior_tree::AsyncWait>("AsyncWait");
+  factory.registerNodeType<ros2_behavior_tree::AsyncWaitNode>("AsyncWait");
 
   const BT::PortsList message_params {BT::InputPort<std::string>("msg")};
   factory.registerSimpleAction("Message",

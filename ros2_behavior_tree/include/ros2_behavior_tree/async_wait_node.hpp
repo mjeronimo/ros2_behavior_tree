@@ -23,35 +23,54 @@
 namespace ros2_behavior_tree
 {
 
-class AsyncWait : public BT::AsyncActionNode
+class AsyncWaitNode : public BT::AsyncActionNode
 {
 public:
-  AsyncWait(const std::string & name, const BT::NodeConfiguration & config)
-  : BT::AsyncActionNode(name, config)
+  AsyncWaitNode(const std::string & name, int milliseconds)
+  : BT::AsyncActionNode(name, {}),
+    wait_duration_(milliseconds), read_parameters_from_ports_(false)
+  {
+    setRegistrationID("AsyncWait");
+  }
+
+  AsyncWaitNode(const std::string & name, const BT::NodeConfiguration & config)
+  : BT::AsyncActionNode(name, config), read_parameters_from_ports_(true)
   {
   }
 
   // Define this node's ports
   static BT::PortsList providedPorts()
   {
-    return {BT::InputPort<int>("msec")};
-  }
-
-private:
-  BT::NodeStatus tick() override
-  {
-    // An AsyncActionNode's tick method is happening on a separate thread, so we can simply
-    // cause this thread to sleep for the specified duration
-    int msec = 0;
-    getInput<int>("msec", msec);
-    std::this_thread::sleep_for(std::chrono::milliseconds(msec));
-    return BT::NodeStatus::SUCCESS;
+    return {
+      BT::InputPort<int>("msec")
+    };
   }
 
   // An AsyncActionNode must provide a halt override
   void halt() override
   {
+    stopAndJoinThread();
+    setStatus(BT::NodeStatus::IDLE);
   }
+
+private:
+  BT::NodeStatus tick() override
+  {
+    if (read_parameters_from_ports_) {
+      if (!getInput<int>("msec", wait_duration_)) {
+        throw BT::RuntimeError("Missing parameter [msec] in AsyncWait node");
+      }
+    }
+
+    // An AsyncActionNode's tick method is happening on a separate thread, so we
+    // can simply cause this thread to sleep for the specified duration
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(wait_duration_));
+    return BT::NodeStatus::SUCCESS;
+  }
+
+    bool read_parameters_from_ports_;
+    int wait_duration_{0};
 };
 
 }  // namespace ros2_behavior_tree

@@ -112,7 +112,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
-  add_subdirectory(test)
+  add_subdirectory(tests)
 endif()
 
 ament_export_include_directories(include)

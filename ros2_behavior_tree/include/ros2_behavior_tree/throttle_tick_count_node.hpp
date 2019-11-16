@@ -41,7 +41,9 @@ public:
   // Define this node's ports
   static BT::PortsList providedPorts()
   {
-    return {BT::InputPort<double>("hz", 10.0, "Rate")};
+    return {
+      BT::InputPort<double>("hz", 10.0, "Rate")
+    };
   }
 
 private:

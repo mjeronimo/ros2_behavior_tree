@@ -20,7 +20,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "example_interfaces/srv/add_two_ints.hpp"
-#include "ros2_behavior_tree/ros2_service_node.hpp"
+#include "ros2_behavior_tree/ros2_service_client_node.hpp"
 
 using AddTwoInts = example_interfaces::srv::AddTwoInts;
 using namespace std::placeholders;
@@ -43,7 +43,8 @@ public:
   template<typename NodeT>
   explicit NodeThread(NodeT node)
   : NodeThread(node->get_node_base_interface())
-  {}
+  {
+  }
 
   ~NodeThread()
   {
@@ -65,26 +66,9 @@ public:
   {
     addition_server_ = create_service<AddTwoInts>("add_two_ints",
         std::bind(&ServiceNode::handle_service, this, _1, _2, _3));
-
-    // Create a blackboard which will be shared among the nodes
-    blackboard_ = BT::Blackboard::create();
-
-    // Create a node configurand and populate the blackboard
-    BT::NodeConfiguration config;
-    config.blackboard = blackboard_;
-    // TODO(mjeronimo): Put required items on the blackboard
-    // blackboard_->set("msec", "0");
-    // blackboard_->set("msec", "0");
-    // blackboard_->set("msec", "0");
-    // blackboard_->set("msec", "0");
-
-    BT::assignDefaultRemapping<ros2_behavior_tree::ROS2ServiceNode<AddTwoInts>>(config);
-    ros2_service_node_ =
-      std::make_unique<ros2_behavior_tree::ROS2ServiceNode<AddTwoInts>>("ROS2 service", config);
-  }
-
-  void handle_service(
-    const std::shared_ptr<rmw_request_id_t> request_header,
+  } 
+  
+  void handle_service( const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<AddTwoInts::Request> request,
     const std::shared_ptr<AddTwoInts::Response> response)
   {
@@ -94,46 +78,63 @@ public:
   }
 
   rclcpp::Service<AddTwoInts>::SharedPtr addition_server_;
-  BT::Blackboard::Ptr blackboard_;
-  std::unique_ptr<ros2_behavior_tree::ROS2ServiceNode<AddTwoInts>> ros2_service_node_;
 };
 
 struct ROS2ServiceTest : testing::Test
 {
-  static void run_service_thread()
-  {
-    rclcpp::spin(service_node_->get_node_base_interface());
-  }
-
   static void SetUpTestCase()
   {
-    std::cerr << "SetUpTestCase\n";
-    service_node_ = std::make_shared<ServiceNode>("service_node");
-    service_node_thread_ = std::make_unique<std::thread>(&ROS2ServiceTest::run_service_thread);
+    // std::cerr << "SetUpTestCase\n";
+    service_node_ = std::make_shared<ServiceNode>("test_service_node");
+    service_node_thread_ = std::make_unique<NodeThread>(service_node_);
   }
 
   static void TearDownTestCase()
   {
-    std::cerr << "TearDownTestCase\n";
+    // std::cerr << "TearDownTestCase\n";
+    rclcpp::shutdown();
+    service_node_thread_.reset();
     service_node_.reset();
   }
 
   void SetUp()
   {
-    std::cerr << "SetUp\n";
+    // std::cerr << "SetUp\n";
+
+    // Create a blackboard which will be shared among the nodes
+    // TODO(mjeronimo): Put required items on the blackboard
+    blackboard_ = BT::Blackboard::create();
+    blackboard_->set("service_name", "add_two_ints");
+    blackboard_->set("server_timeout", "10");
+    // blackboard_->set("msec", "0");
+    // blackboard_->set("msec", "0");
+    // blackboard_->set("msec", "0");
+
+    // <ROS2ServiceCall service_name="add_two_ints" server_timeout="10"/>
+
+    BT::NodeConfiguration config;
+    config.blackboard = blackboard_;
+
+    BT::assignDefaultRemapping<ros2_behavior_tree::ROS2ServiceClientNode<AddTwoInts>>(config);
+
+    ros2_service_client_node_ =
+      std::make_unique<ros2_behavior_tree::ROS2ServiceClientNode<AddTwoInts>>("add_two_ints", config);
   }
 
   void TearDown()
   {
-    std::cerr << "TearDown\n";
+    // std::cerr << "TearDown\n";
   }
 
   static std::shared_ptr<ServiceNode> service_node_;
-  static std::shared_ptr<std::thread> service_node_thread_;
+  static std::shared_ptr<NodeThread> service_node_thread_;
+
+  BT::Blackboard::Ptr blackboard_;
+  std::unique_ptr<ros2_behavior_tree::ROS2ServiceClientNode<AddTwoInts>> ros2_service_client_node_;
 };
 
 std::shared_ptr<ServiceNode> ROS2ServiceTest::service_node_;
-std::shared_ptr<std::thread> ROS2ServiceTest::service_node_thread_;
+std::shared_ptr<NodeThread> ROS2ServiceTest::service_node_thread_;
 
 TEST_F(ROS2ServiceTest, ConditionTrue)
 {
@@ -148,13 +149,6 @@ TEST_F(ROS2ServiceTest, ConditionTrue2)
 int main(int argc, char ** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
-
   rclcpp::init(argc, argv);
-  auto rc = RUN_ALL_TESTS();
-
-  // TODO(mjeronimo): stop and join the thread before ROS shutdown
-  rclcpp::shutdown();
-  ROS2ServiceTest::service_node_thread_->join();
-
-  return rc;
+  return RUN_ALL_TESTS();
 }

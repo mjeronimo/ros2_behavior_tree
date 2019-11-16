@@ -35,33 +35,37 @@ public:
   RepeatUntilNode(const std::string & name, const BT::NodeConfiguration & config)
   : BT::DecoratorNode(name, config), read_parameters_from_ports_(true)
   {
+    if (!getInput<std::string>("key", key_)) {
+      throw BT::RuntimeError("Missing parameter [key] in RepeatUntil node");
+    }
+
+    if (!getInput<bool>("value", target_value_)) {
+      throw BT::RuntimeError("Missing parameter [value] in RepeatUntil node");
+    }
   }
 
   // Define this node's ports
   static BT::PortsList providedPorts()
   {
     return {
-      BT::InputPort<std::string>("key", "The target key to use"),
-      BT::InputPort<bool>("value", "The target value to match")
+      BT::InputPort<std::string>("key", "The name of the key to use"),
+      BT::InputPort<bool>("value", "The target value to match when reading the key"),
+      BT::InputPort<bool>("current_value", "The current value")
     };
-  }
-
-  void halt() override
-  {
-    DecoratorNode::halt();
   }
 
 private:
   BT::NodeStatus tick() override
   {
+#if 0
     if (read_parameters_from_ports_) {
-      if (!getInput<std::string>("key", key_)) {
-        throw BT::RuntimeError("Missing parameter [key] in RepeatUntil node");
-      }
-      if (!getInput<bool>("value", target_value_)) {
+      if (!getInput<bool>("current_value", current_value_)) {
         throw BT::RuntimeError("Missing parameter [value] in RepeatUntil node");
       }
     }
+#endif
+
+	setStatus(BT::NodeStatus::RUNNING);
 
     auto status = child_node_->executeTick();
 
@@ -69,6 +73,7 @@ private:
       return BT::NodeStatus::FAILURE;
     }
 
+    // TODO(mjeronimo): switch to the input port
     bool current_value = false;
     config().blackboard->get<bool>(key_, current_value);
 
@@ -78,7 +83,7 @@ private:
 
   bool read_parameters_from_ports_;
   std::string key_;
-  bool target_value_{true};
+  bool target_value_;
 };
 
 }  // namespace ros2_behavior_tree

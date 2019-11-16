@@ -77,7 +77,7 @@ private:
     // If we've reached or exceeded the specified period, execute the child node
     if (first_time || seconds.count() >= period_) {
       first_time = false;
-      const BT::NodeStatus child_state = child_node_->executeTick();
+      auto child_state = child_node_->executeTick();
 
       switch (child_state) {
         case BT::NodeStatus::RUNNING:

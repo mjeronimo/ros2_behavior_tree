@@ -45,6 +45,7 @@ public:
     std::chrono::milliseconds tick_period = std::chrono::milliseconds(10));
 
   BT::Blackboard::Ptr blackboard() {return blackboard_;}
+  BT::BehaviorTreeFactory & factory() {return factory_;}
 
 protected:
   // The factory to use when dynamically constructing the Behavior Tree

@@ -14,49 +14,16 @@
 
 #include <gtest/gtest.h>
 
-#include <cinttypes>
 #include <memory>
 #include <string>
 
 #include "rclcpp/rclcpp.hpp"
 #include "example_interfaces/srv/add_two_ints.hpp"
+#include "ros2_behavior_tree/node_thread.hpp"
 #include "ros2_behavior_tree/ros2_service_client_node.hpp"
 
 using AddTwoInts = example_interfaces::srv::AddTwoInts;
 using namespace std::placeholders;
-
-class NodeThread
-{
-public:
-  explicit NodeThread(rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node_base)
-  : node_(node_base)
-  {
-    thread_ = std::make_unique<std::thread>(
-      [&]()
-      {
-        executor_.add_node(node_);
-        executor_.spin();
-        executor_.remove_node(node_);
-      });
-  }
-
-  template<typename NodeT>
-  explicit NodeThread(NodeT node)
-  : NodeThread(node->get_node_base_interface())
-  {
-  }
-
-  ~NodeThread()
-  {
-    executor_.cancel();
-    thread_->join();
-  }
-
-protected:
-  rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node_;
-  std::unique_ptr<std::thread> thread_;
-  rclcpp::executors::SingleThreadedExecutor executor_;
-};
 
 class ServiceNode : public rclcpp::Node
 {
@@ -73,7 +40,6 @@ public:
     const std::shared_ptr<AddTwoInts::Response> response)
   {
     (void)request_header;
-    RCLCPP_INFO(get_logger(), "request: %" PRId64 " + %" PRId64, request->a, request->b);
     response->sum = request->a + request->b;
   }
 
@@ -84,14 +50,12 @@ struct ROS2ServiceTest : testing::Test
 {
   static void SetUpTestCase()
   {
-    // std::cerr << "SetUpTestCase\n";
     service_node_ = std::make_shared<ServiceNode>("test_service_node");
-    service_node_thread_ = std::make_unique<NodeThread>(service_node_);
+    service_node_thread_ = std::make_unique<ros2_behavior_tree::NodeThread>(service_node_);
   }
 
   static void TearDownTestCase()
   {
-    // std::cerr << "TearDownTestCase\n";
     rclcpp::shutdown();
     service_node_thread_.reset();
     service_node_.reset();
@@ -99,18 +63,10 @@ struct ROS2ServiceTest : testing::Test
 
   void SetUp()
   {
-    // std::cerr << "SetUp\n";
-
     // Create a blackboard which will be shared among the nodes
-    // TODO(mjeronimo): Put required items on the blackboard
     blackboard_ = BT::Blackboard::create();
     blackboard_->set("service_name", "add_two_ints");
     blackboard_->set("server_timeout", "10");
-    // blackboard_->set("msec", "0");
-    // blackboard_->set("msec", "0");
-    // blackboard_->set("msec", "0");
-
-    // <ROS2ServiceCall service_name="add_two_ints" server_timeout="10"/>
 
     BT::NodeConfiguration config;
     config.blackboard = blackboard_;
@@ -123,27 +79,86 @@ struct ROS2ServiceTest : testing::Test
 
   void TearDown()
   {
-    // std::cerr << "TearDown\n";
   }
 
   static std::shared_ptr<ServiceNode> service_node_;
-  static std::shared_ptr<NodeThread> service_node_thread_;
+  static std::shared_ptr<ros2_behavior_tree::NodeThread> service_node_thread_;
 
   BT::Blackboard::Ptr blackboard_;
   std::unique_ptr<ros2_behavior_tree::ROS2ServiceClientNode<AddTwoInts>> ros2_service_client_node_;
 };
 
 std::shared_ptr<ServiceNode> ROS2ServiceTest::service_node_;
-std::shared_ptr<NodeThread> ROS2ServiceTest::service_node_thread_;
+std::shared_ptr<ros2_behavior_tree::NodeThread> ROS2ServiceTest::service_node_thread_;
 
 TEST_F(ROS2ServiceTest, ConditionTrue)
 {
-  ASSERT_EQ(true, true);
+  auto request = std::make_shared<AddTwoInts::Request>();
+  auto response = std::make_shared<AddTwoInts::Response>();
+
+  // Set the input port values
+  blackboard_->set("service_name", "add_two_ints");
+  blackboard_->set("server_timeout", "10");
+  blackboard_->set("request", request);
+
+  // Set the fields of the request message
+  request->a = 7;
+  request->b = 14;
+
+  // Execute the Behavior Tree, the result is in the "response" output port
+  ros2_service_client_node_->executeTick();
+
+  auto rc = blackboard_->get("response", response);
+  ASSERT_EQ(response->sum, 21);
 }
 
-TEST_F(ROS2ServiceTest, ConditionTrue2)
+#include "ros2_behavior_tree/behavior_tree.hpp"
+
+TEST_F(ROS2ServiceTest, ChainUsingXMLAndPorts)
 {
-  ASSERT_EQ(true, true);
+  // TODO(mjeronimo): have to register the AddTwoInts type in order for it to be available to the XML
+  using AddTwoIntsClient = ros2_behavior_tree::ROS2ServiceClientNode<AddTwoInts>;
+
+  static const char* xml_text2 = R"(
+ <root main_tree_to_execute = "MainTree" >
+     <BehaviorTree ID="MainTree">
+        <Sequence name="root">
+
+            <!-- Need some text format and conversion for the input and output types/structs -->
+            <SetBlackboard key="AddTwoIntsRequest" "1:2"/>   
+            <AddTwoInts service_name="add_two_ints" server_timeout="10" request="{AddTwoIntsRequest}" response="{AddTwoIntsResponse}"/>
+            <!-- no way to directly reference the output fields, like response.sum -->
+            <!-- I could pass the whole message to another node, but it would have to accept the AddTwoInts.Response type -->
+
+            <!-- or -->
+
+            <SetBlackboard key="some_value" "1"/>
+            <SetBlackboard key="another_value" "2"/>
+            <AddTwoInts service_name="add_two_ints" server_timeout="10" a="{some_value}" b="{another_value} sum="{sum}"/>
+
+            <!-- can easily reference the output values -->
+            <SetBlackboard key="a_third_value" "3"/>
+            <AddTwoInts service_name="add_two_ints" server_timeout="10" a="{sum}" b="{a_third_value} sum="{final_result}"/>
+            <Message msg="The result is: "/>
+            <Message msg="{final_result}"/>
+        </Sequence>
+     </BehaviorTree>
+ </root>
+ )";
+
+  static const char* xml_text = R"(
+ <root main_tree_to_execute = "MainTree" >
+     <BehaviorTree ID="MainTree">
+        <Sequence name="root">
+            <AddTwoInts service_name="add_two_ints" server_timeout="10"/>
+        </Sequence>
+     </BehaviorTree>
+ </root>
+ )";
+
+    ros2_behavior_tree::BehaviorTree bt(xml_text, {"ros2_behavior_tree_nodes", "custom_test_nodes"});
+    // ASSERT_EQ(bt.execute(), ros2_behavior_tree::BtStatus::SUCCEEDED);
+    ASSERT_EQ(true, true);
 }
 
 int main(int argc, char ** argv)

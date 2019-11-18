@@ -34,11 +34,11 @@ namespace ros2_behavior_tree
 {
 
 template<class ServiceT>
-class ROS2ServiceClientNode : public BT::CoroActionNode
+class ROS2ServiceClientNode : public BT::SyncActionNode
 {
 public:
   ROS2ServiceClientNode(const std::string & name, const BT::NodeConfiguration & config)
-  : BT::CoroActionNode(name, config)
+  : BT::SyncActionNode(name, config)
   {
     if (!getInput("service_name", service_name_)) {
       throw BT::RuntimeError("Missing parameter [service_name] in ROS2ServiceClientNode");
@@ -48,26 +48,20 @@ public:
       throw BT::RuntimeError("Missing parameter [server_timeout] in ROS2ServiceClientNode");
 	  }
 
-    // node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node");
     node_ = std::make_shared<rclcpp::Node>(name + "_service_client");
     service_client_ = node_->create_client<ServiceT>(service_name_);
-
-    request_ = std::make_shared<typename ServiceT::Request>();
-    response_ = std::make_shared<typename ServiceT::Response>();
   }
 
   ROS2ServiceClientNode() = delete;
-
-  virtual ~ROS2ServiceClientNode()
-  {
-  }
 
   // Define this node's ports
   static BT::PortsList providedPorts()
   {
     return {
       BT::InputPort<std::string>("service_name", "please_set_service_name_in_BT_Node"),
-      BT::InputPort<std::chrono::milliseconds>("server_timeout", "BT loop timeout")
+      BT::InputPort<std::chrono::milliseconds>("server_timeout", "BT loop timeout"),
+      BT::InputPort<std::shared_ptr<typename ServiceT::Request>>("request", "The service request message"),
+      BT::OutputPort<std::shared_ptr<typename ServiceT::Response>>("response", "The service response message")
     };
   }
 
@@ -75,42 +69,50 @@ public:
   BT::NodeStatus tick() override
   {
     // Make sure the server is actually there before continuing
-    RCLCPP_INFO(node_->get_logger(), "Waiting for \"%s\" service", service_name_.c_str());
-    printf("Waiting for %s service", service_name_.c_str());
-    service_client_->wait_for_service();
+    // TODO(mjeronimo); make this a parameter
+    const int service_wait_timeout = 100;
+    //service_client_->wait_for_service();
+    if (!service_client_->wait_for_service(std::chrono::milliseconds(service_wait_timeout))) {
+      return BT::NodeStatus::FAILURE;
+    }
+
+    std::shared_ptr<typename ServiceT::Request> request;
+    if (!getInput<std::shared_ptr<typename ServiceT::Request>>("request", request)) {
+      throw BT::RuntimeError("Missing parameter [request] in ROS2ServiceClientNode");
+	  }
 
     // Send the request to the server
-    auto future_result = service_client_->async_send_request(request_);
+    auto future_result = service_client_->async_send_request(request);
 
     // Wait for the response
     auto rc = rclcpp::spin_until_future_complete(node_, future_result, server_timeout_);
 
     if (rc == rclcpp::executor::FutureReturnCode::SUCCESS) {
+      std::shared_ptr<typename ServiceT::Response> response;
+      response = future_result.get();
+      setOutput("response", response);
       return BT::NodeStatus::SUCCESS;
     }
-	
-	if (rc == rclcpp::executor::FutureReturnCode::TIMEOUT) {
+
+	  if (rc == rclcpp::executor::FutureReturnCode::TIMEOUT) {
       RCLCPP_WARN(node_->get_logger(),
         "Node timed out while executing service call to %s.", service_name_.c_str());
       return BT::NodeStatus::FAILURE;
     }
-
+	
     return BT::NodeStatus::FAILURE;
   }
 
 protected:
-  std::string service_name_;
-
   typename std::shared_ptr<rclcpp::Client<ServiceT>> service_client_;
-
-  std::shared_ptr<typename ServiceT::Request> request_;
-  std::shared_ptr<typename ServiceT::Response> response_;
 
   // The node that will be used for any ROS operations
   rclcpp::Node::SharedPtr node_;
 
+  std::string service_name_;
+
   // The timeout value while to use in the tick loop while waiting for
-  // a result from the server
+  // a response from the server
   std::chrono::milliseconds server_timeout_;
 };
 

@@ -58,8 +58,8 @@ struct ROS2ServiceTest : testing::Test
 
     // Set the generic input port values
     blackboard_->set("service_name", "add_two_ints");
-    blackboard_->set("wait_timeout", "1000");
-    blackboard_->set("call_timeout", "1000");
+    blackboard_->set("wait_timeout", "100");
+    blackboard_->set("call_timeout", "100");
     blackboard_->set<std::shared_ptr<rclcpp::Node>>("client_node", client_node_);  // NOLINT
 
     // Set this configuration to the AddTwoInts input and output ports
@@ -112,11 +112,11 @@ TEST_F(ROS2ServiceTest, ChainUsingXMLAndPorts)
         <Sequence name="root">
             <SetBlackboard output_key="a1" value="33"/>
             <CreateROS2Node node_name="test_bt_node" spin="false" node_handle="{client_node}"/>
-            <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" client_node="{client_node}" a="{a1}" b="44" sum="{sum1}"/>
-            <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" client_node="{client_node}" a="{sum1}" b="44" sum="{sum2}"/>
-            <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" client_node="{client_node}" a="{sum2}" b="{sum2}" sum="{sum3}"/>
+            <AddTwoInts service_name="add_two_ints" wait_timeout="100" call_timeout="100" client_node="{client_node}" a="{a1}" b="44" sum="{sum1}"/>
+            <AddTwoInts service_name="add_two_ints" wait_timeout="100" call_timeout="100" client_node="{client_node}" a="{sum1}" b="44" sum="{sum2}"/>
+            <AddTwoInts service_name="add_two_ints" wait_timeout="100" call_timeout="100" client_node="{client_node}" a="{sum2}" b="{sum2}" sum="{sum3}"/>
             <Repeat num_cycles="10">
-              <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" client_node="{client_node}" a="{sum3}" b="1" sum="{sum3}"/>
+              <AddTwoInts service_name="add_two_ints" wait_timeout="100" call_timeout="100" client_node="{client_node}" a="{sum3}" b="1" sum="{sum3}"/>
             </Repeat>
         </Sequence>
      </BehaviorTree>

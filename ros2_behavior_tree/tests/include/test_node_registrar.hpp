@@ -30,4 +30,3 @@ public:
 }  // namespace ros2_behavior_tree
 
 #endif  // TEST_NODE_REGISTRAR_HPP_
-

@@ -17,10 +17,12 @@
 #include <memory>
 #include <string>
 
-#include "rclcpp/rclcpp.hpp"
 #include "example_interfaces/srv/add_two_ints.hpp"
+#include "ros2_behavior_tree/behavior_tree.hpp"
 #include "ros2_behavior_tree/node_thread.hpp"
 #include "ros2_behavior_tree/ros2_service_client_node.hpp"
+#include "rclcpp/rclcpp.hpp"
+
 
 using AddTwoInts = example_interfaces::srv::AddTwoInts;
 using namespace std::placeholders;
@@ -33,9 +35,10 @@ public:
   {
     addition_server_ = create_service<AddTwoInts>("add_two_ints",
         std::bind(&ServiceNode::handle_service, this, _1, _2, _3));
-  } 
-  
-  void handle_service( const std::shared_ptr<rmw_request_id_t> request_header,
+  }
+
+  void handle_service(
+    const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<AddTwoInts::Request> request,
     const std::shared_ptr<AddTwoInts::Response> response)
   {
@@ -65,16 +68,19 @@ struct ROS2ServiceTest : testing::Test
   {
     // Create a blackboard which will be shared among the nodes
     blackboard_ = BT::Blackboard::create();
-    blackboard_->set("service_name", "add_two_ints");
-    blackboard_->set("server_timeout", "10");
 
     BT::NodeConfiguration config;
     config.blackboard = blackboard_;
 
+    // Set the generic input port values
+    blackboard_->set("service_name", "add_two_ints");
+    blackboard_->set("server_timeout", "10");
+
     BT::assignDefaultRemapping<ros2_behavior_tree::ROS2ServiceClientNode<AddTwoInts>>(config);
 
     ros2_service_client_node_ =
-      std::make_unique<ros2_behavior_tree::ROS2ServiceClientNode<AddTwoInts>>("add_two_ints", config);
+      std::make_unique<ros2_behavior_tree::ROS2ServiceClientNode<AddTwoInts>>(
+      "add_two_ints", config);
   }
 
   void TearDown()
@@ -93,72 +99,48 @@ std::shared_ptr<ros2_behavior_tree::NodeThread> ROS2ServiceTest::service_node_th
 
 TEST_F(ROS2ServiceTest, ConditionTrue)
 {
-  auto request = std::make_shared<AddTwoInts::Request>();
-  auto response = std::make_shared<AddTwoInts::Response>();
-
-  // Set the input port values
-  blackboard_->set("service_name", "add_two_ints");
-  blackboard_->set("server_timeout", "10");
-  blackboard_->set("request", request);
-
-  // Set the fields of the request message
-  request->a = 7;
-  request->b = 14;
+  // Set the specific input port values
+  blackboard_->set("a", 33);
+  blackboard_->set("b", 44);
 
   // Execute the Behavior Tree, the result is in the "response" output port
   ros2_service_client_node_->executeTick();
 
-  auto rc = blackboard_->get("response", response);
-  ASSERT_EQ(response->sum, 21);
+  long sum = 0;
+  auto rc = blackboard_->get("sum", sum);
+  ASSERT_EQ(sum, 77);
 }
-
-#include "ros2_behavior_tree/behavior_tree.hpp"
 
 TEST_F(ROS2ServiceTest, ChainUsingXMLAndPorts)
 {
-  // TODO(mjeronimo): have to register the AddTwoInts type in order for it to be available to the XML
   using AddTwoIntsClient = ros2_behavior_tree::ROS2ServiceClientNode<AddTwoInts>;
 
-  static const char* xml_text2 = R"(
+  static const char * xml_text =
+    R"(
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
         <Sequence name="root">
-
-            <!-- Need some text format and conversion for the input and output types/structs -->
-            <SetBlackboard key="AddTwoIntsRequest" "1:2"/>   
-            <AddTwoInts service_name="add_two_ints" server_timeout="10" request="{AddTwoIntsRequest}" response="{AddTwoIntsResponse}"/>
-            <!-- no way to directly reference the output fields, like response.sum -->
-            <!-- I could pass the whole message to another node, but it would have to accept the AddTwoInts.Response type -->
-
-            <!-- or -->
-
-            <SetBlackboard key="some_value" "1"/>
-            <SetBlackboard key="another_value" "2"/>
-            <AddTwoInts service_name="add_two_ints" server_timeout="10" a="{some_value}" b="{another_value} sum="{sum}"/>
-
-            <!-- can easily reference the output values -->
-            <SetBlackboard key="a_third_value" "3"/>
-            <AddTwoInts service_name="add_two_ints" server_timeout="10" a="{sum}" b="{a_third_value} sum="{final_result}"/>
-            <Message msg="The result is: "/>
-            <Message msg="{final_result}"/>
+            <SetBlackboard output_key="a1" value="33" />
+            <SetBlackboard output_key="b1" value="44" />
+            <AddTwoInts service_name="add_two_ints" server_timeout="10" a="33" b="44" sum="{sum1}"/>
+            <AddTwoInts service_name="add_two_ints" server_timeout="10" a="{sum1}" b="44" sum="{sum2}"/>
         </Sequence>
      </BehaviorTree>
  </root>
  )";
 
-  static const char* xml_text = R"(
- <root main_tree_to_execute = "MainTree" >
-     <BehaviorTree ID="MainTree">
-        <Sequence name="root">
-            <AddTwoInts service_name="add_two_ints" server_timeout="10"/>
-        </Sequence>
-     </BehaviorTree>
- </root>
- )";
+  ros2_behavior_tree::BehaviorTree bt(xml_text, {"ros2_behavior_tree_nodes", "custom_test_nodes"});
 
-    ros2_behavior_tree::BehaviorTree bt(xml_text, {"ros2_behavior_tree_nodes", "custom_test_nodes"});
-    // ASSERT_EQ(bt.execute(), ros2_behavior_tree::BtStatus::SUCCEEDED);
-    ASSERT_EQ(true, true);
+  auto bt_return = bt.execute();
+  ASSERT_EQ(bt_return, ros2_behavior_tree::BtStatus::SUCCEEDED);
+
+  long sum1 = 0;
+  auto rc = bt.blackboard()->get("sum1", sum1);
+  ASSERT_EQ(sum1, 77);
+
+  long sum2 = 0;
+  rc = bt.blackboard()->get("sum2", sum2);
+  ASSERT_EQ(sum2, 121);
 }
 
 int main(int argc, char ** argv)

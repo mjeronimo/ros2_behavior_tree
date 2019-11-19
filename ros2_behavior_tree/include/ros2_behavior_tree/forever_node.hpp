@@ -34,7 +34,7 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-	setStatus(BT::NodeStatus::RUNNING);
+    setStatus(BT::NodeStatus::RUNNING);
 
     auto child_state = child_node_->executeTick();
 

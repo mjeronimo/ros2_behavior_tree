@@ -65,7 +65,7 @@ private:
     }
 #endif
 
-	setStatus(BT::NodeStatus::RUNNING);
+    setStatus(BT::NodeStatus::RUNNING);
 
     auto status = child_node_->executeTick();
 

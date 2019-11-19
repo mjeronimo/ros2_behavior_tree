@@ -56,7 +56,8 @@ struct ROS2ServiceTest : testing::Test
 
     // Set the generic input port values
     blackboard_->set("service_name", "add_two_ints");
-    blackboard_->set("server_timeout", "100");
+    blackboard_->set("wait_timeout", "1000");
+    blackboard_->set("call_timeout", "1000");
 
     // Set this configuration to the AddTwoInts input and output ports
     BT::assignDefaultRemapping<AddTwoIntsClient>(config);
@@ -89,7 +90,7 @@ TEST_F(ROS2ServiceTest, SimpleCall)
   // Execute the Behavior Tree, the result is in the "response" output port
   add_two_ints_client_->executeTick();
 
-  long sum = 0;
+  int64_t sum = 0;
   auto rc = blackboard_->get("sum", sum);
   ASSERT_EQ(rc, true);
   ASSERT_EQ(sum, 77);
@@ -106,11 +107,11 @@ TEST_F(ROS2ServiceTest, ChainUsingXMLAndPorts)
         <Sequence name="root">
             <SetBlackboard output_key="a1" value="33" />
             <SetBlackboard output_key="b1" value="44" />
-            <AddTwoInts service_name="add_two_ints" server_timeout="200" a="33" b="44" sum="{sum1}"/>
-            <AddTwoInts service_name="add_two_ints" server_timeout="200" a="{sum1}" b="44" sum="{sum2}"/>
-            <AddTwoInts service_name="add_two_ints" server_timeout="200" a="{sum2}" b="{sum2}" sum="{sum3}"/>
+            <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" a="33" b="44" sum="{sum1}"/>
+            <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" a="{sum1}" b="44" sum="{sum2}"/>
+            <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" a="{sum2}" b="{sum2}" sum="{sum3}"/>
             <Repeat num_cycles="10">
-              <AddTwoInts service_name="add_two_ints" server_timeout="200" a="{sum3}" b="1" sum="{sum3}"/>
+              <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" a="{sum3}" b="1" sum="{sum3}"/>
             </Repeat>
         </Sequence>
      </BehaviorTree>
@@ -126,17 +127,17 @@ TEST_F(ROS2ServiceTest, ChainUsingXMLAndPorts)
 
   // Check all of the output values from the blackboard (output ports)
 
-  long sum1 = 0;
+  int64_t sum1 = 0;
   auto rc = bt.blackboard()->get("sum1", sum1);
   ASSERT_EQ(rc, true);
   ASSERT_EQ(sum1, 77);
 
-  long sum2 = 0;
+  int64_t sum2 = 0;
   rc = bt.blackboard()->get("sum2", sum2);
   ASSERT_EQ(rc, true);
   ASSERT_EQ(sum2, 121);
 
-  long sum3 = 0;
+  int64_t sum3 = 0;
   rc = bt.blackboard()->get("sum3", sum3);
   ASSERT_EQ(rc, true);
   ASSERT_EQ(sum3, 252);

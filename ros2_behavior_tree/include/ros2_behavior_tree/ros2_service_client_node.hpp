@@ -37,8 +37,12 @@ public:
       throw BT::RuntimeError("Missing parameter [service_name] in ROS2ServiceClientNode");
     }
 
-    if (!getInput<std::chrono::milliseconds>("server_timeout", server_timeout_)) {
-      throw BT::RuntimeError("Missing parameter [server_timeout] in ROS2ServiceClientNode");
+    if (!getInput<std::chrono::milliseconds>("wait_timeout", wait_timeout_)) {
+      throw BT::RuntimeError("Missing parameter [wait_timeout] in ROS2ServiceClientNode");
+    }
+
+    if (!getInput<std::chrono::milliseconds>("call_timeout", call_timeout_)) {
+      throw BT::RuntimeError("Missing parameter [call_timeout] in ROS2ServiceClientNode");
     }
 
     node_ = std::make_shared<rclcpp::Node>(name + "_service_client");
@@ -50,40 +54,43 @@ public:
 
   ROS2ServiceClientNode() = delete;
 
-  // Define this node's ports
+  // Define the ports required by the ROS2ServiceClient node
+  static BT::PortsList augment_basic_ports(BT::PortsList additional_ports)
+  {
+    BT::PortsList basic_ports = {
+      BT::InputPort<std::string>("service_name", "The name of the service to call"),
+      BT::InputPort<std::chrono::milliseconds>("wait_timeout",
+        "The timeout value, in milliseconds, to use when waiting for the service"),
+      BT::InputPort<std::chrono::milliseconds>("call_timeout",
+        "The timeout value, in milliseconds, to use when calling the service")
+    };
+
+    basic_ports.insert(additional_ports.begin(), additional_ports.end());
+    return basic_ports;
+  }
+
+  // Any subclass of ROS2ServiceClient that defines additional ports must then define its
+  // own providedPorts method and call augment_basic_ports to add the subclass's ports to
+  // the required basic ports
   static BT::PortsList providedPorts()
   {
-    return {
-      BT::InputPort<std::string>("service_name", "please_set_service_name_in_BT_Node"),
-      BT::InputPort<std::chrono::milliseconds>("server_timeout", "BT loop timeout"),
-      BT::InputPort<long>("a", "The augend"),
-      BT::InputPort<long>("b", "The addend"),
-      BT::OutputPort<long>("sum", "The sum of the addition")
-    };
+    return augment_basic_ports({});
   }
+
+  // A derived class the defines input and/or output ports can override these methods
+  // to get/set the ports
+  virtual void get_input_ports() {}
+  virtual void set_output_ports() {}
 
   // The main override required by a BT service
   BT::NodeStatus tick() override
   {
-    int a;
-    if (!getInput("a", a)) {
-      throw BT::RuntimeError("Missing parameter [a] in ROS2ServiceClientNode");
-    }
-
-    int b;
-    if (!getInput("b", b)) {
-      throw BT::RuntimeError("Missing parameter [b] in ROS2ServiceClientNode");
-    }
-
-    request_->a = a;
-    request_->b = b;
+    get_input_ports();
 
     // Make sure the server is actually there before continuing
-    // TODO(mjeronimo): make this a parameter
-    const int service_wait_timeout = 1000;
-    // service_client_->wait_for_service();
-    if (!service_client_->wait_for_service(std::chrono::milliseconds(service_wait_timeout))) {
-      printf("wait_for_service timed out\n");
+    if (!service_client_->wait_for_service(std::chrono::milliseconds(wait_timeout_))) {
+      RCLCPP_ERROR(node_->get_logger(),
+        "Node timed out waiting for service \"%s\" to become available", service_name_.c_str());
       return BT::NodeStatus::FAILURE;
     }
 
@@ -91,34 +98,33 @@ public:
     auto future_result = service_client_->async_send_request(request_);
 
     // Wait for the response
-    auto rc = rclcpp::spin_until_future_complete(node_, future_result, server_timeout_);
+    auto rc = rclcpp::spin_until_future_complete(node_, future_result, call_timeout_);
 
     if (rc == rclcpp::executor::FutureReturnCode::SUCCESS) {
       response_ = future_result.get();
-      setOutput("sum", response_->sum);
+      set_output_ports();
       return BT::NodeStatus::SUCCESS;
     }
 
     if (rc == rclcpp::executor::FutureReturnCode::TIMEOUT) {
-      RCLCPP_WARN(node_->get_logger(),
-        "Timed out waiting for response from service %s.", service_name_.c_str());
+      RCLCPP_ERROR(node_->get_logger(), "Call to \"%s\" service timed out", service_name_.c_str());
       return BT::NodeStatus::FAILURE;
     }
 
+    RCLCPP_ERROR(node_->get_logger(), "Call to \"%s\" server failed", service_name_.c_str());
     return BT::NodeStatus::FAILURE;
   }
 
 protected:
   typename std::shared_ptr<rclcpp::Client<ServiceT>> service_client_;
 
-  // The node that will be used for any ROS operations
+  // The (non-spinning) node to use when calling the service
   rclcpp::Node::SharedPtr node_;
 
   std::string service_name_;
 
-  // The timeout value while to use in the tick loop while waiting for
-  // a response from the server
-  std::chrono::milliseconds server_timeout_;
+  std::chrono::milliseconds wait_timeout_;
+  std::chrono::milliseconds call_timeout_;
 
   std::shared_ptr<typename ServiceT::Request> request_;
   std::shared_ptr<typename ServiceT::Response> response_;

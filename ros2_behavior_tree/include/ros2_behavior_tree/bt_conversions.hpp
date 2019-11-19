@@ -17,12 +17,12 @@
 
 #include "behaviortree_cpp/behavior_tree.h"
 
-namespace BT
-{
-
 // The follow templates are required when using these types as parameters
 // in our BT XML files. They parse the strings in the XML into their corresponding
-// data type.
+// data types.
+
+namespace BT
+{
 
 template<>
 inline std::chrono::milliseconds convertFromString<std::chrono::milliseconds>(const StringView key)
@@ -31,9 +31,9 @@ inline std::chrono::milliseconds convertFromString<std::chrono::milliseconds>(co
 }
 
 template<>
-inline long convertFromString<long>(const StringView key)
+inline int64_t convertFromString<int64_t>(const StringView key)
 {
-  long l = std::stol(key.data());
+  return std::strtoll(key.data(), NULL, 10);
 }
 
 }  // namespace BT

@@ -17,6 +17,7 @@
 #include <string>
 
 #include "ros2_behavior_tree/async_wait_node.hpp"
+#include "ros2_behavior_tree/create_ros2_node.hpp"
 #include "ros2_behavior_tree/forever_node.hpp"
 #include "ros2_behavior_tree/recovery_node.hpp"
 #include "ros2_behavior_tree/repeat_until_node.hpp"
@@ -37,6 +38,7 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
 
   // Action nodes
   factory.registerNodeType<ros2_behavior_tree::AsyncWaitNode>("AsyncWait");
+  factory.registerNodeType<ros2_behavior_tree::CreateROS2Node>("CreateROS2Node");
 
   const BT::PortsList message_params {BT::InputPort<std::string>("msg")};
   factory.registerSimpleAction("Message",

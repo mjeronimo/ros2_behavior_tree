@@ -54,10 +54,13 @@ struct ROS2ServiceTest : testing::Test
     BT::NodeConfiguration config;
     config.blackboard = blackboard_;
 
+    client_node_ = std::make_shared<rclcpp::Node>("test_bt_client_node");
+
     // Set the generic input port values
     blackboard_->set("service_name", "add_two_ints");
     blackboard_->set("wait_timeout", "1000");
     blackboard_->set("call_timeout", "1000");
+    blackboard_->set<std::shared_ptr<rclcpp::Node>>("client_node", client_node_);  // NOLINT
 
     // Set this configuration to the AddTwoInts input and output ports
     BT::assignDefaultRemapping<AddTwoIntsClient>(config);
@@ -74,6 +77,8 @@ struct ROS2ServiceTest : testing::Test
 
   BT::Blackboard::Ptr blackboard_;
   std::unique_ptr<AddTwoIntsClient> add_two_ints_client_;
+
+  std::shared_ptr<rclcpp::Node> client_node_;
 };
 
 std::shared_ptr<AddTwoIntsServer> ROS2ServiceTest::service_node_;
@@ -105,13 +110,13 @@ TEST_F(ROS2ServiceTest, ChainUsingXMLAndPorts)
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
         <Sequence name="root">
-            <SetBlackboard output_key="a1" value="33" />
-            <SetBlackboard output_key="b1" value="44" />
-            <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" a="33" b="44" sum="{sum1}"/>
-            <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" a="{sum1}" b="44" sum="{sum2}"/>
-            <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" a="{sum2}" b="{sum2}" sum="{sum3}"/>
+            <SetBlackboard output_key="a1" value="33"/>
+            <CreateROS2Node node_name="test_bt_node" spin="false" node_handle="{client_node}"/>
+            <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" client_node="{client_node}" a="{a1}" b="44" sum="{sum1}"/>
+            <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" client_node="{client_node}" a="{sum1}" b="44" sum="{sum2}"/>
+            <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" client_node="{client_node}" a="{sum2}" b="{sum2}" sum="{sum3}"/>
             <Repeat num_cycles="10">
-              <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" a="{sum3}" b="1" sum="{sum3}"/>
+              <AddTwoInts service_name="add_two_ints" wait_timeout="1000" call_timeout="1000" client_node="{client_node}" a="{sum3}" b="1" sum="{sum3}"/>
             </Repeat>
         </Sequence>
      </BehaviorTree>
@@ -119,7 +124,7 @@ TEST_F(ROS2ServiceTest, ChainUsingXMLAndPorts)
  )";
 
   // Have to load the cutom test nodes to make AddTwoInts available to the XML
-  ros2_behavior_tree::BehaviorTree bt(xml_text, {"custom_test_nodes"});
+  ros2_behavior_tree::BehaviorTree bt(xml_text, {"ros2_behavior_tree_nodes", "custom_test_nodes"});
 
   // Execute the Behavior Tree and make sure that was successful
   auto bt_result = bt.execute();

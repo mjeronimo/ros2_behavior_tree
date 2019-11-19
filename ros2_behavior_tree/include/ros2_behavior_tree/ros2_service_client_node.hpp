@@ -80,9 +80,10 @@ public:
 
     // Make sure the server is actually there before continuing
     // TODO(mjeronimo): make this a parameter
-    const int service_wait_timeout = 100;
+    const int service_wait_timeout = 1000;
     // service_client_->wait_for_service();
     if (!service_client_->wait_for_service(std::chrono::milliseconds(service_wait_timeout))) {
+      printf("wait_for_service timed out\n");
       return BT::NodeStatus::FAILURE;
     }
 
@@ -100,7 +101,7 @@ public:
 
     if (rc == rclcpp::executor::FutureReturnCode::TIMEOUT) {
       RCLCPP_WARN(node_->get_logger(),
-        "Node timed out while executing service call to %s.", service_name_.c_str());
+        "Timed out waiting for response from service %s.", service_name_.c_str());
       return BT::NodeStatus::FAILURE;
     }
 

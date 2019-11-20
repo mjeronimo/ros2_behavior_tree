@@ -62,7 +62,8 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
 
   // Control nodes
   factory.registerNodeType<ros2_behavior_tree::FirstResultNode>("FirstResult");
-  factory.registerNodeType<ros2_behavior_tree::RecoveryNode>("RecoveryNode");	// TODO: ::Recovery not RecoveryNode
+  // TODO(mjeronimo): ::Recovery not RecoveryNode
+  factory.registerNodeType<ros2_behavior_tree::RecoveryNode>("RecoveryNode");
 }
 
 #define ANSI_COLOR_RESET    "\x1b[0m"

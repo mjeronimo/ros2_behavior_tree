@@ -24,7 +24,7 @@
 #include "ros2_behavior_tree/ros2_service_client_node.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-struct TestROS2ServiceNode : testing::Test
+struct TestROS2ServiceClientNode : testing::Test
 {
   static void SetUpTestCase()
   {
@@ -54,7 +54,7 @@ struct TestROS2ServiceNode : testing::Test
     BT::NodeConfiguration config;
     config.blackboard = blackboard_;
 
-    client_node_ = std::make_shared<rclcpp::Node>("test_bt_client_node");
+    client_node_ = std::make_shared<rclcpp::Node>("client_node");
 
     // Set the generic input port values
     blackboard_->set("service_name", "add_two_ints");
@@ -81,12 +81,12 @@ struct TestROS2ServiceNode : testing::Test
   std::shared_ptr<rclcpp::Node> client_node_;
 };
 
-std::shared_ptr<AddTwoIntsServer> TestROS2ServiceNode::service_node_;
-std::shared_ptr<ros2_behavior_tree::NodeThread> TestROS2ServiceNode::service_node_thread_;
+std::shared_ptr<AddTwoIntsServer> TestROS2ServiceClientNode::service_node_;
+std::shared_ptr<ros2_behavior_tree::NodeThread> TestROS2ServiceClientNode::service_node_thread_;
 
 // Set a couple values on the blackboard, which will be picked up by the BT node's
 // input ports and tick the node, which will cause it to execute the service call
-TEST_F(TestROS2ServiceNode, SimpleCall)
+TEST_F(TestROS2ServiceClientNode, SimpleCall)
 {
   // Set the specific input port values
   blackboard_->set("a", 33);
@@ -103,7 +103,7 @@ TEST_F(TestROS2ServiceNode, SimpleCall)
 
 // Chain some calls to the AddTwoInts service, using the input and output ports
 // to ensure that the output of one call can be used as the input to another
-TEST_F(TestROS2ServiceNode, ChainUsingXMLAndPorts)
+TEST_F(TestROS2ServiceClientNode, ChainUsingXMLAndPorts)
 {
   static const char * xml_text =
     R"(

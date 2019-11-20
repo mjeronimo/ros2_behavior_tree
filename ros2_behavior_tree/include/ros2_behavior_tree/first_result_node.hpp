@@ -25,7 +25,7 @@ namespace ros2_behavior_tree
 class FirstResultNode : public BT::ControlNode
 {
 public:
-  FirstResultNode(const std::string & name)
+  explicit FirstResultNode(const std::string & name)
   : BT::ControlNode::ControlNode(name, {})
   {
     setRegistrationID("FirstResult");

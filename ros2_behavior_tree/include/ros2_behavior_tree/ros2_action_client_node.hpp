@@ -90,15 +90,15 @@ public:
 
     get_input_ports();
 
-	if (action_client_ == nullptr) {
+    if (action_client_ == nullptr) {
       action_client_ = rclcpp_action::create_client<ActionT>(client_node_, action_name_);
     }
 
+#if 0
     // Make sure the server is actually there before continuing
-    RCLCPP_INFO(client_node_->get_logger(), "Waiting for \"%s\" action server", action_name_.c_str());
+    RCLCPP_INFO(client_node_->get_logger(), "Waiting for \"%s\" action server", name().c_str());
     action_client_->wait_for_action_server();
 
-#if 0
     // Enable result awareness by providing an empty lambda function
     auto send_goal_options = typename rclcpp_action::Client<ActionT>::SendGoalOptions();
     send_goal_options.result_callback = [](auto) {};
@@ -121,7 +121,6 @@ new_goal_received:
     do {
       rc = rclcpp::spin_until_future_complete(node_, future_result, server_timeout_);
       if (rc == rclcpp::executor::FutureReturnCode::TIMEOUT) {
-
 #if 0
         on_server_timeout();
 
@@ -143,7 +142,7 @@ new_goal_received:
     result_ = future_result.get();
     switch (result_.code) {
       case rclcpp_action::ResultCode::SUCCEEDED:
-		set_output_ports();
+        set_output_ports();
         return BT::NodeStatus::SUCCESS;
 
       case rclcpp_action::ResultCode::ABORTED:
@@ -156,7 +155,7 @@ new_goal_received:
         throw std::logic_error("ROS2ActionClientNode::Tick: invalid status value");
     }
 #endif
-	return BT::NodeStatus::SUCCESS;
+    return BT::NodeStatus::SUCCESS;
   }
 
   // The other (optional) override required by a BT action. In this case, we

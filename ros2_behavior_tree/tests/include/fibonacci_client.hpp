@@ -47,7 +47,7 @@ public:
 
   void set_output_ports() override
   {
-    setOutput<int32_t>("sequence", 101); // TODO: result_->sum);
+    setOutput<int32_t>("sequence", 101);  // TODO(mjeronimo): result_->sum);
   }
 
 private:

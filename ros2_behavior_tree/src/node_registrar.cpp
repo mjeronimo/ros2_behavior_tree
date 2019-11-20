@@ -18,6 +18,7 @@
 
 #include "ros2_behavior_tree/async_wait_node.hpp"
 #include "ros2_behavior_tree/create_ros2_node.hpp"
+#include "ros2_behavior_tree/first_result_node.hpp"
 #include "ros2_behavior_tree/forever_node.hpp"
 #include "ros2_behavior_tree/recovery_node.hpp"
 #include "ros2_behavior_tree/repeat_until_node.hpp"
@@ -59,7 +60,8 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
   factory.registerNodeType<ros2_behavior_tree::ThrottleTickCountNode>("ThrottleTickCount");
 
   // Control nodes
-  factory.registerNodeType<ros2_behavior_tree::RecoveryNode>("RecoveryNode");
+  factory.registerNodeType<ros2_behavior_tree::FirstResultNode>("FirstResult");
+  factory.registerNodeType<ros2_behavior_tree::RecoveryNode>("RecoveryNode");	// TODO: ::Recovery not RecoveryNode
 }
 
 #define ANSI_COLOR_RESET    "\x1b[0m"

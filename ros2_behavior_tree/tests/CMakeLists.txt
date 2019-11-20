@@ -2,6 +2,7 @@ include_directories(include)
 
 ament_add_gtest(test_ros2_behavior_tree
   test_async_wait.cpp
+  test_first_result.cpp
   test_forever.cpp
   test_recovery.cpp
   test_repeat_until.cpp

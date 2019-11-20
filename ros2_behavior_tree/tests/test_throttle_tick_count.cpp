@@ -157,7 +157,7 @@ TEST_F(ThrottleTickCountWithStubAction, WaitForDurationWithFailure)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(ThrottleTickCountWithStubAction, CheckClockResetOnSuccess)
+TEST_F(ThrottleTickCountWithStubAction, SuccessAfterRunning)
 {
   // If the child returns RUNNING, the root should return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
@@ -166,23 +166,27 @@ TEST_F(ThrottleTickCountWithStubAction, CheckClockResetOnSuccess)
   ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 
-  // The Throttle node won't fire until the child returns SUCCESS or FAILURE
-  // and the period has expired
-
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  // If the child has started, it should continue ticking until a result
   child_action_->set_return_value(BT::NodeStatus::SUCCESS);
-
   status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
   ASSERT_EQ(root_->status(), BT::NodeStatus::SUCCESS);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
+}
 
-  // Since the period will not have expired again yet, the parent
-  // should still be running
-  child_action_->set_return_value(BT::NodeStatus::SUCCESS);
-
-  status = root_->executeTick();
+TEST_F(ThrottleTickCountWithStubAction, FailureAfterRunning)
+{
+  // If the child returns RUNNING, the root should return RUNNING
+  child_action_->set_return_value(BT::NodeStatus::RUNNING);
+  auto status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::RUNNING);
   ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
+
+  // If the child has started, it should continue ticking until a result
+  child_action_->set_return_value(BT::NodeStatus::FAILURE);
+  status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::FAILURE);
+  ASSERT_EQ(root_->status(), BT::NodeStatus::FAILURE);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }

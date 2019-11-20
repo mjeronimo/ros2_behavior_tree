@@ -75,7 +75,7 @@ private:
     auto seconds = std::chrono::duration_cast<float_seconds>(elapsed);
 
     // If we've reached or exceeded the specified period, execute the child node
-    if (first_time || seconds.count() >= period_) {
+    if (first_time || (status() == BT::NodeStatus::RUNNING) || seconds.count() >= period_) {
       first_time = false;
       auto child_state = child_node_->executeTick();
 

@@ -6,7 +6,7 @@ ament_add_gtest(test_ros2_behavior_tree
   test_forever.cpp
   test_recovery.cpp
   test_repeat_until.cpp
-  test_ros2_action.cpp
+  test_ros2_action_client.cpp
   test_ros2_service_client.cpp
   test_throttle_tick_count.cpp
 )

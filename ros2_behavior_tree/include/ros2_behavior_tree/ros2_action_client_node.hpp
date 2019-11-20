@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROS2_BEHAVIOR_TREE__ROS2_ACTION_NODE_HPP_
-#define ROS2_BEHAVIOR_TREE__ROS2_ACTION_NODE_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__ROS2_ACTION_CLIENT_NODE_HPP_
+#define ROS2_BEHAVIOR_TREE__ROS2_ACTION_CLIENT_NODE_HPP_
 
 #include <memory>
 #include <string>
@@ -26,80 +26,79 @@ namespace ros2_behavior_tree
 {
 
 template<class ActionT>
-class ROS2ActionNode : public BT::CoroActionNode
+class ROS2ActionClientNode : public BT::CoroActionNode
 {
 public:
-  ROS2ActionNode(
-    const std::string & action_name,
-    const BT::NodeConfiguration & conf)
-  : BT::CoroActionNode(action_name, conf), action_name_(action_name)
+  ROS2ActionClientNode(const std::string & name, const BT::NodeConfiguration & config)
+  : BT::CoroActionNode(name, config)
   {
     // Initialize the input and output messages
     goal_ = typename ActionT::Goal();
     result_ = typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult();
-
-    // Get the required items from the blackboard
-    node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node");
-    server_timeout_ =
-      config().blackboard->get<std::chrono::milliseconds>("server_timeout");
-    getInput<std::chrono::milliseconds>("server_timeout", server_timeout_);
-
-    // Now that we have the ROS node to use, create the action client for this BT action
-    action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name_);
-
-    // Make sure the server is actually there before continuing
-    RCLCPP_INFO(node_->get_logger(), "Waiting for \"%s\" action server", action_name_.c_str());
-    action_client_->wait_for_action_server();
-
-    // Give the derive class a chance to do any initialization
-    RCLCPP_INFO(node_->get_logger(), "\"%s\" ROS2ActionNode initialized", action_name_.c_str());
   }
 
-  ROS2ActionNode() = delete;
+  ROS2ActionClientNode() = delete;
 
-  virtual ~ROS2ActionNode()
+  // Define the ports required by the ROS2ActionClient node
+  static BT::PortsList augment_basic_ports(BT::PortsList additional_ports)
   {
-  }
+    BT::PortsList basic_ports = {
+      BT::InputPort<std::string>("action_name", "The name of the action to call"),
+      BT::InputPort<std::chrono::milliseconds>("wait_timeout",
+        "The timeout value, in milliseconds, to use when waiting for the service"),
+      BT::InputPort<std::chrono::milliseconds>("call_timeout",
+        "The timeout value, in milliseconds, to use when calling the service"),
+      BT::InputPort<std::shared_ptr<rclcpp::Node>>("client_node",
+        "The (non-spinning) client node to use when making service calls")
+    };
 
-  // Any subclass of ROS2ActionNode that accepts parameters must provide a providedPorts method
-  // and call providedBasicPorts in it.
-  static BT::PortsList providedBasicPorts(BT::PortsList addition)
-  {
-    BT::PortsList basic_ports = {BT::InputPort<std::chrono::milliseconds>("server_timeout")};
-    basic_ports.insert(addition.begin(), addition.end());
+    basic_ports.insert(additional_ports.begin(), additional_ports.end());
     return basic_ports;
   }
 
+  // Any subclass of ROS2ActionClientNode that defines additional ports must then define
+  // its own providedPorts method and call augment_basic_ports to add the subclass's ports
+  // to the required basic ports
   static BT::PortsList providedPorts()
   {
-    return providedBasicPorts({});
+    return augment_basic_ports({});
   }
 
-  // Derived classes can override any of the following methods to hook into the
-  // processing for the action: on_tick, on_server_timeout, and on_success
-
-  // Could do dynamic checks, such as getting updates to values on the blackboard
-  virtual void on_tick()
-  {
-  }
-
-  // There can be many loop iterations per tick. Any opportunity to do something after
-  // a timeout waiting for a result that hasn't been received yet
-  virtual void on_server_timeout()
-  {
-  }
-
-  // Called upon successful completion of the action. A derived class can override this
-  // method to put a value on the blackboard, for example
-  virtual void on_success()
-  {
-  }
+  // A derived class the defines input and/or output ports can override these methods
+  // to get/set the ports
+  virtual void get_input_ports() {}
+  virtual void set_output_ports() {}
 
   // The main override required by a BT action
   BT::NodeStatus tick() override
   {
-    on_tick();
+    if (!getInput("action_name", action_name_)) {
+      throw BT::RuntimeError("Missing parameter [action_name] in ROS2ServiceClientNode");
+    }
 
+    if (!getInput<std::chrono::milliseconds>("wait_timeout", wait_timeout_)) {
+      throw BT::RuntimeError("Missing parameter [wait_timeout] in ROS2ServiceClientNode");
+    }
+
+    if (!getInput<std::chrono::milliseconds>("call_timeout", call_timeout_)) {
+      throw BT::RuntimeError("Missing parameter [call_timeout] in ROS2ServiceClientNode");
+    }
+
+    if (!getInput<std::shared_ptr<rclcpp::Node>>("client_node", client_node_)) {
+      throw BT::RuntimeError("Missing parameter [client_node] in ROS2ServiceClientNode");
+    }
+
+    get_input_ports();
+
+	if (action_client_ == nullptr) {
+      action_client_ = rclcpp_action::create_client<ActionT>(client_node_, action_name_);
+    }
+
+    // Make sure the server is actually there before continuing
+    RCLCPP_INFO(client_node_->get_logger(), "Waiting for \"%s\" action server", action_name_.c_str());
+    action_client_->wait_for_action_server();
+
+#if 0
     // Enable result awareness by providing an empty lambda function
     auto send_goal_options = typename rclcpp_action::Client<ActionT>::SendGoalOptions();
     send_goal_options.result_callback = [](auto) {};
@@ -122,6 +121,8 @@ new_goal_received:
     do {
       rc = rclcpp::spin_until_future_complete(node_, future_result, server_timeout_);
       if (rc == rclcpp::executor::FutureReturnCode::TIMEOUT) {
+
+#if 0
         on_server_timeout();
 
         // We can handle a new goal if we're still executing
@@ -132,6 +133,7 @@ new_goal_received:
           goal_updated_ = false;
           goto new_goal_received;
         }
+#endif
 
         // Yield to any other CoroActionNodes (coroutines)
         setStatusRunningAndYield();
@@ -141,21 +143,20 @@ new_goal_received:
     result_ = future_result.get();
     switch (result_.code) {
       case rclcpp_action::ResultCode::SUCCEEDED:
-        on_success();
-        setStatus(BT::NodeStatus::IDLE);
+		set_output_ports();
         return BT::NodeStatus::SUCCESS;
 
       case rclcpp_action::ResultCode::ABORTED:
-        setStatus(BT::NodeStatus::IDLE);
         return BT::NodeStatus::FAILURE;
 
       case rclcpp_action::ResultCode::CANCELED:
-        setStatus(BT::NodeStatus::IDLE);
         return BT::NodeStatus::SUCCESS;
 
       default:
-        throw std::logic_error("ROS2ActionNode::Tick: invalid status value");
+        throw std::logic_error("ROS2ActionClientNode::Tick: invalid status value");
     }
+#endif
+	return BT::NodeStatus::SUCCESS;
   }
 
   // The other (optional) override required by a BT action. In this case, we
@@ -164,10 +165,10 @@ new_goal_received:
   {
     if (should_cancel_goal()) {
       auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
-      if (rclcpp::spin_until_future_complete(node_, future_cancel) !=
+      if (rclcpp::spin_until_future_complete(client_node_, future_cancel) !=
         rclcpp::executor::FutureReturnCode::SUCCESS)
       {
-        RCLCPP_ERROR(node_->get_logger(),
+        RCLCPP_ERROR(client_node_->get_logger(),
           "Failed to cancel action server for %s", action_name_.c_str());
       }
     }
@@ -183,7 +184,7 @@ protected:
       return false;
     }
 
-    rclcpp::spin_some(node_);
+    rclcpp::spin_some(client_node_);
     auto status = goal_handle_->get_status();
 
     // Check if the goal is still executing
@@ -196,24 +197,24 @@ protected:
     return false;
   }
 
-  const std::string action_name_;
+
+  // bool goal_updated_{false};
+
   typename std::shared_ptr<rclcpp_action::Client<ActionT>> action_client_;
-
-  // All ROS2 actions have a goal and a result
-  typename ActionT::Goal goal_;
-  typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult result_;
-
-  bool goal_updated_{false};
   typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle_;
 
-  // The node that will be used for any ROS operations
-  rclcpp::Node::SharedPtr node_;
+  // The (non-spinning) node to use when calling the service
+  rclcpp::Node::SharedPtr client_node_;
 
-  // The timeout value while to use in the tick loop while waiting for
-  // a result from the server
-  std::chrono::milliseconds server_timeout_;
+  std::string action_name_;
+
+  std::chrono::milliseconds wait_timeout_;
+  std::chrono::milliseconds call_timeout_;
+
+  typename ActionT::Goal goal_;
+  typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult result_;
 };
 
 }  // namespace ros2_behavior_tree
 
-#endif  // ROS2_BEHAVIOR_TREE__ROS2_ACTION_NODE_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__ROS2_ACTION_CLIENT_NODE_HPP_

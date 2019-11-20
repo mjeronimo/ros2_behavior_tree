@@ -18,9 +18,9 @@
 #include "behaviortree_cpp/behavior_tree.h"
 #include "ros2_behavior_tree/async_wait_node.hpp"
 
-struct AsyncWaitWithStubAction : testing::Test
+struct TestAsyncWaitNode : testing::Test
 {
-  AsyncWaitWithStubAction()
+  TestAsyncWaitNode()
   {
     // Create a blackboard which will be shared among the nodes
     blackboard_ = BT::Blackboard::create();
@@ -34,7 +34,7 @@ struct AsyncWaitWithStubAction : testing::Test
     async_wait_node_ = std::make_unique<ros2_behavior_tree::AsyncWaitNode>("async_wait", config);
   }
 
-  ~AsyncWaitWithStubAction()
+  ~TestAsyncWaitNode()
   {
     BT::haltAllActions(async_wait_node_.get());
   }
@@ -44,7 +44,7 @@ struct AsyncWaitWithStubAction : testing::Test
 };
 
 // If the wait duration hasn't been exceeded, the node should return RUNNING
-TEST_F(AsyncWaitWithStubAction, BeforeExpiry)
+TEST_F(TestAsyncWaitNode, BeforeExpiry)
 {
   blackboard_->set("msec", "100");
 
@@ -54,7 +54,7 @@ TEST_F(AsyncWaitWithStubAction, BeforeExpiry)
 }
 
 // If the wait duration has been exceeded, the node should return SUCCESS
-TEST_F(AsyncWaitWithStubAction, AfterExpiry)
+TEST_F(TestAsyncWaitNode, AfterExpiry)
 {
   blackboard_->set("msec", "100");
 
@@ -74,7 +74,7 @@ TEST_F(AsyncWaitWithStubAction, AfterExpiry)
 }
 
 // Halting the AsyncWaitNode should cause it to go IDLE
-TEST_F(AsyncWaitWithStubAction, IdleUponHalt)
+TEST_F(TestAsyncWaitNode, IdleUponHalt)
 {
   blackboard_->set("msec", "100");
 

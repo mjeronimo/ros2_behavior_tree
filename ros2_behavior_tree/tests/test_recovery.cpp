@@ -20,9 +20,9 @@
 #include "ros2_behavior_tree/recovery_node.hpp"
 #include "stub_action_test_node.hpp"
 
-struct RecoveryWithStubActions : testing::Test
+struct TestRecoveryNode : testing::Test
 {
-  RecoveryWithStubActions()
+  TestRecoveryNode()
   {
     blackboard_ = BT::Blackboard::create();
 
@@ -42,7 +42,7 @@ struct RecoveryWithStubActions : testing::Test
     root_->addChild(recovery_action_.get());
   }
 
-  ~RecoveryWithStubActions()
+  ~TestRecoveryNode()
   {
     BT::haltAllActions(root_.get());
   }
@@ -54,7 +54,7 @@ struct RecoveryWithStubActions : testing::Test
   BT::Blackboard::Ptr blackboard_;
 };
 
-TEST_F(RecoveryWithStubActions, ChildReturnsSuccess)
+TEST_F(TestRecoveryNode, ChildReturnsSuccess)
 {
   // If the child returns SUCCESS, the root should return SUCCESS
   blackboard_->set("number_of_retries", "1");
@@ -72,7 +72,7 @@ TEST_F(RecoveryWithStubActions, ChildReturnsSuccess)
   ASSERT_EQ(recovery_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(RecoveryWithStubActions, ChildReturnsRunning)
+TEST_F(TestRecoveryNode, ChildReturnsRunning)
 {
   // If the child returns RUNNING, the root should return RUNNING
   blackboard_->set("number_of_retries", "1");
@@ -91,7 +91,7 @@ TEST_F(RecoveryWithStubActions, ChildReturnsRunning)
   ASSERT_EQ(recovery_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(RecoveryWithStubActions, ChildReturnsFailure)
+TEST_F(TestRecoveryNode, ChildReturnsFailure)
 {
   // If the child action fails each time, the recovery action
   // and the original action will be invoked up to the # of retries
@@ -112,7 +112,7 @@ TEST_F(RecoveryWithStubActions, ChildReturnsFailure)
   ASSERT_EQ(recovery_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(RecoveryWithStubActions, RecoveryReturnsFailure)
+TEST_F(TestRecoveryNode, RecoveryReturnsFailure)
 {
   // If the recovery action returns FAILURE, the control node will return FAILURE
   blackboard_->set("number_of_retries", "3");
@@ -128,7 +128,7 @@ TEST_F(RecoveryWithStubActions, RecoveryReturnsFailure)
   ASSERT_EQ(recovery_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(RecoveryWithStubActions, RerunChildReturnsFailure)
+TEST_F(TestRecoveryNode, RerunChildReturnsFailure)
 {
   // Try a test case so that we can then reset and try again
   blackboard_->set("number_of_retries", "2");

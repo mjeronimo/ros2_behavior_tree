@@ -19,9 +19,9 @@
 #include "ros2_behavior_tree/throttle_tick_count_node.hpp"
 #include "stub_action_test_node.hpp"
 
-struct ThrottleTickCountWithStubAction : testing::Test
+struct TestThrottleTickCountNode : testing::Test
 {
-  ThrottleTickCountWithStubAction()
+  TestThrottleTickCountNode()
   {
     // Create a blackboard which will be shared among the nodes
     blackboard_ = BT::Blackboard::create();
@@ -46,7 +46,7 @@ struct ThrottleTickCountWithStubAction : testing::Test
     root_->setChild(child_action_.get());
   }
 
-  ~ThrottleTickCountWithStubAction()
+  ~TestThrottleTickCountNode()
   {
     BT::haltAllActions(root_.get());
   }
@@ -57,7 +57,7 @@ struct ThrottleTickCountWithStubAction : testing::Test
   BT::Blackboard::Ptr blackboard_;
 };
 
-TEST_F(ThrottleTickCountWithStubAction, FirstTimeSuccess)
+TEST_F(TestThrottleTickCountNode, FirstTimeSuccess)
 {
   // If the child immediately returns SUCCESS, the ThrottleTickCount
   // decorator allows it to pass
@@ -71,7 +71,7 @@ TEST_F(ThrottleTickCountWithStubAction, FirstTimeSuccess)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(ThrottleTickCountWithStubAction, FailureUponFailure)
+TEST_F(TestThrottleTickCountNode, FailureUponFailure)
 {
   // If the child returns FAILURE, the parent should also return FAILURE
   child_action_->set_return_value(BT::NodeStatus::FAILURE);
@@ -84,7 +84,7 @@ TEST_F(ThrottleTickCountWithStubAction, FailureUponFailure)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(ThrottleTickCountWithStubAction, WaitForDurationWithRunning)
+TEST_F(TestThrottleTickCountNode, WaitForDurationWithRunning)
 {
   // If the child returns RUNNING, the root should return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
@@ -105,7 +105,7 @@ TEST_F(ThrottleTickCountWithStubAction, WaitForDurationWithRunning)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 }
 
-TEST_F(ThrottleTickCountWithStubAction, WaitForDurationWithSuccess)
+TEST_F(TestThrottleTickCountNode, WaitForDurationWithSuccess)
 {
   // If the child returns RUNNING, the root should return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
@@ -129,7 +129,7 @@ TEST_F(ThrottleTickCountWithStubAction, WaitForDurationWithSuccess)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(ThrottleTickCountWithStubAction, WaitForDurationWithFailure)
+TEST_F(TestThrottleTickCountNode, WaitForDurationWithFailure)
 {
   // If the child returns RUNNING, the root should return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
@@ -157,7 +157,7 @@ TEST_F(ThrottleTickCountWithStubAction, WaitForDurationWithFailure)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(ThrottleTickCountWithStubAction, SuccessAfterRunning)
+TEST_F(TestThrottleTickCountNode, SuccessAfterRunning)
 {
   // If the child returns RUNNING, the root should return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
@@ -174,7 +174,7 @@ TEST_F(ThrottleTickCountWithStubAction, SuccessAfterRunning)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(ThrottleTickCountWithStubAction, FailureAfterRunning)
+TEST_F(TestThrottleTickCountNode, FailureAfterRunning)
 {
   // If the child returns RUNNING, the root should return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);

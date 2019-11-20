@@ -33,12 +33,11 @@ public:
 
   BT::NodeStatus tick() override
   {
-    const unsigned children_count = children_nodes_.size();
+    const unsigned num_children = children_nodes_.size();
 
     setStatus(BT::NodeStatus::RUNNING);
 
-    // while (current_child_idx_ < children_count) {
-    for (current_child_idx_ = 0; current_child_idx_ < children_count; current_child_idx_++) {
+    for (current_child_idx_ = 0; current_child_idx_ < num_children; current_child_idx_++) {
       TreeNode * child_node = children_nodes_[current_child_idx_];
       const BT::NodeStatus child_status = child_node->executeTick();
 

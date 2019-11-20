@@ -56,9 +56,9 @@ public:
     return basic_ports;
   }
 
-  // Any subclass of ROS2ServiceClient that defines additional ports must then define its
-  // own providedPorts method and call augment_basic_ports to add the subclass's ports to
-  // the required basic ports
+  // Any subclass of ROS2ServiceClientNode that defines additional ports must then define
+  // its own providedPorts method and call augment_basic_ports to add the subclass's ports
+  // to the required basic ports
   static BT::PortsList providedPorts()
   {
     return augment_basic_ports({});

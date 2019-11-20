@@ -20,9 +20,9 @@
 #include "ros2_behavior_tree/repeat_until_node.hpp"
 #include "stub_action_test_node.hpp"
 
-struct RepeatUntilWithStubAction : testing::Test
+struct TestRepeatUntilNode : testing::Test
 {
-  RepeatUntilWithStubAction()
+  TestRepeatUntilNode()
   {
     // Create a blackboard which will be shared among the nodes
     blackboard_ = BT::Blackboard::create();
@@ -47,7 +47,7 @@ struct RepeatUntilWithStubAction : testing::Test
     root_->setChild(child_action_.get());
   }
 
-  ~RepeatUntilWithStubAction()
+  ~TestRepeatUntilNode()
   {
     BT::haltAllActions(root_.get());
   }
@@ -58,7 +58,7 @@ struct RepeatUntilWithStubAction : testing::Test
   BT::Blackboard::Ptr blackboard_;
 };
 
-TEST_F(RepeatUntilWithStubAction, RunningUponSuccess)
+TEST_F(TestRepeatUntilNode, RunningUponSuccess)
 {
   // If the child returns SUCCESS, the root should return RUNNING
   child_action_->set_return_value(BT::NodeStatus::SUCCESS);
@@ -70,7 +70,7 @@ TEST_F(RepeatUntilWithStubAction, RunningUponSuccess)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(RepeatUntilWithStubAction, RunningUponRunning)
+TEST_F(TestRepeatUntilNode, RunningUponRunning)
 {
   // If the child returns RUNNING, the root should return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
@@ -82,7 +82,7 @@ TEST_F(RepeatUntilWithStubAction, RunningUponRunning)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 }
 
-TEST_F(RepeatUntilWithStubAction, FailureUponFailure)
+TEST_F(TestRepeatUntilNode, FailureUponFailure)
 {
   // If the child returns FAILURE, the root should return FAILURE
   child_action_->set_return_value(BT::NodeStatus::FAILURE);
@@ -94,7 +94,7 @@ TEST_F(RepeatUntilWithStubAction, FailureUponFailure)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(RepeatUntilWithStubAction, HaltAfterRunning)
+TEST_F(TestRepeatUntilNode, HaltAfterRunning)
 {
   // If the nodes are halted after running, they should go IDLE
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
@@ -107,7 +107,7 @@ TEST_F(RepeatUntilWithStubAction, HaltAfterRunning)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(RepeatUntilWithStubAction, CheckValueOnBlackboard)
+TEST_F(TestRepeatUntilNode, CheckValueOnBlackboard)
 {
   // Start everything running
   child_action_->set_return_value(BT::NodeStatus::RUNNING);

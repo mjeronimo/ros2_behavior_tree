@@ -22,6 +22,7 @@
 #include "ros2_behavior_tree/forever_node.hpp"
 #include "ros2_behavior_tree/recovery_node.hpp"
 #include "ros2_behavior_tree/repeat_until_node.hpp"
+#include "ros2_behavior_tree/ros2_service_client_node.hpp"
 #include "ros2_behavior_tree/throttle_tick_count_node.hpp"
 
 BT_REGISTER_NODES(factory)

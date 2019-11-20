@@ -24,7 +24,7 @@
 #include "ros2_behavior_tree/ros2_service_client_node.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-struct ROS2ServiceTest : testing::Test
+struct TestROS2ServiceNode : testing::Test
 {
   static void SetUpTestCase()
   {
@@ -81,12 +81,12 @@ struct ROS2ServiceTest : testing::Test
   std::shared_ptr<rclcpp::Node> client_node_;
 };
 
-std::shared_ptr<AddTwoIntsServer> ROS2ServiceTest::service_node_;
-std::shared_ptr<ros2_behavior_tree::NodeThread> ROS2ServiceTest::service_node_thread_;
+std::shared_ptr<AddTwoIntsServer> TestROS2ServiceNode::service_node_;
+std::shared_ptr<ros2_behavior_tree::NodeThread> TestROS2ServiceNode::service_node_thread_;
 
 // Set a couple values on the blackboard, which will be picked up by the BT node's
 // input ports and tick the node, which will cause it to execute the service call
-TEST_F(ROS2ServiceTest, SimpleCall)
+TEST_F(TestROS2ServiceNode, SimpleCall)
 {
   // Set the specific input port values
   blackboard_->set("a", 33);
@@ -103,7 +103,7 @@ TEST_F(ROS2ServiceTest, SimpleCall)
 
 // Chain some calls to the AddTwoInts service, using the input and output ports
 // to ensure that the output of one call can be used as the input to another
-TEST_F(ROS2ServiceTest, ChainUsingXMLAndPorts)
+TEST_F(TestROS2ServiceNode, ChainUsingXMLAndPorts)
 {
   static const char * xml_text =
     R"(

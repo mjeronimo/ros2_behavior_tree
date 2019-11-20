@@ -17,6 +17,7 @@
 
 #include "ros2_behavior_tree/node_registrar.hpp"
 #include "add_two_ints_client.hpp"
+#include "fibonacci_client.hpp"
 
 BT_REGISTER_NODES(factory)
 {
@@ -30,6 +31,7 @@ void
 TestNodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
 {
   factory.registerNodeType<AddTwoIntsClient>("AddTwoInts");
+  factory.registerNodeType<FibonacciClient>("Fibonacci");
 }
 
 }  // namespace ros2_behavior_tree

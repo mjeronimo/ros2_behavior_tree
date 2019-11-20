@@ -14,11 +14,11 @@
 
 #include <gtest/gtest.h>
 
-struct ROS2ActionTest : testing::Test
+struct TestROS2ActionClientNode : testing::Test
 {
 };
 
-TEST_F(ROS2ActionTest, ConditionTrue)
+TEST_F(TestROS2ActionClientNode, ConditionTrue)
 {
   ASSERT_EQ(true, true);
 }

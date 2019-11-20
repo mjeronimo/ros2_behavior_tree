@@ -20,9 +20,9 @@
 #include "ros2_behavior_tree/first_result_node.hpp"
 #include "stub_action_test_node.hpp"
 
-struct FirstResultWithStubActions : testing::Test
+struct TestFirstResultNode : testing::Test
 {
-  FirstResultWithStubActions()
+  TestFirstResultNode()
   {
     blackboard_ = BT::Blackboard::create();
 
@@ -40,7 +40,7 @@ struct FirstResultWithStubActions : testing::Test
     root_->addChild(second_child_.get());
   }
 
-  ~FirstResultWithStubActions()
+  ~TestFirstResultNode()
   {
     BT::haltAllActions(root_.get());
   }
@@ -53,7 +53,7 @@ struct FirstResultWithStubActions : testing::Test
   BT::Blackboard::Ptr blackboard_;
 };
 
-TEST_F(FirstResultWithStubActions, FirstChildReturnsSuccess)
+TEST_F(TestFirstResultNode, FirstChildReturnsSuccess)
 {
   // If the child returns SUCCESS, the root should return SUCCESS
   first_child_->set_return_value(BT::NodeStatus::SUCCESS);
@@ -70,7 +70,7 @@ TEST_F(FirstResultWithStubActions, FirstChildReturnsSuccess)
   ASSERT_EQ(second_child_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(FirstResultWithStubActions, FirstChildReturnsFailure)
+TEST_F(TestFirstResultNode, FirstChildReturnsFailure)
 {
   // If the child returns FAILURE, the root should return FAILURE
   first_child_->set_return_value(BT::NodeStatus::FAILURE);
@@ -87,7 +87,7 @@ TEST_F(FirstResultWithStubActions, FirstChildReturnsFailure)
   ASSERT_EQ(second_child_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(FirstResultWithStubActions, FirstChildReturnsRunningSecondSuccess)
+TEST_F(TestFirstResultNode, FirstChildReturnsRunningSecondSuccess)
 {
   // If the child returns RUNNING, the second child should also be ticked
   // In this case, it also returns SUCCESS, so the root should return SUCCESS
@@ -105,7 +105,7 @@ TEST_F(FirstResultWithStubActions, FirstChildReturnsRunningSecondSuccess)
   ASSERT_EQ(second_child_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(FirstResultWithStubActions, FirstChildReturnsRunningSecondFailure)
+TEST_F(TestFirstResultNode, FirstChildReturnsRunningSecondFailure)
 {
   // If the child returns RUNNING, the second child should also be ticked
   // In this case, it also returns FAILURE, so the root should return FAILURE
@@ -123,7 +123,7 @@ TEST_F(FirstResultWithStubActions, FirstChildReturnsRunningSecondFailure)
   ASSERT_EQ(second_child_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(FirstResultWithStubActions, FirstChildReturnsRunningSecondRunning)
+TEST_F(TestFirstResultNode, FirstChildReturnsRunningSecondRunning)
 {
   // If the child returns RUNNING, the second child should also be ticked
   // In this case, it also returns RUNNING, so the root should return RUNNING

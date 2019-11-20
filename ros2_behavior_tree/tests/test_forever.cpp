@@ -20,9 +20,9 @@
 #include "ros2_behavior_tree/forever_node.hpp"
 #include "stub_action_test_node.hpp"
 
-struct ForeverWithStubAction : testing::Test
+struct TestForeverNode : testing::Test
 {
-  ForeverWithStubAction()
+  TestForeverNode()
   {
     BT::NodeConfiguration config;
 
@@ -31,13 +31,13 @@ struct ForeverWithStubAction : testing::Test
     BT::assignDefaultRemapping<StubActionTestNode>(config);
     child_action_ = std::make_unique<StubActionTestNode>("child", config);
 
-    root_ = std::make_unique<ros2_behavior_tree::ForeverNode>("repeat_until");
+    root_ = std::make_unique<ros2_behavior_tree::ForeverNode>("forever");
 
     // Create the tree structure
     root_->setChild(child_action_.get());
   }
 
-  ~ForeverWithStubAction()
+  ~TestForeverNode()
   {
     BT::haltAllActions(root_.get());
   }
@@ -48,7 +48,7 @@ struct ForeverWithStubAction : testing::Test
   BT::Blackboard::Ptr blackboard_;
 };
 
-TEST_F(ForeverWithStubAction, ChildReturnsSuccess)
+TEST_F(TestForeverNode, ChildReturnsSuccess)
 {
   // If the child returns SUCCESS, the root should return RUNNING
   child_action_->set_return_value(BT::NodeStatus::SUCCESS);
@@ -60,7 +60,7 @@ TEST_F(ForeverWithStubAction, ChildReturnsSuccess)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(ForeverWithStubAction, ChildReturnsRunning)
+TEST_F(TestForeverNode, ChildReturnsRunning)
 {
   // If the child returns RUNNING, the root should return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
@@ -72,7 +72,7 @@ TEST_F(ForeverWithStubAction, ChildReturnsRunning)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 }
 
-TEST_F(ForeverWithStubAction, ChildReturnsFailure)
+TEST_F(TestForeverNode, ChildReturnsFailure)
 {
   // If the child returns FAILURE, the root should return FAILURE
   child_action_->set_return_value(BT::NodeStatus::FAILURE);
@@ -84,7 +84,7 @@ TEST_F(ForeverWithStubAction, ChildReturnsFailure)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(ForeverWithStubAction, IdleAfterHalt)
+TEST_F(TestForeverNode, IdleAfterHalt)
 {
   // If the child returns RUNNING, the root should return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);

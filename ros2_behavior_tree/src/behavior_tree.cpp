@@ -18,7 +18,7 @@
 #include <string>
 #include <vector>
 
-#include "behaviortree_cpp/xml_parsing.h"
+#include "behaviortree_cpp_v3/xml_parsing.h"
 #include "rclcpp/rclcpp.hpp"
 
 namespace ros2_behavior_tree

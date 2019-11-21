@@ -19,7 +19,7 @@
 #include <string>
 #include <memory>
 
-#include "behaviortree_cpp/action_node.h"
+#include "behaviortree_cpp_v3/action_node.h"
 #include "rclcpp/rclcpp.hpp"
 #include "ros2_behavior_tree/node_thread.hpp"
 

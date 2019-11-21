@@ -18,7 +18,7 @@
 #include <memory>
 #include <string>
 
-#include "behaviortree_cpp/action_node.h"
+#include "behaviortree_cpp_v3/action_node.h"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 
@@ -95,35 +95,25 @@ public:
     }
 
     // Make sure the server is actually there before continuing
-    RCLCPP_INFO(client_node_->get_logger(), "Waiting for \"%s\" action server", action_name_.c_str());
+    // TODO(mjeronimo): Use the wait timeout
     action_client_->wait_for_action_server();
-
-    std::cerr << "1\n";
 
     // Enable result awareness by providing an empty lambda function
     auto send_goal_options = typename rclcpp_action::Client<ActionT>::SendGoalOptions();
     send_goal_options.result_callback = [](auto) {};
-
-    std::cerr << "2\n";
 
 // new_goal_received:
     auto future_goal_handle = action_client_->async_send_goal(goal_, send_goal_options);
     if (rclcpp::spin_until_future_complete(client_node_, future_goal_handle) !=
       rclcpp::executor::FutureReturnCode::SUCCESS)
     {
-      std::cerr << "Send goal failed\n";
       throw std::runtime_error("send_goal failed");
     }
 
-    std::cerr << "3\n";
-
     goal_handle_ = future_goal_handle.get();
     if (!goal_handle_) {
-      std::cerr << "Goal rejected by the action server\n";
       throw std::runtime_error("Goal was rejected by the action server");
     }
-
-    std::cerr << "4\n";
 
     auto future_result = goal_handle_->async_result();
     rclcpp::executor::FutureReturnCode rc;
@@ -147,25 +137,19 @@ public:
       }
     } while (rc != rclcpp::executor::FutureReturnCode::SUCCESS);
 
-    std::cerr << "5\n";
-
     result_ = future_result.get();
     switch (result_.code) {
       case rclcpp_action::ResultCode::SUCCEEDED:
-      printf("SUCCEEDED\n");
         write_output_ports();
         return BT::NodeStatus::SUCCESS;
 
       case rclcpp_action::ResultCode::ABORTED:
-      printf("ABORTED\n");
         return BT::NodeStatus::FAILURE;
 
       case rclcpp_action::ResultCode::CANCELED:
-      printf("CANCELED\n");
         return BT::NodeStatus::SUCCESS;
 
       default:
-      printf("default\n");
         throw std::logic_error("ROS2ActionClientNode::tick: invalid status value");
     }
   }

@@ -18,7 +18,7 @@
 #include <chrono>
 #include <string>
 
-#include "behaviortree_cpp/action_node.h"
+#include "behaviortree_cpp_v3/action_node.h"
 
 namespace ros2_behavior_tree
 {
@@ -48,7 +48,8 @@ public:
   // An AsyncActionNode must override the halt method
   void halt() override
   {
-    stopAndJoinThread();
+    // TODO(mjeronimo): should break out of the wait in the tick() method
+    // stopAndJoinThread();
     setStatus(BT::NodeStatus::IDLE);
   }
 

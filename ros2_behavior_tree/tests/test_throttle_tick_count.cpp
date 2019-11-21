@@ -15,7 +15,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-#include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp_v3/behavior_tree.h"
 #include "ros2_behavior_tree/throttle_tick_count_node.hpp"
 #include "stub_action_test_node.hpp"
 

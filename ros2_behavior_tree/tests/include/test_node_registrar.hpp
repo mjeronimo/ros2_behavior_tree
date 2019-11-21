@@ -15,8 +15,8 @@
 #ifndef TEST_NODE_REGISTRAR_HPP_
 #define TEST_NODE_REGISTRAR_HPP_
 
-#include "behaviortree_cpp/behavior_tree.h"
-#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp_v3/behavior_tree.h"
+#include "behaviortree_cpp_v3/bt_factory.h"
 
 namespace ros2_behavior_tree
 {

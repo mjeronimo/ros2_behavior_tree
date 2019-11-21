@@ -89,8 +89,9 @@ TEST_F(TestROS2ActionClientNode, SimpleCall)
   blackboard_->set<std::shared_ptr<rclcpp::Node>>("client_node", client_node_);  // NOLINT
   blackboard_->set("n", "10");
 
-  // Execute the Behavior Tree, the result is in the "response" output port
-  fibonacci_client_->executeTick();
+  // Manually run the node to completion
+  while (fibonacci_client_->executeTick() == BT::NodeStatus::RUNNING)
+    ;
 
   int sequence = 0;
   auto rc = blackboard_->get("sequence", sequence);
@@ -107,6 +108,7 @@ TEST_F(TestROS2ActionClientNode, CallUsingXML)
         <Sequence name="root">
             <CreateROS2Node node_name="client_node2" spin="false" node_handle="{client_node}"/>
             <Fibonacci action_name="fibonacci" wait_timeout="1000" call_timeout="1000" client_node="{client_node}" n="10" sequence="{sequence}"/>
+            <Fibonacci action_name="fibonacci" wait_timeout="1000" call_timeout="1000" client_node="{client_node}" n="11" sequence="{sequence2}"/>
         </Sequence>
      </BehaviorTree>
  </root>

@@ -15,7 +15,7 @@
 #ifndef ROS2_BEHAVIOR_TREE__BT_CONVERSIONS_HPP_
 #define ROS2_BEHAVIOR_TREE__BT_CONVERSIONS_HPP_
 
-#include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp_v3/behavior_tree.h"
 
 // The follow templates are required when using these types as parameters
 // in our BT XML files. They parse the strings in the XML into their corresponding

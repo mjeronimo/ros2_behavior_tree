@@ -35,13 +35,6 @@ public:
   RepeatUntilNode(const std::string & name, const BT::NodeConfiguration & config)
   : BT::DecoratorNode(name, config), read_parameters_from_ports_(true)
   {
-    if (!getInput<std::string>("key", key_)) {
-      throw BT::RuntimeError("Missing parameter [key] in RepeatUntil node");
-    }
-
-    if (!getInput<bool>("value", target_value_)) {
-      throw BT::RuntimeError("Missing parameter [value] in RepeatUntil node");
-    }
   }
 
   static BT::PortsList providedPorts()
@@ -49,20 +42,21 @@ public:
     return {
       BT::InputPort<std::string>("key", "The name of the key to use"),
       BT::InputPort<bool>("value", "The target value to match when reading the key"),
-      BT::InputPort<bool>("current_value", "The current value")
     };
   }
 
 private:
   BT::NodeStatus tick() override
   {
-#if 0
     if (read_parameters_from_ports_) {
-      if (!getInput<bool>("current_value", current_value_)) {
+      if (!getInput<std::string>("key", key_)) {
+        throw BT::RuntimeError("Missing parameter [key] in RepeatUntil node");
+      }
+
+      if (!getInput<bool>("value", target_value_)) {
         throw BT::RuntimeError("Missing parameter [value] in RepeatUntil node");
       }
     }
-#endif
 
     setStatus(BT::NodeStatus::RUNNING);
 
@@ -72,9 +66,10 @@ private:
       return BT::NodeStatus::FAILURE;
     }
 
-    // TODO(mjeronimo): switch to the input port
     bool current_value = false;
-    config().blackboard->get<bool>(key_, current_value);
+    if (!config().blackboard->get<bool>(key_, current_value)) {
+      return BT::NodeStatus::RUNNING;
+    }
 
     // We're waiting for the value on the blackboard to match the target
     return (current_value == target_value_) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::RUNNING;

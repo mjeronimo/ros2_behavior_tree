@@ -30,8 +30,6 @@ struct TestRepeatUntilNode : testing::Test
     // Create a node configurand and populate the blackboard
     BT::NodeConfiguration config;
     config.blackboard = blackboard_;
-    blackboard_->set("key", "target_key");
-    blackboard_->set("value", "true");
 
     // Update the configuration with the child node's ports and tell the child node
     // to use this configuration
@@ -60,7 +58,11 @@ struct TestRepeatUntilNode : testing::Test
 
 TEST_F(TestRepeatUntilNode, RunningUponSuccess)
 {
-  // If the child returns SUCCESS, the root should return RUNNING
+  blackboard_->set("key", "target_key");
+  blackboard_->set<bool>("value", true);
+
+  // Without the target value set on the blackboard, if the child
+  // returns SUCCESS, the root should return RUNNING
   child_action_->set_return_value(BT::NodeStatus::SUCCESS);
   auto status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::RUNNING);
@@ -72,7 +74,11 @@ TEST_F(TestRepeatUntilNode, RunningUponSuccess)
 
 TEST_F(TestRepeatUntilNode, RunningUponRunning)
 {
-  // If the child returns RUNNING, the root should return RUNNING
+  blackboard_->set("key", "target_key");
+  blackboard_->set<bool>("value", true);
+
+  // Without the target value set on the blackboard, if the child
+  // returns RUNNING, the root should return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
   auto status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::RUNNING);
@@ -84,7 +90,10 @@ TEST_F(TestRepeatUntilNode, RunningUponRunning)
 
 TEST_F(TestRepeatUntilNode, FailureUponFailure)
 {
-  // If the child returns FAILURE, the root should return FAILURE
+  blackboard_->set("key", "target_key");
+  blackboard_->set<bool>("value", true);
+
+  // Now matter what, if the child returns FAILURE, the root should return FAILURE
   child_action_->set_return_value(BT::NodeStatus::FAILURE);
   auto status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::FAILURE);
@@ -96,6 +105,9 @@ TEST_F(TestRepeatUntilNode, FailureUponFailure)
 
 TEST_F(TestRepeatUntilNode, HaltAfterRunning)
 {
+  blackboard_->set("key", "target_key");
+  blackboard_->set<bool>("value", true);
+
   // If the nodes are halted after running, they should go IDLE
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
   auto status = root_->executeTick();
@@ -107,8 +119,53 @@ TEST_F(TestRepeatUntilNode, HaltAfterRunning)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(TestRepeatUntilNode, CheckValueOnBlackboard)
+TEST_F(TestRepeatUntilNode, ValueOnBlackboardSuccess)
 {
+  blackboard_->set("key", "target_key");
+  blackboard_->set<bool>("value", true);
+
+  // If the child returns SUCCESS...
+  child_action_->set_return_value(BT::NodeStatus::SUCCESS);
+
+  // and the target value is on the blackboard...
+  blackboard_->set("key", "target_key");
+  blackboard_->set<bool>("value", true);
+  blackboard_->set<bool>("target_key", true);
+
+  auto status = root_->executeTick();
+
+  // the parent should return SUCCESS
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(root_->status(), BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
+}
+
+TEST_F(TestRepeatUntilNode, ValueOnBlackboardFailure)
+{
+  blackboard_->set("key", "target_key");
+  blackboard_->set<bool>("value", true);
+
+  // If the child returns FAILURE...
+  child_action_->set_return_value(BT::NodeStatus::FAILURE);
+
+  // and the target value is on the blackboard...
+  blackboard_->set("key", "target_key");
+  blackboard_->set<bool>("value", true);
+  blackboard_->set<bool>("target_key", true);
+
+  auto status = root_->executeTick();
+
+  // the parent should propagate the FAILURE
+  ASSERT_EQ(status, BT::NodeStatus::FAILURE);
+  ASSERT_EQ(root_->status(), BT::NodeStatus::FAILURE);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
+}
+
+TEST_F(TestRepeatUntilNode, ToggleTest)
+{
+  blackboard_->set("key", "target_key");
+  blackboard_->set<bool>("value", true);
+
   // Start everything running
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
   auto status = root_->executeTick();
@@ -116,7 +173,7 @@ TEST_F(TestRepeatUntilNode, CheckValueOnBlackboard)
   ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 
-  // Set the flag on the blackboard
+  // Then set the flag on the blackboard
   std::string key_name;
   blackboard_->get<std::string>("key", key_name);
   blackboard_->set<bool>(key_name, true);
@@ -128,14 +185,14 @@ TEST_F(TestRepeatUntilNode, CheckValueOnBlackboard)
   ASSERT_EQ(root_->status(), BT::NodeStatus::SUCCESS);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 
-  // Turn off the flag and both should be RUNNING again
+  // Turn off the flag, tick again, and both should be RUNNING
   blackboard_->set<bool>(key_name, false);  // NOLINT
   status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::RUNNING);
   ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 
-  // Turn it on one more time and check
+  // Turn the flag back on and check once more
   blackboard_->set<bool>(key_name, true);  // NOLINT
   status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);

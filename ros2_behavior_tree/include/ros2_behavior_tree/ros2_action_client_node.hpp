@@ -68,6 +68,7 @@ public:
   // to get/set the ports
   virtual void read_input_ports() {}
   virtual void write_output_ports() {}
+  virtual bool new_goal_received() {return false;}
 
   // The main override required by a BT action
   BT::NodeStatus tick() override
@@ -105,7 +106,7 @@ public:
     auto send_goal_options = typename rclcpp_action::Client<ActionT>::SendGoalOptions();
     send_goal_options.result_callback = [](auto) {};
 
-// new_goal_received:
+new_goal_received:
     auto future_goal_handle = action_client_->async_send_goal(goal_, send_goal_options);
     if (rclcpp::spin_until_future_complete(client_node_, future_goal_handle) !=
       rclcpp::executor::FutureReturnCode::SUCCESS)
@@ -123,18 +124,18 @@ public:
     do {
       rc = rclcpp::spin_until_future_complete(client_node_, future_result, call_timeout_);
       if (rc == rclcpp::executor::FutureReturnCode::TIMEOUT) {
-#if 0
-        on_server_timeout();
+        if (new_goal_received()) {
+          // If we're received a new goal, cancel the current goal and start a new one
+          auto future = action_client_->async_cancel_goal(goal_handle_);
+          if (rclcpp::spin_until_future_complete(client_node_, future) !=
+            rclcpp::executor::FutureReturnCode::SUCCESS)
+          {
+            RCLCPP_WARN(client_node_->get_logger(), "failed to cancel goal");
+          }
 
-        // We can handle a new goal if we're still executing
-        auto status = goal_handle_->get_status();
-        if (goal_updated_ && (status == action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
-          status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED ))
-        {
-          goal_updated_ = false;
           goto new_goal_received;
         }
-#endif
+
         // Yield to any other CoroActionNodes (coroutines)
         setStatusRunningAndYield();
       }

@@ -28,7 +28,7 @@ struct TestRecoveryNode : testing::Test
 
     BT::NodeConfiguration config;
     config.blackboard = blackboard_;
-    blackboard_->set("number_of_retries", "1");
+    blackboard_->set("num_retries", "1");
 
     BT::assignDefaultRemapping<StubActionTestNode>(config);
     child_action_ = std::make_unique<StubActionTestNode>("child_action", config);
@@ -57,7 +57,7 @@ struct TestRecoveryNode : testing::Test
 TEST_F(TestRecoveryNode, ChildReturnsSuccess)
 {
   // If the child returns SUCCESS, the root should return SUCCESS
-  blackboard_->set("number_of_retries", "1");
+  blackboard_->set("num_retries", "1");
   child_action_->set_return_value(BT::NodeStatus::SUCCESS);
   recovery_action_->set_return_value(BT::NodeStatus::IDLE);
   auto status = root_->executeTick();
@@ -75,7 +75,7 @@ TEST_F(TestRecoveryNode, ChildReturnsSuccess)
 TEST_F(TestRecoveryNode, ChildReturnsRunning)
 {
   // If the child returns RUNNING, the root should return RUNNING
-  blackboard_->set("number_of_retries", "1");
+  blackboard_->set("num_retries", "1");
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
   recovery_action_->set_return_value(BT::NodeStatus::IDLE);
   auto status = root_->executeTick();
@@ -95,7 +95,7 @@ TEST_F(TestRecoveryNode, ChildReturnsFailure)
 {
   // If the child action fails each time, the recovery action
   // and the original action will be invoked up to the # of retries
-  blackboard_->set("number_of_retries", "2");
+  blackboard_->set("num_retries", "2");
   child_action_->set_return_value(BT::NodeStatus::FAILURE);
   recovery_action_->set_return_value(BT::NodeStatus::SUCCESS);
   auto status = root_->executeTick();
@@ -104,7 +104,7 @@ TEST_F(TestRecoveryNode, ChildReturnsFailure)
   // RecoveryNode ultimately returns FAILURE. The child action will
   // be invoked the first time + # of retries and will go IDLE
   // because it failed. The recovery action will be invoked
-  // number_of_retries times.
+  // num_retries times.
   ASSERT_EQ(status, BT::NodeStatus::FAILURE);
   ASSERT_EQ(child_action_->get_tick_count(), 3);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
@@ -115,7 +115,7 @@ TEST_F(TestRecoveryNode, ChildReturnsFailure)
 TEST_F(TestRecoveryNode, RecoveryReturnsFailure)
 {
   // If the recovery action returns FAILURE, the control node will return FAILURE
-  blackboard_->set("number_of_retries", "3");
+  blackboard_->set("num_retries", "3");
   child_action_->set_return_value(BT::NodeStatus::FAILURE);
   recovery_action_->set_return_value(BT::NodeStatus::FAILURE);
   auto status = root_->executeTick();
@@ -131,7 +131,7 @@ TEST_F(TestRecoveryNode, RecoveryReturnsFailure)
 TEST_F(TestRecoveryNode, RerunChildReturnsFailure)
 {
   // Try a test case so that we can then reset and try again
-  blackboard_->set("number_of_retries", "2");
+  blackboard_->set("num_retries", "2");
   child_action_->set_return_value(BT::NodeStatus::FAILURE);
   recovery_action_->set_return_value(BT::NodeStatus::SUCCESS);
   auto status = root_->executeTick();

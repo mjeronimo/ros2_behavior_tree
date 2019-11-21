@@ -16,6 +16,7 @@
 #define FIBONACCI_CLIENT_HPP_
 
 #include <string>
+#include <vector>
 
 #include "ros2_behavior_tree/ros2_action_client_node.hpp"
 #include "example_interfaces/action/fibonacci.hpp"
@@ -34,7 +35,7 @@ public:
   {
     return augment_basic_ports({
       BT::InputPort<int32_t>("n", "Compute the fibonnaci sequence up to the nth value"),
-      BT::OutputPort<int32_t>("sequence", "The output fibonacci sequence up to n")
+      BT::OutputPort<std::vector<int32_t>>("sequence", "The output fibonacci sequence up to n")
     });
   }
 
@@ -47,7 +48,29 @@ public:
 
   void write_output_ports() override
   {
-    setOutput<int32_t>("sequence", 101);  // TODO(mjeronimo): result_->sum);
+    // auto & sequence = result_.result->sequence;
+    // std::stringstream ss;
+    // std::copy(sequence.begin(), sequence.end(), std::ostream_iterator<int>(ss, ";"));
+    setOutput<std::vector<int32_t>>("sequence", result_.result->sequence);
+  }
+
+  bool new_goal_received() override
+  {
+    // Get the current value of 'n' from the input port (may have been updated)
+    int32_t n = 0;
+    if (!getInput<int32_t>("n", n)) {
+      throw BT::RuntimeError("Missing parameter [n] in Fibonacci node");
+    }
+
+    // If it's not the same as the goal we're currently working on, update the goal
+    // and return true
+    if (n != goal_.order) {
+      goal_.order = n;
+      return true;
+    }
+
+    // Otherwise, continue with the current goal
+    return false;
   }
 
 private:

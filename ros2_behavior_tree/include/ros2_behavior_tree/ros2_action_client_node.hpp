@@ -94,9 +94,12 @@ public:
       action_client_ = rclcpp_action::create_client<ActionT>(client_node_, action_name_);
     }
 
-    // Make sure the server is actually there before continuing
-    // TODO(mjeronimo): Use the wait timeout
-    action_client_->wait_for_action_server();
+    // Make sure the action server is available there before continuing
+    if (!action_client_->wait_for_action_server(std::chrono::milliseconds(wait_timeout_))) {
+      RCLCPP_ERROR(client_node_->get_logger(),
+        "Timed out waiting for action server \"%s\" to become available", action_name_.c_str());
+      return BT::NodeStatus::FAILURE;
+    }
 
     // Enable result awareness by providing an empty lambda function
     auto send_goal_options = typename rclcpp_action::Client<ActionT>::SendGoalOptions();

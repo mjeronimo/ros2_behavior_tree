@@ -97,7 +97,7 @@ public:
     // Make sure the server is actually there before continuing
     if (!service_client_->wait_for_service(std::chrono::milliseconds(wait_timeout_))) {
       RCLCPP_ERROR(client_node_->get_logger(),
-        "Node timed out waiting for service \"%s\" to become available", service_name_.c_str());
+        "Timed out waiting for service \"%s\" to become available", service_name_.c_str());
       return BT::NodeStatus::FAILURE;
     }
 

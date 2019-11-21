@@ -30,7 +30,6 @@ public:
   {
   }
 
-  // Define this node's ports
   static BT::PortsList providedPorts()
   {
     return augment_basic_ports({
@@ -40,7 +39,7 @@ public:
     });
   }
 
-  void get_input_ports() override
+  void read_input_ports() override
   {
     if (!getInput<int64_t>("a", request_->a)) {
       throw BT::RuntimeError("Missing parameter [a] in AddTwoInts node");
@@ -51,7 +50,7 @@ public:
     }
   }
 
-  void set_output_ports() override
+  void write_output_ports() override
   {
     setOutput("sum", response_->sum);
   }

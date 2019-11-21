@@ -27,7 +27,6 @@ public:
   {
   }
 
-  // Define this node's ports
   static BT::PortsList providedPorts() {return {};}
 
   void set_return_value(BT::NodeStatus return_value)

@@ -38,7 +38,6 @@ public:
   {
   }
 
-  // Define this node's ports
   static BT::PortsList providedPorts()
   {
     return {
@@ -46,7 +45,7 @@ public:
     };
   }
 
-  // An AsyncActionNode must provide a halt override
+  // An AsyncActionNode must override the halt method
   void halt() override
   {
     stopAndJoinThread();

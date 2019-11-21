@@ -56,19 +56,11 @@ struct TestROS2ActionClientNode : testing::Test
     BT::NodeConfiguration config;
     config.blackboard = blackboard_;
 
-    client_node_ = std::make_shared<rclcpp::Node>("client_node");
-
-    // Set the generic input port values
-    blackboard_->set("action_name", "fibonacci");
-    blackboard_->set("wait_timeout", "100");
-    blackboard_->set("call_timeout", "100");
-    blackboard_->set<std::shared_ptr<rclcpp::Node>>("client_node", client_node_);  // NOLINT
-
     // Set this configuration to the Fibonacci input and output ports
     BT::assignDefaultRemapping<FibonacciClient>(config);
 
-    // TODO(mjeronimo): make action
-    // fibonacci_client_ = std::make_unique<FibonacciClient>("fibonacci", config);
+    client_node_ = std::make_shared<rclcpp::Node>("client_node1");
+    fibonacci_client_ = std::make_unique<FibonacciClient>("fibonacci", config);
   }
 
   void TearDown()
@@ -91,30 +83,30 @@ struct TestROS2ActionClientNode : testing::Test
 // input ports and tick the node, which will cause it to execute the action call
 TEST_F(TestROS2ActionClientNode, SimpleCall)
 {
-  // Set the specific input port values
-  blackboard_->set("a", 33);
-  blackboard_->set("b", 44);
+  blackboard_->set("action_name", "fibonacci");
+  blackboard_->set("wait_timeout", "1000");
+  blackboard_->set("call_timeout", "1000");
+  blackboard_->set<std::shared_ptr<rclcpp::Node>>("client_node", client_node_);  // NOLINT
+  blackboard_->set("n", "10");
 
   // Execute the Behavior Tree, the result is in the "response" output port
   fibonacci_client_->executeTick();
 
-  int64_t sum = 0;
-  auto rc = blackboard_->get("sum", sum);
+  int sequence = 0;
+  auto rc = blackboard_->get("sequence", sequence);
   ASSERT_EQ(rc, true);
-  ASSERT_EQ(sum, 77);
+  ASSERT_EQ(sequence, 101);
 }
 
-// Chain some calls to the Fibonacci service, using the input and output ports
-// to ensure that the output of one call can be used as the input to another
-TEST_F(TestROS2ActionClientNode, ChainUsingXMLAndPorts)
+TEST_F(TestROS2ActionClientNode, CallUsingXML)
 {
   static const char * xml_text =
     R"(
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
         <Sequence name="root">
-            <CreateROS2Node node_name="test_bt_node" spin="false" node_handle="{client_node}"/>
-            <Fibonacci service_name="fibonacci" wait_timeout="100" call_timeout="100" client_node="{client_node}" n="10" result="{result}"/>
+            <CreateROS2Node node_name="client_node2" spin="false" node_handle="{client_node}"/>
+            <Fibonacci action_name="fibonacci" wait_timeout="1000" call_timeout="1000" client_node="{client_node}" n="10" sequence="{sequence}"/>
         </Sequence>
      </BehaviorTree>
  </root>
@@ -129,10 +121,12 @@ TEST_F(TestROS2ActionClientNode, ChainUsingXMLAndPorts)
 
   // Check all of the output values from the blackboard (output ports)
 
-  int result = 0;
-  auto rc = bt.blackboard()->get("result", result);
+  int sequence = 0;
+  auto rc = bt.blackboard()->get("sequence", sequence);
   ASSERT_EQ(rc, true);
-  ASSERT_EQ(result, 101);
+  ASSERT_EQ(sequence, 101);
+
+  printf("sequence: %d\n", sequence);
 }
 
 int main(int argc, char ** argv)

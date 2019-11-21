@@ -38,7 +38,6 @@ public:
   {
   }
 
-  // Define this node's ports
   static BT::PortsList providedPorts()
   {
     return {

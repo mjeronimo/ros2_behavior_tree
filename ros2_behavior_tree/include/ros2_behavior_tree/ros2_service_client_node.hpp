@@ -66,8 +66,8 @@ public:
 
   // A derived class the defines input and/or output ports can override these methods
   // to get/set the ports
-  virtual void get_input_ports() {}
-  virtual void set_output_ports() {}
+  virtual void read_input_ports() {}
+  virtual void write_output_ports() {}
 
   // The main override required by a BT service
   BT::NodeStatus tick() override
@@ -88,7 +88,7 @@ public:
       throw BT::RuntimeError("Missing parameter [client_node] in ROS2ServiceClientNode");
     }
 
-    get_input_ports();
+    read_input_ports();
 
     if (service_client_ == nullptr) {
       service_client_ = client_node_->create_client<ServiceT>(service_name_);
@@ -109,7 +109,7 @@ public:
 
     if (rc == rclcpp::executor::FutureReturnCode::SUCCESS) {
       response_ = future_result.get();
-      set_output_ports();
+      write_output_ports();
       return BT::NodeStatus::SUCCESS;
     }
 

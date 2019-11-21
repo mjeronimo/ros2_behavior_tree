@@ -66,8 +66,8 @@ public:
 
   // A derived class the defines input and/or output ports can override these methods
   // to get/set the ports
-  virtual void get_input_ports() {}
-  virtual void set_output_ports() {}
+  virtual void read_input_ports() {}
+  virtual void write_output_ports() {}
 
   // The main override required by a BT action
   BT::NodeStatus tick() override
@@ -88,38 +88,47 @@ public:
       throw BT::RuntimeError("Missing parameter [client_node] in ROS2ServiceClientNode");
     }
 
-    get_input_ports();
+    read_input_ports();
 
     if (action_client_ == nullptr) {
       action_client_ = rclcpp_action::create_client<ActionT>(client_node_, action_name_);
     }
 
-#if 0
     // Make sure the server is actually there before continuing
-    RCLCPP_INFO(client_node_->get_logger(), "Waiting for \"%s\" action server", name().c_str());
+    RCLCPP_INFO(client_node_->get_logger(), "Waiting for \"%s\" action server", action_name_.c_str());
     action_client_->wait_for_action_server();
+
+    std::cerr << "1\n";
 
     // Enable result awareness by providing an empty lambda function
     auto send_goal_options = typename rclcpp_action::Client<ActionT>::SendGoalOptions();
     send_goal_options.result_callback = [](auto) {};
 
-new_goal_received:
+    std::cerr << "2\n";
+
+// new_goal_received:
     auto future_goal_handle = action_client_->async_send_goal(goal_, send_goal_options);
-    if (rclcpp::spin_until_future_complete(node_, future_goal_handle) !=
+    if (rclcpp::spin_until_future_complete(client_node_, future_goal_handle) !=
       rclcpp::executor::FutureReturnCode::SUCCESS)
     {
+      std::cerr << "Send goal failed\n";
       throw std::runtime_error("send_goal failed");
     }
 
+    std::cerr << "3\n";
+
     goal_handle_ = future_goal_handle.get();
     if (!goal_handle_) {
+      std::cerr << "Goal rejected by the action server\n";
       throw std::runtime_error("Goal was rejected by the action server");
     }
+
+    std::cerr << "4\n";
 
     auto future_result = goal_handle_->async_result();
     rclcpp::executor::FutureReturnCode rc;
     do {
-      rc = rclcpp::spin_until_future_complete(node_, future_result, server_timeout_);
+      rc = rclcpp::spin_until_future_complete(client_node_, future_result, call_timeout_);
       if (rc == rclcpp::executor::FutureReturnCode::TIMEOUT) {
 #if 0
         on_server_timeout();
@@ -133,29 +142,32 @@ new_goal_received:
           goto new_goal_received;
         }
 #endif
-
         // Yield to any other CoroActionNodes (coroutines)
         setStatusRunningAndYield();
       }
     } while (rc != rclcpp::executor::FutureReturnCode::SUCCESS);
 
+    std::cerr << "5\n";
+
     result_ = future_result.get();
     switch (result_.code) {
       case rclcpp_action::ResultCode::SUCCEEDED:
-        set_output_ports();
+      printf("SUCCEEDED\n");
+        write_output_ports();
         return BT::NodeStatus::SUCCESS;
 
       case rclcpp_action::ResultCode::ABORTED:
+      printf("ABORTED\n");
         return BT::NodeStatus::FAILURE;
 
       case rclcpp_action::ResultCode::CANCELED:
+      printf("CANCELED\n");
         return BT::NodeStatus::SUCCESS;
 
       default:
-        throw std::logic_error("ROS2ActionClientNode::Tick: invalid status value");
+      printf("default\n");
+        throw std::logic_error("ROS2ActionClientNode::tick: invalid status value");
     }
-#endif
-    return BT::NodeStatus::SUCCESS;
   }
 
   // The other (optional) override required by a BT action. In this case, we
@@ -178,6 +190,9 @@ new_goal_received:
 protected:
   bool should_cancel_goal()
   {
+#if 0
+    return status() == BT::NodeStatus::RUNNING;
+#else
     // Shut the node down if it is currently running
     if (status() != BT::NodeStatus::RUNNING) {
       return false;
@@ -194,8 +209,8 @@ protected:
     }
 
     return false;
+#endif
   }
-
 
   // bool goal_updated_{false};
 

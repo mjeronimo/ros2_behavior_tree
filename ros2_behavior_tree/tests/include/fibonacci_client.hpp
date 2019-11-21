@@ -38,14 +38,14 @@ public:
     });
   }
 
-  void get_input_ports() override
+  void read_input_ports() override
   {
     if (!getInput<int32_t>("n", goal_.order)) {
       throw BT::RuntimeError("Missing parameter [n] in Fibonacci node");
     }
   }
 
-  void set_output_ports() override
+  void write_output_ports() override
   {
     setOutput<int32_t>("sequence", 101);  // TODO(mjeronimo): result_->sum);
   }

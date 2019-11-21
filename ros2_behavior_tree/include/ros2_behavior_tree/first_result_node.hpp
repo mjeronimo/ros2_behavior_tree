@@ -54,7 +54,7 @@ public:
           break;
 
         default:
-          throw BT::RuntimeError("Invalid status return from BT node");
+          throw BT::LogicError("Invalid status return from BT node");
           break;
       }
     }

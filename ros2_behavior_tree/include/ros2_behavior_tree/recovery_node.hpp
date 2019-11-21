@@ -108,7 +108,7 @@ public:
             return BT::NodeStatus::RUNNING;
 
           default:
-            throw BT::RuntimeError("Invalid status return from BT node");
+            throw BT::LogicError("Invalid status return from BT node");
             break;
         }
 
@@ -127,7 +127,7 @@ public:
             return BT::NodeStatus::RUNNING;
 
           default:
-            throw BT::RuntimeError("Invalid status return from BT node");
+            throw BT::LogicError("Invalid status return from BT node");
             break;
         }
       }

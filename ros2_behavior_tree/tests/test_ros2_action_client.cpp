@@ -90,8 +90,8 @@ TEST_F(TestROS2ActionClientNode, SimpleCall)
   blackboard_->set("n", "10");
 
   // Manually run the node to completion
-  while (fibonacci_client_->executeTick() == BT::NodeStatus::RUNNING)
-    ;
+  while (fibonacci_client_->executeTick() == BT::NodeStatus::RUNNING) {
+  }
 
   int sequence = 0;
   auto rc = blackboard_->get("sequence", sequence);

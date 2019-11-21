@@ -23,24 +23,29 @@ namespace ros2_behavior_tree
 {
 
 //
-// @brief The RecoveryNode has only two children and returns SUCCESS if and only if the first child
-// returns SUCCESS.
+// @brief The RecoveryNode allows a "recovery action" to be invoked upon failure of
+// a node, retrying the node that failed after a successful call to the recovery action.
 //
-// - If the first child returns FAILURE, the second child will be executed.  After that the first
-//   child is executed again if the second child returns SUCCESS.
+// The RecoverNode must have exactly two children and behaves as follows:
+//
+// - If the first child returns SUCCESS, the second child is not invoked and the node
+//   returns SUCCESS
+//
+// - If the first child returns FAILURE
+//     If the retry count has not been exceeded, the second child will be executed
+//       If the second child returns FAILURE, the node will return FAILURE
+//       If the second child returns SUCCESS, the retry count is incremented and the
+//       first child is executed again
+//     If the retry count has been exceeded, the node returns FAILURE
 //
 // - If the first or second child returns RUNNING, this node returns RUNNING.
-//
-// - If the second child returns FAILURE, this control node will stop the loop and returns FAILURE.
-//
-// - TODO(mjeronimo): explain the retry count
 //
 class RecoveryNode : public BT::ControlNode
 {
 public:
   RecoveryNode(const std::string & name, int retries)
   : BT::ControlNode::ControlNode(name, {}),
-    number_of_retries_(retries), read_parameters_from_ports_(false)
+    num_retries_(retries), read_parameters_from_ports_(false)
   {
     setRegistrationID("Recovery");
   }
@@ -54,15 +59,15 @@ public:
   static BT::PortsList providedPorts()
   {
     return {
-      BT::InputPort<int>("number_of_retries", 1, "Number of retries")
+      BT::InputPort<int>("num_retries", 1, "Number of retries")
     };
   }
 
   BT::NodeStatus tick() override
   {
     if (read_parameters_from_ports_) {
-      if (!getInput("number_of_retries", number_of_retries_)) {
-        throw BT::RuntimeError("Missing parameter [number_of_retries] in Recovery node");
+      if (!getInput("num_retries", num_retries_)) {
+        throw BT::RuntimeError("Missing parameter [num_retries] in Recovery node");
       }
     }
 
@@ -79,7 +84,7 @@ public:
 
     setStatus(BT::NodeStatus::RUNNING);
 
-    while (current_child_idx_ < children_count && retry_count_ <= number_of_retries_) {
+    while (current_child_idx_ < children_count && retry_count_ <= num_retries_) {
       TreeNode * child_node = children_nodes_[current_child_idx_];
       const BT::NodeStatus child_status = child_node->executeTick();
 
@@ -91,7 +96,7 @@ public:
 
           case BT::NodeStatus::FAILURE:
             // tick the recovery action
-            if (retry_count_ < number_of_retries_) {
+            if (retry_count_ < num_retries_) {
               current_child_idx_++;
               break;
             } else {
@@ -142,7 +147,7 @@ public:
 private:
   bool read_parameters_from_ports_;
   unsigned int current_child_idx_{0};
-  unsigned int number_of_retries_{0};
+  unsigned int num_retries_{0};
   unsigned int retry_count_{0};
 };
 

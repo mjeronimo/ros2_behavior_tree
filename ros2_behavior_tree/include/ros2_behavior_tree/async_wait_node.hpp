@@ -17,6 +17,8 @@
 
 #include <chrono>
 #include <string>
+#include <mutex>
+#include <condition_variable>
 
 #include "behaviortree_cpp_v3/action_node.h"
 
@@ -45,30 +47,31 @@ public:
     };
   }
 
-  // An AsyncActionNode must override the halt method
   void halt() override
   {
-    // TODO(mjeronimo): should break out of the wait in the tick() method
-    // stopAndJoinThread();
-    setStatus(BT::NodeStatus::IDLE);
+    // Break out of the wait in the tick() method
+    cv_.notify_one();
   }
 
-private:
   BT::NodeStatus tick() override
   {
+    // Get the wait duration from the input port
     if (read_parameters_from_ports_) {
       if (!getInput<int>("msec", wait_duration_)) {
         throw BT::RuntimeError("Missing parameter [msec] in AsyncWait node");
       }
     }
 
-    // An AsyncActionNode's tick method is happening on a separate thread, so we
-    // can simply cause this thread to sleep for the specified duration
+    // Wait for the specified duration
+    std::mutex mtx;
+    std::unique_lock<std::mutex> lck(mtx);
+    auto status = cv_.wait_for(lck, std::chrono::milliseconds(wait_duration_));
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(wait_duration_));
-    return BT::NodeStatus::SUCCESS;
+    return (status == std::cv_status::timeout) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 
+private:
+  std::condition_variable cv_;
   bool read_parameters_from_ports_;
   int wait_duration_{0};
 };

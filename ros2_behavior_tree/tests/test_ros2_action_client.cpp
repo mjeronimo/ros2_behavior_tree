@@ -59,11 +59,15 @@ struct TestROS2ActionClientNode : testing::Test
     BT::assignDefaultRemapping<FibonacciClient>(config);
 
     client_node_ = std::make_shared<rclcpp::Node>("client_node1");
+    client_node_thread_ = std::make_unique<ros2_behavior_tree::NodeThread>(client_node_);
+
     fibonacci_client_ = std::make_unique<FibonacciClient>("fibonacci", config);
   }
 
   void TearDown()
   {
+    client_node_thread_.reset();
+    client_node_.reset();
   }
 
   static std::shared_ptr<FibonacciServer> action_node_;
@@ -73,6 +77,7 @@ struct TestROS2ActionClientNode : testing::Test
   std::unique_ptr<FibonacciClient> fibonacci_client_;
 
   std::shared_ptr<rclcpp::Node> client_node_;
+  std::shared_ptr<ros2_behavior_tree::NodeThread> client_node_thread_;
 };
 
 std::shared_ptr<FibonacciServer> TestROS2ActionClientNode::action_node_;
@@ -83,8 +88,7 @@ std::shared_ptr<ros2_behavior_tree::NodeThread> TestROS2ActionClientNode::action
 TEST_F(TestROS2ActionClientNode, SimpleCall)
 {
   blackboard_->set("action_name", "fibonacci");
-  blackboard_->set("wait_timeout", "1000");
-  blackboard_->set("call_timeout", "1000");
+  blackboard_->set("server_timeout", "1000");
   blackboard_->set<std::shared_ptr<rclcpp::Node>>("client_node", client_node_);  // NOLINT
   blackboard_->set("n", "10");
 
@@ -109,8 +113,8 @@ TEST_F(TestROS2ActionClientNode, CallUsingXML)
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
         <Sequence name="root">
-            <CreateROS2Node node_name="client_node2" spin="false" node_handle="{client_node}"/>
-            <Fibonacci action_name="fibonacci" wait_timeout="1000" call_timeout="1000" client_node="{client_node}" n="10" sequence="{sequence}"/>
+            <CreateROS2Node node_name="client_node2" spin="true" node_handle="{client_node}"/>
+            <Fibonacci action_name="fibonacci" server_timeout="1000" client_node="{client_node}" n="10" sequence="{sequence}"/>
         </Sequence>
      </BehaviorTree>
  </root>
@@ -137,8 +141,7 @@ TEST_F(TestROS2ActionClientNode, CallUsingXML)
 TEST_F(TestROS2ActionClientNode, SendNewGoal)
 {
   blackboard_->set("action_name", "fibonacci");
-  blackboard_->set("wait_timeout", "1000");
-  blackboard_->set("call_timeout", "1000");
+  blackboard_->set("server_timeout", "1000");
   blackboard_->set<std::shared_ptr<rclcpp::Node>>("client_node", client_node_);  // NOLINT
   blackboard_->set("n", "10");
 

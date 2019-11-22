@@ -44,10 +44,8 @@ public:
   {
     BT::PortsList basic_ports = {
       BT::InputPort<std::string>("action_name", "The name of the action to call"),
-      BT::InputPort<std::chrono::milliseconds>("wait_timeout",
-        "The timeout value, in milliseconds, to use when waiting for the service"),
-      BT::InputPort<std::chrono::milliseconds>("call_timeout",
-        "The timeout value, in milliseconds, to use when calling the service"),
+      BT::InputPort<std::chrono::milliseconds>("server_timeout",
+        "The timeout value, in milliseconds, to use when waiting for the server responses"),
       BT::InputPort<std::shared_ptr<rclcpp::Node>>("client_node",
         "The (non-spinning) client node to use when making service calls")
     };
@@ -77,12 +75,8 @@ public:
       throw BT::RuntimeError("Missing parameter [action_name] in ROS2ServiceClientNode");
     }
 
-    if (!getInput<std::chrono::milliseconds>("wait_timeout", wait_timeout_)) {
-      throw BT::RuntimeError("Missing parameter [wait_timeout] in ROS2ServiceClientNode");
-    }
-
-    if (!getInput<std::chrono::milliseconds>("call_timeout", call_timeout_)) {
-      throw BT::RuntimeError("Missing parameter [call_timeout] in ROS2ServiceClientNode");
+    if (!getInput<std::chrono::milliseconds>("server_timeout", server_timeout_)) {
+      throw BT::RuntimeError("Missing parameter [server_timeout] in ROS2ServiceClientNode");
     }
 
     if (!getInput<std::shared_ptr<rclcpp::Node>>("client_node", client_node_)) {
@@ -96,7 +90,7 @@ public:
     }
 
     // Make sure the action server is available there before continuing
-    if (!action_client_->wait_for_action_server(std::chrono::milliseconds(wait_timeout_))) {
+    if (!action_client_->wait_for_action_server(std::chrono::milliseconds(server_timeout_))) {
       RCLCPP_ERROR(client_node_->get_logger(),
         "Timed out waiting for action server \"%s\" to become available", action_name_.c_str());
       return BT::NodeStatus::FAILURE;
@@ -108,9 +102,8 @@ public:
 
 new_goal_received:
     auto future_goal_handle = action_client_->async_send_goal(goal_, send_goal_options);
-    if (rclcpp::spin_until_future_complete(client_node_, future_goal_handle) !=
-      rclcpp::executor::FutureReturnCode::SUCCESS)
-    {
+
+    if (future_goal_handle.wait_for(server_timeout_) == std::future_status::timeout) {
       throw std::runtime_error("send_goal failed");
     }
 
@@ -120,26 +113,24 @@ new_goal_received:
     }
 
     auto future_result = goal_handle_->async_result();
-    rclcpp::executor::FutureReturnCode rc;
+    std::future_status rc;
     do {
-      rc = rclcpp::spin_until_future_complete(client_node_, future_result, call_timeout_);
-      if (rc == rclcpp::executor::FutureReturnCode::TIMEOUT) {
+      rc = future_result.wait_for(server_timeout_);
+      if (rc == std::future_status::timeout) {
         if (new_goal_received()) {
           // If we're received a new goal, cancel the current goal and start a new one
           auto future = action_client_->async_cancel_goal(goal_handle_);
-          if (rclcpp::spin_until_future_complete(client_node_, future) !=
-            rclcpp::executor::FutureReturnCode::SUCCESS)
-          {
+          if (future.wait_for(server_timeout_) == std::future_status::timeout) {
             RCLCPP_WARN(client_node_->get_logger(), "failed to cancel goal");
+          } else {
+            goto new_goal_received;
           }
-
-          goto new_goal_received;
         }
 
         // Yield to any other CoroActionNodes (coroutines)
         setStatusRunningAndYield();
       }
-    } while (rc != rclcpp::executor::FutureReturnCode::SUCCESS);
+    } while (rc != std::future_status::ready);
 
     result_ = future_result.get();
     switch (result_.code) {
@@ -178,7 +169,7 @@ new_goal_received:
 protected:
   bool should_cancel_goal()
   {
-#if 0
+#if 1
     return status() == BT::NodeStatus::RUNNING;
 #else
     // Shut the node down if it is currently running
@@ -210,8 +201,7 @@ protected:
 
   std::string action_name_;
 
-  std::chrono::milliseconds wait_timeout_;
-  std::chrono::milliseconds call_timeout_;
+  std::chrono::milliseconds server_timeout_;
 
   typename ActionT::Goal goal_;
   typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult result_;

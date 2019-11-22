@@ -51,8 +51,8 @@ public:
       throw BT::RuntimeError("Missing parameter [node_name] in CreateROS2Node");
     }
 
-    bool spin = false;
-    if (!getInput("spin", spin)) {
+    bool spin_thread = false;
+    if (!getInput("spin", spin_thread)) {
       throw BT::RuntimeError("Missing parameter [spin] in CreateROS2Node");
     }
 
@@ -62,10 +62,15 @@ public:
       throw BT::RuntimeError("Failed to set output port value [node_handle] in CreateROS2Node");
     }
 
-    // TODO(mjeronimo) implement spin
+    if (spin_thread) {
+      node_thread_ = std::make_unique<ros2_behavior_tree::NodeThread>(node);
+    }
 
     return BT::NodeStatus::SUCCESS;
   }
+
+private:
+  std::shared_ptr<ros2_behavior_tree::NodeThread> node_thread_;
 };
 
 }  // namespace ros2_behavior_tree

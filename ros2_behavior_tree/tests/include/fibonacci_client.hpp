@@ -48,9 +48,6 @@ public:
 
   void write_output_ports() override
   {
-    // auto & sequence = result_.result->sequence;
-    // std::stringstream ss;
-    // std::copy(sequence.begin(), sequence.end(), std::ostream_iterator<int>(ss, ";"));
     setOutput<std::vector<int32_t>>("sequence", result_.result->sequence);
   }
 
@@ -72,8 +69,6 @@ public:
     // Otherwise, continue with the current goal
     return false;
   }
-
-private:
 };
 
 #endif  // FIBONACCI_CLIENT_HPP_

@@ -51,6 +51,8 @@ public:
   {
     // Break out of the wait in the tick() method
     cv_.notify_one();
+
+    setStatus(BT::NodeStatus::IDLE);
   }
 
   BT::NodeStatus tick() override

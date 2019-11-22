@@ -28,7 +28,6 @@ const char SampleActionServerNode::bt_xml_[] =
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
     <Repeat num_cycles="{iterations}">
-      <SetBlackboard messageSequenceStar name="do_work">
       <SequenceStar name="do_work">
         <Message msg="{message}"/>
         <AsyncWait msec="{pause_ms}"/>

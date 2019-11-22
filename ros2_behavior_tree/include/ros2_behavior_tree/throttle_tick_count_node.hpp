@@ -60,7 +60,7 @@ private:
       // Reset the start time since we're beginning a new iteration
       // (transitioning from IDLE to RUNNING)
       start_ = std::chrono::high_resolution_clock::now();
-      first_time = true;
+      first_time_ = true;
     }
 
     setStatus(BT::NodeStatus::RUNNING);
@@ -74,8 +74,9 @@ private:
     auto seconds = std::chrono::duration_cast<float_seconds>(elapsed);
 
     // If we've reached or exceeded the specified period, execute the child node
-    if (first_time || (status() == BT::NodeStatus::RUNNING) || seconds.count() >= period_) {
-      first_time = false;
+    if (first_time_ || (child_node_->status() == BT::NodeStatus::RUNNING) || seconds.count() >= period_) {
+      first_time_ = false;
+
       auto child_state = child_node_->executeTick();
 
       switch (child_state) {
@@ -98,7 +99,7 @@ private:
   bool read_parameters_from_ports_;
   std::chrono::time_point<std::chrono::high_resolution_clock> start_;
   double period_{0.0};
-  bool first_time{false};
+  bool first_time_{false};
 };
 
 }  // namespace ros2_behavior_tree

@@ -59,8 +59,8 @@ struct TestThrottleTickCountNode : testing::Test
 
 TEST_F(TestThrottleTickCountNode, FirstTimeSuccess)
 {
-  // If the child immediately returns SUCCESS, the ThrottleTickCount
-  // decorator allows it to pass
+  // If the child returns SUCCESS on the first tick, the parent should
+  // also return SUCCESS
   child_action_->set_return_value(BT::NodeStatus::SUCCESS);
   auto status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
@@ -73,7 +73,8 @@ TEST_F(TestThrottleTickCountNode, FirstTimeSuccess)
 
 TEST_F(TestThrottleTickCountNode, FailureUponFailure)
 {
-  // If the child returns FAILURE, the parent should also return FAILURE
+  // If the child returns FAILURE on the first tick, the parent should
+  // also return FAILURE
   child_action_->set_return_value(BT::NodeStatus::FAILURE);
   auto status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::FAILURE);
@@ -86,7 +87,8 @@ TEST_F(TestThrottleTickCountNode, FailureUponFailure)
 
 TEST_F(TestThrottleTickCountNode, WaitForDurationWithRunning)
 {
-  // If the child returns RUNNING, the root should return RUNNING
+  // If the child returns RUNNING on the first tick, the parent should
+  // also return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
   auto status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::RUNNING);
@@ -96,8 +98,8 @@ TEST_F(TestThrottleTickCountNode, WaitForDurationWithRunning)
   // Wait a bit to exceed the time period
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-  // Now, if the child returns RUNNING, the ThrottleTickCount decorator
-  // will also return RUNNING, even though the period has expired
+  // As long as the child is running, the parent should continue to
+  // return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
   status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::RUNNING);
@@ -107,7 +109,8 @@ TEST_F(TestThrottleTickCountNode, WaitForDurationWithRunning)
 
 TEST_F(TestThrottleTickCountNode, WaitForDurationWithSuccess)
 {
-  // If the child returns RUNNING, the root should return RUNNING
+  // If the child returns RUNNING on the first tick, the root should
+  // return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
   auto status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::RUNNING);
@@ -117,8 +120,7 @@ TEST_F(TestThrottleTickCountNode, WaitForDurationWithSuccess)
   // Wait a bit to exceed the time period
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-  // Now, if the child returns SUCCESS, the ThrottleTickCount decorator
-  // will return SUCCESS
+  // Now, if the child returns SUCCESS, the parent will return SUCCESS
   child_action_->set_return_value(BT::NodeStatus::SUCCESS);
   status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
@@ -131,16 +133,15 @@ TEST_F(TestThrottleTickCountNode, WaitForDurationWithSuccess)
 
 TEST_F(TestThrottleTickCountNode, WaitForDurationWithFailure)
 {
-  // If the child returns RUNNING, the root should return RUNNING
+  // If the child returns RUNNING on the first tick, the root should
+  // return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
   auto status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::RUNNING);
   ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 
-  // The Throttle node won't fire until the child returns SUCCESS or FAILURE
-  // even if the period has expired
-
+  // Wait a bit to exceed the time period
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
 
@@ -149,6 +150,7 @@ TEST_F(TestThrottleTickCountNode, WaitForDurationWithFailure)
   ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 
+  // Once the child returns FAILURE, that should be passed up
   child_action_->set_return_value(BT::NodeStatus::FAILURE);
 
   status = root_->executeTick();
@@ -159,14 +161,17 @@ TEST_F(TestThrottleTickCountNode, WaitForDurationWithFailure)
 
 TEST_F(TestThrottleTickCountNode, SuccessAfterRunning)
 {
-  // If the child returns RUNNING, the root should return RUNNING
+  // If the child returns RUNNING on the first tick, the root should
+  // return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
   auto status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::RUNNING);
   ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 
-  // If the child has started, it should continue ticking until a result
+  // If we immediately tick again without waiting for the time period
+  // to expire, the child should be ticked, and return SUCCESS in 
+  // this case
   child_action_->set_return_value(BT::NodeStatus::SUCCESS);
   status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
@@ -176,17 +181,51 @@ TEST_F(TestThrottleTickCountNode, SuccessAfterRunning)
 
 TEST_F(TestThrottleTickCountNode, FailureAfterRunning)
 {
-  // If the child returns RUNNING, the root should return RUNNING
+  // If the child returns RUNNING on the first tick, the root should
+  // return RUNNING
   child_action_->set_return_value(BT::NodeStatus::RUNNING);
   auto status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::RUNNING);
   ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 
-  // If the child has started, it should continue ticking until a result
+  // If we immediately tick again without waiting for the time period
+  // to expire, the child should be ticked, and return FAILURE in 
+  // this case
   child_action_->set_return_value(BT::NodeStatus::FAILURE);
   status = root_->executeTick();
   ASSERT_EQ(status, BT::NodeStatus::FAILURE);
   ASSERT_EQ(root_->status(), BT::NodeStatus::FAILURE);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
+
+TEST_F(TestThrottleTickCountNode, WaitForDurationWithSuccessThenSuccess)
+{
+  // If the child returns RUNNING on the first tick, the root should
+  // return RUNNING
+  child_action_->set_return_value(BT::NodeStatus::RUNNING);
+  auto status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::RUNNING);
+  ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
+
+  // Wait a bit to exceed the time period
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+  // Now, if the child now returns SUCCESS, the ThrottleTickCount
+  // decorator will return SUCCESS
+  child_action_->set_return_value(BT::NodeStatus::SUCCESS);
+  status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(root_->status(), BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
+
+  // Now, if we immediately tick again, the node should return
+  // RUNNING because the time hasn't expired
+  child_action_->set_return_value(BT::NodeStatus::SUCCESS);
+  status = root_->executeTick();
+  ASSERT_EQ(status, BT::NodeStatus::RUNNING);
+  ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
+  ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
+}
+

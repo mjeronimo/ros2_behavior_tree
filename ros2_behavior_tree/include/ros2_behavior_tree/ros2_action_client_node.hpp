@@ -45,7 +45,7 @@ public:
     BT::PortsList basic_ports = {
       BT::InputPort<std::string>("action_name", "The name of the action to call"),
       BT::InputPort<std::chrono::milliseconds>("server_timeout",
-        "The timeout value, in milliseconds, to use when waiting for the server responses"),
+        "The timeout value, in milliseconds, to use when waiting for the action server responses"),
       BT::InputPort<std::shared_ptr<rclcpp::Node>>("client_node",
         "The (non-spinning) client node to use when making service calls")
     };

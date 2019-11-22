@@ -44,10 +44,8 @@ public:
   {
     BT::PortsList basic_ports = {
       BT::InputPort<std::string>("service_name", "The name of the service to call"),
-      BT::InputPort<std::chrono::milliseconds>("wait_timeout",
-        "The timeout value, in milliseconds, to use when waiting for the service"),
-      BT::InputPort<std::chrono::milliseconds>("call_timeout",
-        "The timeout value, in milliseconds, to use when calling the service"),
+      BT::InputPort<std::chrono::milliseconds>("server_timeout",
+        "The timeout value, in milliseconds, to use when waiting for service responses"),
       BT::InputPort<std::shared_ptr<rclcpp::Node>>("client_node",
         "The (non-spinning) client node to use when making service calls")
     };
@@ -76,12 +74,8 @@ public:
       throw BT::RuntimeError("Missing parameter [service_name] in ROS2ServiceClientNode");
     }
 
-    if (!getInput<std::chrono::milliseconds>("wait_timeout", wait_timeout_)) {
-      throw BT::RuntimeError("Missing parameter [wait_timeout] in ROS2ServiceClientNode");
-    }
-
-    if (!getInput<std::chrono::milliseconds>("call_timeout", call_timeout_)) {
-      throw BT::RuntimeError("Missing parameter [call_timeout] in ROS2ServiceClientNode");
+    if (!getInput<std::chrono::milliseconds>("server_timeout", server_timeout_)) {
+      throw BT::RuntimeError("Missing parameter [server_timeout] in ROS2ServiceClientNode");
     }
 
     if (!getInput<std::shared_ptr<rclcpp::Node>>("client_node", client_node_)) {
@@ -95,7 +89,7 @@ public:
     }
 
     // Make sure the server is actually there before continuing
-    if (!service_client_->wait_for_service(std::chrono::milliseconds(wait_timeout_))) {
+    if (!service_client_->wait_for_service(std::chrono::milliseconds(server_timeout_))) {
       RCLCPP_ERROR(client_node_->get_logger(),
         "Timed out waiting for service \"%s\" to become available", service_name_.c_str());
       return BT::NodeStatus::FAILURE;
@@ -105,22 +99,20 @@ public:
     auto future_result = service_client_->async_send_request(request_);
 
     // Wait for the response
-    auto rc = rclcpp::spin_until_future_complete(client_node_, future_result, call_timeout_);
+    auto rc = future_result.wait_for(server_timeout_);
 
-    if (rc == rclcpp::executor::FutureReturnCode::SUCCESS) {
+    if (rc == std::future_status::ready) {
       response_ = future_result.get();
       write_output_ports();
       return BT::NodeStatus::SUCCESS;
-    }
-
-    if (rc == rclcpp::executor::FutureReturnCode::TIMEOUT) {
+    } else if (rc == std::future_status::timeout) {
       RCLCPP_ERROR(client_node_->get_logger(), "Call to \"%s\" service timed out",
         service_name_.c_str());
       return BT::NodeStatus::FAILURE;
+    } else {
+      RCLCPP_ERROR(client_node_->get_logger(), "Call to \"%s\" server failed", service_name_.c_str());
+      return BT::NodeStatus::FAILURE;
     }
-
-    RCLCPP_ERROR(client_node_->get_logger(), "Call to \"%s\" server failed", service_name_.c_str());
-    return BT::NodeStatus::FAILURE;
   }
 
 protected:
@@ -131,8 +123,7 @@ protected:
 
   std::string service_name_;
 
-  std::chrono::milliseconds wait_timeout_;
-  std::chrono::milliseconds call_timeout_;
+  std::chrono::milliseconds server_timeout_;
 
   std::shared_ptr<typename ServiceT::Request> request_;
   std::shared_ptr<typename ServiceT::Response> response_;

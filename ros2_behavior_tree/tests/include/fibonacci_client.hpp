@@ -35,6 +35,7 @@ public:
   {
     return augment_basic_ports({
       BT::InputPort<int32_t>("n", "Compute the fibonnaci sequence up to the nth value"),
+      BT::OutputPort<std::vector<int32_t>>("feedback", "Feedback from the server while computing the full fib(n) sequence"),
       BT::OutputPort<std::vector<int32_t>>("sequence", "The output fibonacci sequence up to n")
     });
   }
@@ -46,6 +47,12 @@ public:
     }
   }
 
+  void write_feedback_ports(const std::shared_ptr<const Fibonacci::Feedback> feedback) override
+  {
+    RCLCPP_INFO(client_node_->get_logger(), "Feedback: Next number in sequence: %d", feedback->sequence.back());
+    setOutput<std::vector<int32_t>>("feedback", feedback->sequence);
+  }
+
   void write_output_ports() override
   {
     setOutput<std::vector<int32_t>>("sequence", result_.result->sequence);
@@ -53,8 +60,9 @@ public:
 
   bool new_goal_received() override
   {
-    // Get the current value of 'n' from the input port (may have been updated)
     int32_t n = 0;
+
+    // Get the current value of 'n' from the input port (may have been updated)
     if (!getInput<int32_t>("n", n)) {
       throw BT::RuntimeError("Missing parameter [n] in Fibonacci node");
     }

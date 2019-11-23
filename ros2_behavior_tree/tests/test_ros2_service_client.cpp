@@ -55,11 +55,11 @@ struct TestROS2ServiceClientNode : testing::Test
     config.blackboard = blackboard_;
 
     client_node_ = std::make_shared<rclcpp::Node>("client_node");
+    client_node_thread_ = std::make_unique<ros2_behavior_tree::NodeThread>(client_node_);
 
     // Set the generic input port values
     blackboard_->set("service_name", "add_two_ints");
-    blackboard_->set("wait_timeout", "100");
-    blackboard_->set("call_timeout", "100");
+    blackboard_->set("server_timeout", "100");
     blackboard_->set<std::shared_ptr<rclcpp::Node>>("client_node", client_node_);  // NOLINT
 
     // Set this configuration to the AddTwoInts input and output ports
@@ -70,6 +70,9 @@ struct TestROS2ServiceClientNode : testing::Test
 
   void TearDown()
   {
+    // We can then stop the thread and delete the service node
+    client_node_thread_.reset();
+    client_node_.reset();
   }
 
   static std::shared_ptr<AddTwoIntsServer> service_node_;
@@ -79,12 +82,12 @@ struct TestROS2ServiceClientNode : testing::Test
   std::unique_ptr<AddTwoIntsClient> add_two_ints_client_;
 
   std::shared_ptr<rclcpp::Node> client_node_;
+  std::shared_ptr<ros2_behavior_tree::NodeThread> client_node_thread_;
 };
 
 std::shared_ptr<AddTwoIntsServer> TestROS2ServiceClientNode::service_node_;
 std::shared_ptr<ros2_behavior_tree::NodeThread> TestROS2ServiceClientNode::service_node_thread_;
 
-#if 0
 // Set a couple values on the blackboard, which will be picked up by the BT node's
 // input ports and tick the node, which will cause it to execute the service call
 TEST_F(TestROS2ServiceClientNode, SimpleCall)
@@ -101,7 +104,6 @@ TEST_F(TestROS2ServiceClientNode, SimpleCall)
   ASSERT_EQ(rc, true);
   ASSERT_EQ(sum, 77);
 }
-#endif
 
 // Chain some calls to the AddTwoInts service, using the input and output ports
 // to ensure that the output of one call can be used as the input to another

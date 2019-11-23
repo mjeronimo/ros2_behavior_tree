@@ -18,15 +18,16 @@
 #include <string>
 
 #include "ros2_behavior_tree/ros2_service_client_node.hpp"
+#include "ros2_behavior_tree/ros2_async_service_client_node.hpp"
 #include "example_interfaces/srv/add_two_ints.hpp"
 
 using AddTwoInts = example_interfaces::srv::AddTwoInts;
 
-class AddTwoIntsClient : public ros2_behavior_tree::ROS2ServiceClientNode<AddTwoInts>
+class AddTwoIntsClient : public ros2_behavior_tree::ROS2AsyncServiceClientNode<AddTwoInts>
 {
 public:
   explicit AddTwoIntsClient(const std::string & name, const BT::NodeConfiguration & config)
-  : ROS2ServiceClientNode<AddTwoInts>(name, config)
+  : ROS2AsyncServiceClientNode<AddTwoInts>(name, config)
   {
   }
 

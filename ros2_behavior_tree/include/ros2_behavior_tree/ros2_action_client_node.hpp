@@ -21,6 +21,7 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
+#include "ros2_behavior_tree/bt_conversions.hpp"
 
 namespace ros2_behavior_tree
 {
@@ -67,6 +68,14 @@ public:
   virtual void read_input_ports() {}
   virtual void write_output_ports() {}
   virtual bool new_goal_received() {return false;}
+  virtual void write_feedback_ports(const std::shared_ptr<const typename ActionT::Feedback>) {}
+
+  void feedback_callback(
+    typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle,
+    const std::shared_ptr<const typename ActionT::Feedback> feedback)
+  {
+    write_feedback_ports(feedback);
+  }
 
   // The main override required by a BT action
   BT::NodeStatus tick() override
@@ -99,6 +108,7 @@ public:
     // Enable result awareness by providing an empty lambda function
     auto send_goal_options = typename rclcpp_action::Client<ActionT>::SendGoalOptions();
     send_goal_options.result_callback = [](auto) {};
+    send_goal_options.feedback_callback = std::bind(&ROS2ActionClientNode<ActionT>::feedback_callback, this, std::placeholders::_1, std::placeholders::_2);
 
 new_goal_received:
     auto future_goal_handle = action_client_->async_send_goal(goal_, send_goal_options);
@@ -155,9 +165,7 @@ new_goal_received:
   {
     if (should_cancel_goal()) {
       auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
-      if (rclcpp::spin_until_future_complete(client_node_, future_cancel) !=
-        rclcpp::executor::FutureReturnCode::SUCCESS)
-      {
+      if (future_cancel.wait_for(server_timeout_) != std::future_status::ready) {
         RCLCPP_ERROR(client_node_->get_logger(),
           "Failed to cancel action server for %s", action_name_.c_str());
       }
@@ -169,29 +177,16 @@ new_goal_received:
 protected:
   bool should_cancel_goal()
   {
-#if 1
-    return status() == BT::NodeStatus::RUNNING;
-#else
     // Shut the node down if it is currently running
     if (status() != BT::NodeStatus::RUNNING) {
       return false;
     }
 
-    rclcpp::spin_some(client_node_);
+    // Check if the goal is still in progress
     auto status = goal_handle_->get_status();
-
-    // Check if the goal is still executing
-    if (status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
-      status == action_msgs::msg::GoalStatus::STATUS_EXECUTING)
-    {
-      return true;
-    }
-
-    return false;
-#endif
+    return (status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
+      status == action_msgs::msg::GoalStatus::STATUS_EXECUTING);
   }
-
-  // bool goal_updated_{false};
 
   typename std::shared_ptr<rclcpp_action::Client<ActionT>> action_client_;
   typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle_;

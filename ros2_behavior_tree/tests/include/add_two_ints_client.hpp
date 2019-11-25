@@ -56,8 +56,6 @@ public:
   {
     setOutput("sum", response->sum);
   }
-
-private:
 };
 
 #endif  // ADD_TWO_INTS_CLIENT_HPP_

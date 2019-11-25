@@ -96,10 +96,9 @@ public:
     }
 
     auto future_result = service_client_->async_send_request(request_);
-	for (;;) {
-      switch (future_result.wait_for(server_timeout_))
-	  {
-	    case std::future_status::ready:
+    for (;; ) {
+      switch (future_result.wait_for(server_timeout_)) {
+        case std::future_status::ready:
           response_ = future_result.get();
           write_output_ports();
           return BT::NodeStatus::SUCCESS;
@@ -107,7 +106,7 @@ public:
         case std::future_status::timeout:
           // Yield to any other CoroActionNodes (coroutines)
           setStatusRunningAndYield();
-		  break;
+          break;
 
         default:
           return BT::NodeStatus::FAILURE;

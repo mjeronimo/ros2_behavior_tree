@@ -110,7 +110,8 @@ public:
         service_name_.c_str());
       return BT::NodeStatus::FAILURE;
     } else {
-      RCLCPP_ERROR(client_node_->get_logger(), "Call to \"%s\" server failed", service_name_.c_str());
+      RCLCPP_ERROR(client_node_->get_logger(),
+        "Call to \"%s\" server failed", service_name_.c_str());
       return BT::NodeStatus::FAILURE;
     }
   }

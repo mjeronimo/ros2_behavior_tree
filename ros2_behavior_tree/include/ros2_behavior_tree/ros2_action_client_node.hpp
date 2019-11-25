@@ -65,10 +65,11 @@ public:
 
   // A derived class the defines input and/or output ports can override these methods
   // to get/set the ports
-  virtual void read_input_ports() {}
-  virtual void write_output_ports() {}
-  virtual bool new_goal_received() {return false;}
+  virtual void read_input_ports(typename ActionT::Goal & goal) {}
+  virtual bool read_new_goal(typename ActionT::Goal & goal) {return false;}
   virtual void write_feedback_ports(const std::shared_ptr<const typename ActionT::Feedback>) {}
+  virtual void write_output_ports(
+    typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult & result) {}
 
   void feedback_callback(
     typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle,
@@ -92,7 +93,7 @@ public:
       throw BT::RuntimeError("Missing parameter [client_node] in ROS2ServiceClientNode");
     }
 
-    read_input_ports();
+    read_input_ports(goal_);
 
     if (action_client_ == nullptr) {
       action_client_ = rclcpp_action::create_client<ActionT>(client_node_, action_name_);
@@ -108,7 +109,9 @@ public:
     // Enable result awareness by providing an empty lambda function
     auto send_goal_options = typename rclcpp_action::Client<ActionT>::SendGoalOptions();
     send_goal_options.result_callback = [](auto) {};
-    send_goal_options.feedback_callback = std::bind(&ROS2ActionClientNode<ActionT>::feedback_callback, this, std::placeholders::_1, std::placeholders::_2);
+    send_goal_options.feedback_callback = std::bind(
+      &ROS2ActionClientNode<ActionT>::feedback_callback, this,
+      std::placeholders::_1, std::placeholders::_2);
 
 new_goal_received:
     auto future_goal_handle = action_client_->async_send_goal(goal_, send_goal_options);
@@ -127,8 +130,9 @@ new_goal_received:
     do {
       rc = future_result.wait_for(server_timeout_);
       if (rc == std::future_status::timeout) {
-        if (new_goal_received()) {
-          // If we're received a new goal, cancel the current goal and start a new one
+        if (read_new_goal(goal_)) {
+          // If we're received a new goal on the input port, cancel the current goal
+          // and start a new one
           auto future = action_client_->async_cancel_goal(goal_handle_);
           if (future.wait_for(server_timeout_) == std::future_status::timeout) {
             RCLCPP_WARN(client_node_->get_logger(), "failed to cancel goal");
@@ -145,7 +149,7 @@ new_goal_received:
     result_ = future_result.get();
     switch (result_.code) {
       case rclcpp_action::ResultCode::SUCCEEDED:
-        write_output_ports();
+        write_output_ports(result_);
         return BT::NodeStatus::SUCCESS;
 
       case rclcpp_action::ResultCode::ABORTED:
@@ -184,8 +188,8 @@ protected:
 
     // Check if the goal is still in progress
     auto status = goal_handle_->get_status();
-    return (status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
-      status == action_msgs::msg::GoalStatus::STATUS_EXECUTING);
+    return status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
+           status == action_msgs::msg::GoalStatus::STATUS_EXECUTING;
   }
 
   typename std::shared_ptr<rclcpp_action::Client<ActionT>> action_client_;

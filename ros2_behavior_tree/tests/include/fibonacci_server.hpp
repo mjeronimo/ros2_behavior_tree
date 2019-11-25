@@ -70,7 +70,7 @@ private:
 
   void execute(const std::shared_ptr<GoalHandleFibonacci> goal_handle)
   {
-    rclcpp::Rate loop_rate(2);
+    rclcpp::Rate loop_rate(3);
     const auto goal = goal_handle->get_goal();
     auto feedback = std::make_shared<Fibonacci::Feedback>();
     auto & sequence = feedback->sequence;

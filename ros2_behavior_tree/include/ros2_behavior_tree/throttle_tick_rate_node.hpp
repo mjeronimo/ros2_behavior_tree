@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROS2_BEHAVIOR_TREE__THROTTLE_TICK_COUNT_NODE_HPP_
-#define ROS2_BEHAVIOR_TREE__THROTTLE_TICK_COUNT_NODE_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__THROTTLE_TICK_RATE_NODE_HPP_
+#define ROS2_BEHAVIOR_TREE__THROTTLE_TICK_RATE_NODE_HPP_
 
 #include <chrono>
 #include <string>
@@ -23,17 +23,17 @@
 namespace ros2_behavior_tree
 {
 
-class ThrottleTickCountNode : public BT::DecoratorNode
+class ThrottleTickRateNode : public BT::DecoratorNode
 {
 public:
-  ThrottleTickCountNode(const std::string & name, double hz)
+  ThrottleTickRateNode(const std::string & name, double hz)
   : BT::DecoratorNode(name, {}), read_parameters_from_ports_(false)
   {
-    setRegistrationID("ThrottleTickCount");
+    setRegistrationID("ThrottleTickRate");
     period_ = 1.0 / hz;
   }
 
-  ThrottleTickCountNode(const std::string & name, const BT::NodeConfiguration & config)
+  ThrottleTickRateNode(const std::string & name, const BT::NodeConfiguration & config)
   : BT::DecoratorNode(name, config), read_parameters_from_ports_(true)
   {
   }
@@ -51,7 +51,7 @@ private:
     if (read_parameters_from_ports_) {
       double hz = 1.0;
       if (!getInput("hz", hz)) {
-        throw BT::RuntimeError("Missing parameter [hz] in ThrottleTickCount node");
+        throw BT::RuntimeError("Missing parameter [hz] in ThrottleTickRate node");
       }
       period_ = 1.0 / hz;
     }
@@ -73,8 +73,11 @@ private:
     typedef std::chrono::duration<float> float_seconds;
     auto seconds = std::chrono::duration_cast<float_seconds>(elapsed);
 
-    // If we've reached or exceeded the specified period, execute the child node
-    if (first_time_ || (child_node_->status() == BT::NodeStatus::RUNNING) || seconds.count() >= period_) {
+    auto child_running = child_node_->status() == BT::NodeStatus::RUNNING;
+
+    // The child gets ticked the first time through and any time the period has
+    // expired. In addition, once the child begins to run, it is ticked each time
+    if (first_time_ || child_running || seconds.count() >= period_) {
       first_time_ = false;
 
       auto child_state = child_node_->executeTick();
@@ -104,4 +107,4 @@ private:
 
 }  // namespace ros2_behavior_tree
 
-#endif  // ROS2_BEHAVIOR_TREE__THROTTLE_TICK_COUNT_NODE_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__THROTTLE_TICK_RATE_NODE_HPP_

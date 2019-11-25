@@ -16,12 +16,12 @@
 #include <memory>
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
-#include "ros2_behavior_tree/throttle_tick_count_node.hpp"
+#include "ros2_behavior_tree/throttle_tick_rate_node.hpp"
 #include "stub_action_test_node.hpp"
 
-struct TestThrottleTickCountNode : testing::Test
+struct TestThrottleTickRateNode : testing::Test
 {
-  TestThrottleTickCountNode()
+  TestThrottleTickRateNode()
   {
     // Create a blackboard which will be shared among the nodes
     blackboard_ = BT::Blackboard::create();
@@ -38,26 +38,26 @@ struct TestThrottleTickCountNode : testing::Test
 
     // Update the configuration with the parent node's ports and tell the parent node
     // to use this configuration
-    BT::assignDefaultRemapping<ros2_behavior_tree::ThrottleTickCountNode>(config);
+    BT::assignDefaultRemapping<ros2_behavior_tree::ThrottleTickRateNode>(config);
     root_ =
-      std::make_unique<ros2_behavior_tree::ThrottleTickCountNode>("throttle_tick_count", config);
+      std::make_unique<ros2_behavior_tree::ThrottleTickRateNode>("throttle_tick_rate", config);
 
     // Create the tree structure
     root_->setChild(child_action_.get());
   }
 
-  ~TestThrottleTickCountNode()
+  ~TestThrottleTickRateNode()
   {
     BT::haltAllActions(root_.get());
   }
 
-  std::unique_ptr<ros2_behavior_tree::ThrottleTickCountNode> root_;
+  std::unique_ptr<ros2_behavior_tree::ThrottleTickRateNode> root_;
   std::unique_ptr<StubActionTestNode> child_action_;
 
   BT::Blackboard::Ptr blackboard_;
 };
 
-TEST_F(TestThrottleTickCountNode, FirstTimeSuccess)
+TEST_F(TestThrottleTickRateNode, FirstTimeSuccess)
 {
   // If the child returns SUCCESS on the first tick, the parent should
   // also return SUCCESS
@@ -71,7 +71,7 @@ TEST_F(TestThrottleTickCountNode, FirstTimeSuccess)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(TestThrottleTickCountNode, FailureUponFailure)
+TEST_F(TestThrottleTickRateNode, FailureUponFailure)
 {
   // If the child returns FAILURE on the first tick, the parent should
   // also return FAILURE
@@ -85,7 +85,7 @@ TEST_F(TestThrottleTickCountNode, FailureUponFailure)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(TestThrottleTickCountNode, WaitForDurationWithRunning)
+TEST_F(TestThrottleTickRateNode, WaitForDurationWithRunning)
 {
   // If the child returns RUNNING on the first tick, the parent should
   // also return RUNNING
@@ -107,7 +107,7 @@ TEST_F(TestThrottleTickCountNode, WaitForDurationWithRunning)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 }
 
-TEST_F(TestThrottleTickCountNode, WaitForDurationWithSuccess)
+TEST_F(TestThrottleTickRateNode, WaitForDurationWithSuccess)
 {
   // If the child returns RUNNING on the first tick, the root should
   // return RUNNING
@@ -131,7 +131,7 @@ TEST_F(TestThrottleTickCountNode, WaitForDurationWithSuccess)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(TestThrottleTickCountNode, WaitForDurationWithFailure)
+TEST_F(TestThrottleTickRateNode, WaitForDurationWithFailure)
 {
   // If the child returns RUNNING on the first tick, the root should
   // return RUNNING
@@ -159,7 +159,7 @@ TEST_F(TestThrottleTickCountNode, WaitForDurationWithFailure)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(TestThrottleTickCountNode, SuccessAfterRunning)
+TEST_F(TestThrottleTickRateNode, SuccessAfterRunning)
 {
   // If the child returns RUNNING on the first tick, the root should
   // return RUNNING
@@ -170,7 +170,7 @@ TEST_F(TestThrottleTickCountNode, SuccessAfterRunning)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 
   // If we immediately tick again without waiting for the time period
-  // to expire, the child should be ticked, and return SUCCESS in 
+  // to expire, the child should be ticked, and return SUCCESS in
   // this case
   child_action_->set_return_value(BT::NodeStatus::SUCCESS);
   status = root_->executeTick();
@@ -179,7 +179,7 @@ TEST_F(TestThrottleTickCountNode, SuccessAfterRunning)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(TestThrottleTickCountNode, FailureAfterRunning)
+TEST_F(TestThrottleTickRateNode, FailureAfterRunning)
 {
   // If the child returns RUNNING on the first tick, the root should
   // return RUNNING
@@ -190,7 +190,7 @@ TEST_F(TestThrottleTickCountNode, FailureAfterRunning)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::RUNNING);
 
   // If we immediately tick again without waiting for the time period
-  // to expire, the child should be ticked, and return FAILURE in 
+  // to expire, the child should be ticked, and return FAILURE in
   // this case
   child_action_->set_return_value(BT::NodeStatus::FAILURE);
   status = root_->executeTick();
@@ -199,7 +199,7 @@ TEST_F(TestThrottleTickCountNode, FailureAfterRunning)
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
 
-TEST_F(TestThrottleTickCountNode, WaitForDurationWithSuccessThenSuccess)
+TEST_F(TestThrottleTickRateNode, WaitForDurationWithSuccessThenSuccess)
 {
   // If the child returns RUNNING on the first tick, the root should
   // return RUNNING
@@ -212,7 +212,7 @@ TEST_F(TestThrottleTickCountNode, WaitForDurationWithSuccessThenSuccess)
   // Wait a bit to exceed the time period
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-  // Now, if the child now returns SUCCESS, the ThrottleTickCount
+  // Now, if the child now returns SUCCESS, the ThrottleTickRate
   // decorator will return SUCCESS
   child_action_->set_return_value(BT::NodeStatus::SUCCESS);
   status = root_->executeTick();
@@ -228,4 +228,3 @@ TEST_F(TestThrottleTickCountNode, WaitForDurationWithSuccessThenSuccess)
   ASSERT_EQ(root_->status(), BT::NodeStatus::RUNNING);
   ASSERT_EQ(child_action_->status(), BT::NodeStatus::IDLE);
 }
-

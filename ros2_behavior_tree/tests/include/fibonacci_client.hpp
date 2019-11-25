@@ -15,6 +15,7 @@
 #ifndef FIBONACCI_CLIENT_HPP_
 #define FIBONACCI_CLIENT_HPP_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -35,47 +36,43 @@ public:
   {
     return augment_basic_ports({
       BT::InputPort<int32_t>("n", "Compute the fibonnaci sequence up to the nth value"),
-      BT::OutputPort<std::vector<int32_t>>("feedback", "Feedback from the server while computing the full fib(n) sequence"),
+      BT::OutputPort<std::vector<int32_t>>("feedback",
+      "Feedback from the server while computing the full fib(n) sequence"),
       BT::OutputPort<std::vector<int32_t>>("sequence", "The output fibonacci sequence up to n")
     });
   }
 
-  void read_input_ports() override
+  void read_input_ports(Fibonacci::Goal & goal) override
   {
-    if (!getInput<int32_t>("n", goal_.order)) {
+    if (!getInput<int32_t>("n", goal.order)) {
       throw BT::RuntimeError("Missing parameter [n] in Fibonacci node");
     }
   }
 
-  void write_feedback_ports(const std::shared_ptr<const Fibonacci::Feedback> feedback) override
+  bool read_new_goal(Fibonacci::Goal & goal) override
   {
-    RCLCPP_INFO(client_node_->get_logger(), "Feedback: Next number in sequence: %d", feedback->sequence.back());
-    setOutput<std::vector<int32_t>>("feedback", feedback->sequence);
-  }
-
-  void write_output_ports() override
-  {
-    setOutput<std::vector<int32_t>>("sequence", result_.result->sequence);
-  }
-
-  bool new_goal_received() override
-  {
-    int32_t n = 0;
-
     // Get the current value of 'n' from the input port (may have been updated)
+    int32_t n = 0;
     if (!getInput<int32_t>("n", n)) {
       throw BT::RuntimeError("Missing parameter [n] in Fibonacci node");
     }
 
     // If it's not the same as the goal we're currently working on, update the goal
     // and return true
-    if (n != goal_.order) {
-      goal_.order = n;
-      return true;
-    }
+    return (n != goal_.order) ? goal_.order = n, true : false;
+  }
 
-    // Otherwise, continue with the current goal
-    return false;
+  void write_feedback_ports(const std::shared_ptr<const Fibonacci::Feedback> feedback) override
+  {
+    RCLCPP_INFO(client_node_->get_logger(),
+      "Feedback: Next number in sequence: %d", feedback->sequence.back());
+    setOutput<std::vector<int32_t>>("feedback", feedback->sequence);
+  }
+
+  void write_output_ports(
+    rclcpp_action::ClientGoalHandle<Fibonacci>::WrappedResult & result) override
+  {
+    setOutput<std::vector<int32_t>>("sequence", result_.result->sequence);
   }
 };
 

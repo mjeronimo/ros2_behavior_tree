@@ -15,6 +15,7 @@
 #ifndef ADD_TWO_INTS_CLIENT_HPP_
 #define ADD_TWO_INTS_CLIENT_HPP_
 
+#include <memory>
 #include <string>
 
 #include "ros2_behavior_tree/ros2_service_client_node.hpp"
@@ -40,20 +41,20 @@ public:
     });
   }
 
-  void read_input_ports() override
+  void read_input_ports(std::shared_ptr<AddTwoInts::Request> request) override
   {
-    if (!getInput<int64_t>("a", request_->a)) {
+    if (!getInput<int64_t>("a", request->a)) {
       throw BT::RuntimeError("Missing parameter [a] in AddTwoInts node");
     }
 
-    if (!getInput<int64_t>("b", request_->b)) {
+    if (!getInput<int64_t>("b", request->b)) {
       throw BT::RuntimeError("Missing parameter [b] in AddTwoInts node");
     }
   }
 
-  void write_output_ports() override
+  void write_output_ports(std::shared_ptr<AddTwoInts::Response> response) override
   {
-    setOutput("sum", response_->sum);
+    setOutput("sum", response->sum);
   }
 
 private:

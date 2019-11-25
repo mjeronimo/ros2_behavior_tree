@@ -64,8 +64,8 @@ public:
 
   // A derived class the defines input and/or output ports can override these methods
   // to get/set the ports
-  virtual void read_input_ports() {}
-  virtual void write_output_ports() {}
+  virtual void read_input_ports(std::shared_ptr<typename ServiceT::Request> request) {}
+  virtual void write_output_ports(std::shared_ptr<typename ServiceT::Response> response) {}
 
   // The main override required by a BT service
   BT::NodeStatus tick() override
@@ -82,7 +82,7 @@ public:
       throw BT::RuntimeError("Missing parameter [client_node] in ROS2AsyncServiceClientNode");
     }
 
-    read_input_ports();
+    read_input_ports(request_);
 
     if (service_client_ == nullptr) {
       service_client_ = client_node_->create_client<ServiceT>(service_name_);
@@ -100,7 +100,7 @@ public:
       switch (future_result.wait_for(server_timeout_)) {
         case std::future_status::ready:
           response_ = future_result.get();
-          write_output_ports();
+          write_output_ports(response_);
           return BT::NodeStatus::SUCCESS;
 
         case std::future_status::timeout:

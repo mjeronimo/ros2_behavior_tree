@@ -46,8 +46,8 @@ public:
       BT::InputPort<std::string>("service_name", "The name of the service to call"),
       BT::InputPort<std::chrono::milliseconds>("server_timeout",
         "The timeout value, in milliseconds, to use when waiting for service responses"),
-      BT::InputPort<std::shared_ptr<rclcpp::Node>>("client_node",
-        "The (non-spinning) client node to use when making service calls")
+      BT::InputPort<std::shared_ptr<rclcpp::Node>>("ros2_node",
+        "The ROS2 node to use when when creating the service")
     };
 
     basic_ports.insert(additional_ports.begin(), additional_ports.end());
@@ -78,19 +78,19 @@ public:
       throw BT::RuntimeError("Missing parameter [server_timeout] in ROS2AsyncServiceClientNode");
     }
 
-    if (!getInput<std::shared_ptr<rclcpp::Node>>("client_node", client_node_)) {
-      throw BT::RuntimeError("Missing parameter [client_node] in ROS2AsyncServiceClientNode");
+    if (!getInput<std::shared_ptr<rclcpp::Node>>("ros2_node", ros2_node_)) {
+      throw BT::RuntimeError("Missing parameter [ros2_node] in ROS2AsyncServiceClientNode");
     }
 
     read_input_ports(request_);
 
     if (service_client_ == nullptr) {
-      service_client_ = client_node_->create_client<ServiceT>(service_name_);
+      service_client_ = ros2_node_->create_client<ServiceT>(service_name_);
     }
 
     // Make sure the server is actually there before continuing
     if (!service_client_->wait_for_service(std::chrono::milliseconds(server_timeout_))) {
-      RCLCPP_ERROR(client_node_->get_logger(),
+      RCLCPP_ERROR(ros2_node_->get_logger(),
         "Timed out waiting for service \"%s\" to become available", service_name_.c_str());
       return BT::NodeStatus::FAILURE;
     }
@@ -118,7 +118,7 @@ protected:
   typename std::shared_ptr<rclcpp::Client<ServiceT>> service_client_;
 
   // The (non-spinning) node to use when calling the service
-  rclcpp::Node::SharedPtr client_node_;
+  rclcpp::Node::SharedPtr ros2_node_;
 
   std::string service_name_;
 

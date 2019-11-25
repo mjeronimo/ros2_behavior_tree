@@ -58,16 +58,16 @@ struct TestROS2ActionClientNode : testing::Test
     // Set this configuration to the Fibonacci input and output ports
     BT::assignDefaultRemapping<FibonacciClient>(config);
 
-    client_node_ = std::make_shared<rclcpp::Node>("client_node1");
-    client_node_thread_ = std::make_unique<ros2_behavior_tree::NodeThread>(client_node_);
+    ros2_node_ = std::make_shared<rclcpp::Node>("ros2_node1");
+    ros2_node_thread_ = std::make_unique<ros2_behavior_tree::NodeThread>(ros2_node_);
 
     fibonacci_client_ = std::make_unique<FibonacciClient>("fibonacci", config);
   }
 
   void TearDown()
   {
-    client_node_thread_.reset();
-    client_node_.reset();
+    ros2_node_thread_.reset();
+    ros2_node_.reset();
   }
 
   static std::shared_ptr<FibonacciServer> action_node_;
@@ -76,8 +76,8 @@ struct TestROS2ActionClientNode : testing::Test
   BT::Blackboard::Ptr blackboard_;
   std::unique_ptr<FibonacciClient> fibonacci_client_;
 
-  std::shared_ptr<rclcpp::Node> client_node_;
-  std::shared_ptr<ros2_behavior_tree::NodeThread> client_node_thread_;
+  std::shared_ptr<rclcpp::Node> ros2_node_;
+  std::shared_ptr<ros2_behavior_tree::NodeThread> ros2_node_thread_;
 };
 
 std::shared_ptr<FibonacciServer> TestROS2ActionClientNode::action_node_;
@@ -89,7 +89,7 @@ TEST_F(TestROS2ActionClientNode, SimpleCall)
 {
   blackboard_->set("action_name", "fibonacci");
   blackboard_->set("server_timeout", "1000");
-  blackboard_->set<std::shared_ptr<rclcpp::Node>>("client_node", client_node_);  // NOLINT
+  blackboard_->set<std::shared_ptr<rclcpp::Node>>("ros2_node", ros2_node_);  // NOLINT
   blackboard_->set("n", "10");
 
   // Manually run the node to completion
@@ -113,8 +113,8 @@ TEST_F(TestROS2ActionClientNode, CallUsingXML)
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
         <Sequence name="root">
-            <CreateROS2Node node_name="client_node2" spin="true" node_handle="{client_node}"/>
-            <Fibonacci action_name="fibonacci" server_timeout="1000" client_node="{client_node}" n="10" sequence="{sequence}"/>
+            <CreateROS2Node node_name="ros2_node2" spin="true" node_handle="{ros2_node}"/>
+            <Fibonacci action_name="fibonacci" server_timeout="1000" ros2_node="{ros2_node}" n="10" sequence="{sequence}"/>
         </Sequence>
      </BehaviorTree>
  </root>
@@ -142,7 +142,7 @@ TEST_F(TestROS2ActionClientNode, SendNewGoal)
 {
   blackboard_->set("action_name", "fibonacci");
   blackboard_->set("server_timeout", "1000");
-  blackboard_->set<std::shared_ptr<rclcpp::Node>>("client_node", client_node_);  // NOLINT
+  blackboard_->set<std::shared_ptr<rclcpp::Node>>("ros2_node", ros2_node_);  // NOLINT
   blackboard_->set("n", "10");
 
   // This time, dynamically update the goal on the blackboard. This should cause the

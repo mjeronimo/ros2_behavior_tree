@@ -54,13 +54,13 @@ struct TestROS2ServiceClientNode : testing::Test
     BT::NodeConfiguration config;
     config.blackboard = blackboard_;
 
-    client_node_ = std::make_shared<rclcpp::Node>("client_node");
-    client_node_thread_ = std::make_unique<ros2_behavior_tree::NodeThread>(client_node_);
+    ros2_node_ = std::make_shared<rclcpp::Node>("ros2_node");
+    ros2_node_thread_ = std::make_unique<ros2_behavior_tree::NodeThread>(ros2_node_);
 
     // Set the generic input port values
     blackboard_->set("service_name", "add_two_ints");
     blackboard_->set("server_timeout", "100");
-    blackboard_->set<std::shared_ptr<rclcpp::Node>>("client_node", client_node_);  // NOLINT
+    blackboard_->set<std::shared_ptr<rclcpp::Node>>("ros2_node", ros2_node_);  // NOLINT
 
     // Set this configuration to the AddTwoInts input and output ports
     BT::assignDefaultRemapping<AddTwoIntsClient>(config);
@@ -71,8 +71,8 @@ struct TestROS2ServiceClientNode : testing::Test
   void TearDown()
   {
     // We can then stop the thread and delete the service node
-    client_node_thread_.reset();
-    client_node_.reset();
+    ros2_node_thread_.reset();
+    ros2_node_.reset();
   }
 
   static std::shared_ptr<AddTwoIntsServer> service_node_;
@@ -81,8 +81,8 @@ struct TestROS2ServiceClientNode : testing::Test
   BT::Blackboard::Ptr blackboard_;
   std::unique_ptr<AddTwoIntsClient> add_two_ints_client_;
 
-  std::shared_ptr<rclcpp::Node> client_node_;
-  std::shared_ptr<ros2_behavior_tree::NodeThread> client_node_thread_;
+  std::shared_ptr<rclcpp::Node> ros2_node_;
+  std::shared_ptr<ros2_behavior_tree::NodeThread> ros2_node_thread_;
 };
 
 std::shared_ptr<AddTwoIntsServer> TestROS2ServiceClientNode::service_node_;
@@ -115,12 +115,12 @@ TEST_F(TestROS2ServiceClientNode, ChainUsingXMLAndPorts)
      <BehaviorTree ID="MainTree">
         <Sequence name="root">
             <SetBlackboard output_key="a1" value="33"/>
-            <CreateROS2Node node_name="test_bt_node" spin="true" node_handle="{client_node}"/>
-            <AddTwoInts service_name="add_two_ints" server_timeout="100" client_node="{client_node}" a="{a1}" b="44" sum="{sum1}"/>
-            <AddTwoInts service_name="add_two_ints" server_timeout="100" client_node="{client_node}" a="{sum1}" b="44" sum="{sum2}"/>
-            <AddTwoInts service_name="add_two_ints" server_timeout="100" client_node="{client_node}" a="{sum2}" b="{sum2}" sum="{sum3}"/>
+            <CreateROS2Node node_name="test_bt_node" spin="true" node_handle="{ros2_node}"/>
+            <AddTwoInts service_name="add_two_ints" server_timeout="100" ros2_node="{ros2_node}" a="{a1}" b="44" sum="{sum1}"/>
+            <AddTwoInts service_name="add_two_ints" server_timeout="100" ros2_node="{ros2_node}" a="{sum1}" b="44" sum="{sum2}"/>
+            <AddTwoInts service_name="add_two_ints" server_timeout="100" ros2_node="{ros2_node}" a="{sum2}" b="{sum2}" sum="{sum3}"/>
             <Repeat num_cycles="10">
-              <AddTwoInts service_name="add_two_ints" server_timeout="100" client_node="{client_node}" a="{sum3}" b="1" sum="{sum3}"/>
+              <AddTwoInts service_name="add_two_ints" server_timeout="100" ros2_node="{ros2_node}" a="{sum3}" b="1" sum="{sum3}"/>
             </Repeat>
         </Sequence>
      </BehaviorTree>

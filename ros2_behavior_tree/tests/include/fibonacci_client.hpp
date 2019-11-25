@@ -64,7 +64,7 @@ public:
 
   void write_feedback_ports(const std::shared_ptr<const Fibonacci::Feedback> feedback) override
   {
-    RCLCPP_INFO(client_node_->get_logger(),
+    RCLCPP_INFO(ros2_node_->get_logger(),
       "Feedback: Next number in sequence: %d", feedback->sequence.back());
     setOutput<std::vector<int32_t>>("feedback", feedback->sequence);
   }

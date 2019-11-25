@@ -47,8 +47,8 @@ public:
       BT::InputPort<std::string>("action_name", "The name of the action to call"),
       BT::InputPort<std::chrono::milliseconds>("server_timeout",
         "The timeout value, in milliseconds, to use when waiting for the action server responses"),
-      BT::InputPort<std::shared_ptr<rclcpp::Node>>("client_node",
-        "The (non-spinning) client node to use when making service calls")
+      BT::InputPort<std::shared_ptr<rclcpp::Node>>("ros2_node",
+        "The ROS2 node to use when creating the service")
     };
 
     basic_ports.insert(additional_ports.begin(), additional_ports.end());
@@ -89,19 +89,19 @@ public:
       throw BT::RuntimeError("Missing parameter [server_timeout] in ROS2ServiceClientNode");
     }
 
-    if (!getInput<std::shared_ptr<rclcpp::Node>>("client_node", client_node_)) {
-      throw BT::RuntimeError("Missing parameter [client_node] in ROS2ServiceClientNode");
+    if (!getInput<std::shared_ptr<rclcpp::Node>>("ros2_node", ros2_node_)) {
+      throw BT::RuntimeError("Missing parameter [ros2_node] in ROS2ServiceClientNode");
     }
 
     read_input_ports(goal_);
 
     if (action_client_ == nullptr) {
-      action_client_ = rclcpp_action::create_client<ActionT>(client_node_, action_name_);
+      action_client_ = rclcpp_action::create_client<ActionT>(ros2_node_, action_name_);
     }
 
     // Make sure the action server is available there before continuing
     if (!action_client_->wait_for_action_server(std::chrono::milliseconds(server_timeout_))) {
-      RCLCPP_ERROR(client_node_->get_logger(),
+      RCLCPP_ERROR(ros2_node_->get_logger(),
         "Timed out waiting for action server \"%s\" to become available", action_name_.c_str());
       return BT::NodeStatus::FAILURE;
     }
@@ -135,7 +135,7 @@ new_goal_received:
           // and start a new one
           auto future = action_client_->async_cancel_goal(goal_handle_);
           if (future.wait_for(server_timeout_) == std::future_status::timeout) {
-            RCLCPP_WARN(client_node_->get_logger(), "failed to cancel goal");
+            RCLCPP_WARN(ros2_node_->get_logger(), "failed to cancel goal");
           } else {
             goto new_goal_received;
           }
@@ -170,7 +170,7 @@ new_goal_received:
     if (should_cancel_goal()) {
       auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
       if (future_cancel.wait_for(server_timeout_) != std::future_status::ready) {
-        RCLCPP_ERROR(client_node_->get_logger(),
+        RCLCPP_ERROR(ros2_node_->get_logger(),
           "Failed to cancel action server for %s", action_name_.c_str());
       }
     }
@@ -195,8 +195,8 @@ protected:
   typename std::shared_ptr<rclcpp_action::Client<ActionT>> action_client_;
   typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle_;
 
-  // The (non-spinning) node to use when calling the service
-  rclcpp::Node::SharedPtr client_node_;
+  // The ROS node to use when calling the service
+  rclcpp::Node::SharedPtr ros2_node_;
 
   std::string action_name_;
 

@@ -122,7 +122,7 @@ new_goal_received:
       throw std::runtime_error("Goal was rejected by the action server");
     }
 
-    auto future_result = goal_handle_->async_result();
+    auto future_result = action_client_->async_get_result(goal_handle_);
     std::future_status rc;
     do {
       rc = future_result.wait_for(server_timeout_);

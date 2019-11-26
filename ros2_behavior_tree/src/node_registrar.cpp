@@ -23,6 +23,7 @@
 #include "ros2_behavior_tree/recovery_node.hpp"
 #include "ros2_behavior_tree/repeat_until_node.hpp"
 #include "ros2_behavior_tree/ros2_service_client_node.hpp"
+#include "ros2_behavior_tree/round_robin_node.hpp"
 #include "ros2_behavior_tree/throttle_tick_rate_node.hpp"
 
 BT_REGISTER_NODES(factory)
@@ -63,6 +64,7 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
   // Control nodes
   factory.registerNodeType<ros2_behavior_tree::FirstResultNode>("FirstResult");
   factory.registerNodeType<ros2_behavior_tree::RecoveryNode>("Recovery");
+  factory.registerNodeType<ros2_behavior_tree::RoundRobinNode>("RoundRobin");
 }
 
 #define ANSI_COLOR_RESET    "\x1b[0m"

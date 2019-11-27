@@ -1,0 +1,33 @@
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <SequenceStar>
+      <SetBlackboard output_key="first_path_available" value="0"/>
+      <Recovery num_retries="1">
+        <FirstResult>
+          <Repeat num_cycles="-1">
+            <ThrottleTickRate hz="2.0">
+              <Recovery num_retries="1">
+                <Sequence>
+                  <Message msg="ComputePathToPose"/>
+                  <SetBlackboard output_key="first_path_available" value="1"/>
+                </Sequence>
+                <Message msg="Planner Recovery"/>
+              </Recovery>
+            </ThrottleTickRate>
+          </Repeat>
+          <Repeat num_cycles="10">
+            <ThrottleTickRate hz="5.0">
+              <Recovery num_retries="1">
+                <Message msg="FollowPath"/>
+                <BlackboardCheckInt value_A="1" value_B="{first_path_available}" return_on_mismatch="RUNNING">
+                  <Message msg="FollowPath Recovery"/>
+                </BlackboardCheckInt>
+              </Recovery>
+            </ThrottleTickRate>
+          </Repeat>
+        </FirstResult>
+        <Message msg="Global Recovery"/>
+      </Recovery>
+    </SequenceStar>
+  </BehaviorTree>
+</root>

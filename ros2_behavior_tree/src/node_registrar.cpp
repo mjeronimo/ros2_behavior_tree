@@ -21,7 +21,7 @@
 #include "ros2_behavior_tree/create_transform_buffer_node.hpp"
 #include "ros2_behavior_tree/first_result_node.hpp"
 #include "ros2_behavior_tree/forever_node.hpp"
-#include "ros2_behavior_tree/get_current_pose_node.hpp"
+#include "ros2_behavior_tree/get_robot_pose_node.hpp"
 #include "ros2_behavior_tree/recovery_node.hpp"
 #include "ros2_behavior_tree/repeat_until_node.hpp"
 #include "ros2_behavior_tree/ros2_service_client_node.hpp"
@@ -45,7 +45,7 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
   factory.registerNodeType<ros2_behavior_tree::AsyncWaitNode>("AsyncWait");
   factory.registerNodeType<ros2_behavior_tree::CreateROS2Node>("CreateROS2Node");
   factory.registerNodeType<ros2_behavior_tree::CreateTransformBufferNode>("CreateTransformBuffer");
-  factory.registerNodeType<ros2_behavior_tree::GetCurrentPoseNode>("GetCurrentPose");
+  factory.registerNodeType<ros2_behavior_tree::GetRobotPoseNode>("GetRobotPose");
 
   const BT::PortsList message_params {BT::InputPort<std::string>("msg")};
   factory.registerSimpleAction("Message",

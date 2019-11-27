@@ -43,7 +43,7 @@ static const char bt_xml[] =
       <CreateTransformBuffer node_handle="{ros_node}" transform_buffer="{tf}"/>
       <Wait msec="3000"/>
       <Recovery num_retries="5">
-        <GetCurrentPose transform_buffer="{tf}" pose="{goal}"/>
+        <GetRobotPose transform_buffer="{tf}" pose="{goal}"/>
         <Wait msec="1000"/>
 	    </Recovery>
     </Sequence>

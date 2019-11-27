@@ -20,6 +20,7 @@
 
 // The Behavior Tree to execute. This tree simple prints "Hello," and
 // "World!" on separate lines and then terminates.
+#if 0
 static const char bt_xml[] =
   R"(
 <root main_tree_to_execute="MainTree">
@@ -31,6 +32,25 @@ static const char bt_xml[] =
   </BehaviorTree>
 </root>
 )";
+#else
+static const char bt_xml[] =
+  R"(
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <Sequence name="say_hello">
+      <SetBlackboard output_key="first_path_available" value="0"/>
+      <CreateROS2Node node_name="some_name" spin="true" node_handle="{ros_node}"/>
+      <CreateTransformBuffer node_handle="{ros_node}" transform_buffer="{tf}"/>
+      <Wait msec="3000"/>
+      <Recovery num_retries="5">
+        <GetCurrentPose transform_buffer="{tf}" pose="{goal}"/>
+        <Wait msec="1000"/>
+	    </Recovery>
+    </Sequence>
+  </BehaviorTree>
+</root>
+)";
+#endif
 
 int main(int argc, char ** argv)
 {

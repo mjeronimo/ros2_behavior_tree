@@ -11,6 +11,8 @@ find_package(rclcpp REQUIRED)
 find_package(ros2_behavior_tree_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(example_interfaces REQUIRED)
 
 include_directories(
@@ -69,6 +71,8 @@ set(dependencies
   ros2_behavior_tree_msgs
   std_msgs
   std_srvs
+  tf2_geometry_msgs
+  tf2_ros
   example_interfaces
 )
 

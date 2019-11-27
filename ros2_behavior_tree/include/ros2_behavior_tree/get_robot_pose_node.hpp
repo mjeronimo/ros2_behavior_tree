@@ -91,19 +91,19 @@ protected:
       RCLCPP_INFO(logger, "x,y: %f,%f", target_pose.pose.position.x, target_pose.pose.position.y);
       return true;
     } catch (tf2::LookupException & ex) {
-      RCLCPP_ERROR(logger,
-        "No Transform available Error looking up robot pose: %s\n", ex.what());
+      RCLCPP_WARN(logger,
+        "Failed to get robot pose: %s\n", ex.what());
     } catch (tf2::ConnectivityException & ex) {
-      RCLCPP_ERROR(logger,
-        "Connectivity Error looking up robot pose: %s\n", ex.what());
+      RCLCPP_WARN(logger,
+        "Failed to get robot pose: %s\n", ex.what());
     } catch (tf2::ExtrapolationException & ex) {
-      RCLCPP_ERROR(logger,
-        "Extrapolation Error looking up robot pose: %s\n", ex.what());
+      RCLCPP_WARN(logger,
+        "Failed to get robot pose: %s\n", ex.what());
     } catch (tf2::TimeoutException & ex) {
-      RCLCPP_ERROR(logger,
+      RCLCPP_WARN(logger,
         "Transform timeout with tolerance: %.4f", transform_timeout);
     } catch (...) {
-      RCLCPP_ERROR(logger, "Failed to transform from %s to %s",
+      RCLCPP_WARN(logger, "Failed to transform from %s to %s",
         source_frame.c_str(), target_frame.c_str());
     }
 

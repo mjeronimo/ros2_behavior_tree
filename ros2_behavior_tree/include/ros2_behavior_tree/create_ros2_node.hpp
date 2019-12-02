@@ -38,6 +38,7 @@ public:
   {
     return {
       BT::InputPort<std::string>("node_name", "The name of the ROS2 node to create"),
+      BT::InputPort<std::string>("namespace", "The namespace in which to create the node"),
       BT::InputPort<bool>("spin", "Whether to spin this node on a separate thread"),
       BT::OutputPort<std::shared_ptr<rclcpp::Node>>("node_handle",
         "The node handle of the created node")
@@ -51,12 +52,17 @@ public:
       throw BT::RuntimeError("Missing parameter [node_name] in CreateROS2Node");
     }
 
+    std::string ns;
+    if (!getInput("namespace", ns)) {
+      throw BT::RuntimeError("Missing parameter [namespace] in CreateROS2Node");
+    }
+
     bool spin_thread = false;
     if (!getInput("spin", spin_thread)) {
       throw BT::RuntimeError("Missing parameter [spin] in CreateROS2Node");
     }
 
-    auto node = std::make_shared<rclcpp::Node>(node_name);
+    auto node = std::make_shared<rclcpp::Node>(node_name, ns);
 
     if (!setOutput("node_handle", node)) {
       throw BT::RuntimeError("Failed to set output port value [node_handle] in CreateROS2Node");

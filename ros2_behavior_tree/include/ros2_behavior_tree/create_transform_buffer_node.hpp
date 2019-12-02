@@ -63,8 +63,8 @@ public:
         node->get_node_timers_interface());
 
     tf_buffer_->setCreateTimerInterface(timer_interface);
-    //tf_buffer_->setUsingDedicatedThread(true);
-    tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_); // , node, false);
+    tf_buffer_->setUsingDedicatedThread(true);
+    tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, node, false);
 
     if (!setOutput<std::shared_ptr<tf2_ros::Buffer>>("transform_buffer", tf_buffer_)) {
       throw BT::RuntimeError("Failed to set output port value [transform_buffer] in CreateTransformBuffer");

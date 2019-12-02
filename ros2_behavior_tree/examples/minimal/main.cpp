@@ -18,6 +18,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "ros2_behavior_tree/behavior_tree.hpp"
 
+#if 0
 // The Behavior Tree to execute. This tree simple prints "Hello," and
 // "World!" on separate lines and then terminates.
 static const char bt_xml[] =
@@ -31,6 +32,37 @@ static const char bt_xml[] =
   </BehaviorTree>
 </root>
 )";
+#else
+static const char bt_xml[] =
+  R"(
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <Sequence name="say_hello">
+      <SetBlackboard output_key="first_path_available" value="0"/>
+      <CreateROS2Node node_name="node1" namespace="robot1" spin="true" node_handle="{ros_node_1}"/>
+      <CreateROS2Node node_name="node2" namespace="robot2" spin="true" node_handle="{ros_node_2}"/>
+      <CreateTransformBuffer node_handle="{ros_node_1}" transform_buffer="{tf_1}"/>
+      <CreateTransformBuffer node_handle="{ros_node_2}" transform_buffer="{tf_2}"/>
+      <Wait msec="1000"/>
+      <Recovery num_retries="10">
+        <GetRobotPose transform_buffer="{tf_1}" pose="{leader_pose}"/>
+        <Sequence>
+          <Message msg="Waiting for transform to become available..."/>
+          <Wait msec="1000"/>
+        </Sequence>
+      </Recovery>
+      <Recovery num_retries="10">
+        <GetRobotPose transform_buffer="{tf_2}" pose="{follower_pose}"/>
+        <Sequence>
+          <Message msg="Waiting for transform to become available..."/>
+          <Wait msec="1000"/>
+        </Sequence>
+      </Recovery>
+    </Sequence>
+  </BehaviorTree>
+</root>
+)";
+#endif
 
 int main(int argc, char ** argv)
 {

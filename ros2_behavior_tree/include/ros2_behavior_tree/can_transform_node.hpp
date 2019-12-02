@@ -18,7 +18,7 @@
 #include <string>
 #include <memory>
 
-#include "behaviortree_cpp_v3/action_node.h"
+#include "behaviortree_cpp_v3/condition_node.h"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
@@ -27,11 +27,11 @@
 namespace ros2_behavior_tree
 {
 
-class CanTransformNode : public BT::SyncActionNode
+class CanTransformNode : public BT::ConditionNode
 {
 public:
   CanTransformNode(const std::string & name, const BT::NodeConfiguration & config)
-  : BT::SyncActionNode(name, config)
+  : BT::ConditionNode(name, config)
   {
   }
 

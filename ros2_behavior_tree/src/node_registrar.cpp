@@ -17,6 +17,7 @@
 #include <string>
 
 #include "ros2_behavior_tree/async_wait_node.hpp"
+#include "ros2_behavior_tree/can_transform_node.hpp"
 #include "ros2_behavior_tree/create_ros2_node.hpp"
 #include "ros2_behavior_tree/create_transform_buffer_node.hpp"
 #include "ros2_behavior_tree/first_result_node.hpp"
@@ -46,6 +47,7 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
   factory.registerNodeType<ros2_behavior_tree::CreateROS2Node>("CreateROS2Node");
   factory.registerNodeType<ros2_behavior_tree::CreateTransformBufferNode>("CreateTransformBuffer");
   factory.registerNodeType<ros2_behavior_tree::GetRobotPoseNode>("GetRobotPose");
+  factory.registerNodeType<ros2_behavior_tree::CanTransformNode>("CanTransform");
 
   const BT::PortsList message_params {BT::InputPort<std::string>("msg")};
   factory.registerSimpleAction("Message",

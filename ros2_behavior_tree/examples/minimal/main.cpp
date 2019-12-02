@@ -57,8 +57,13 @@ static const char bt_xml[] =
         </Recovery>
       </Sequence>
       <Message msg="Getting robot poses..."/>
-      <GetRobotPose transform_buffer="{tf_1}" pose="{leader_pose}"/>
-      <GetRobotPose transform_buffer="{tf_2}" pose="{follower_pose}"/>
+      <Forever>
+        <Sequence>
+          <GetRobotPose transform_buffer="{tf_1}" pose="{leader_pose}"/>
+          <GetRobotPose transform_buffer="{tf_2}" pose="{follower_pose}"/>
+          <SafeDistance distance="1.0" pose_1="{leader_pose>" pose_2="{follower_pose}"/>
+        </Sequence>
+      </Forever>
     </Sequence>
   </BehaviorTree>
 </root>

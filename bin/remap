@@ -1,0 +1,1 @@
+build/ros2_behavior_tree/minimal --ros-args -r node1:/tf:=/robot1/tf -r node1:/tf_static:=/robot1/tf_static -r node2:/tf:=/robot2/tf -r node2:/tf_static:=/robot2/tf_static

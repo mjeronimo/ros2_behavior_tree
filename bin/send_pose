@@ -1,0 +1,10 @@
+ros2 action send_goal /robot1/ComputePathToPose nav2_msgs/ComputePathToPose "{pose: {header: {stamp: {sec: 0, nanosec: 0}, frame_id: base_link}, pose: {position: {x: 0.0, y: -0.5, z: 0}, orientation: {x: 0, y: 0, z: 0, w: 0}}}, planner_id: GridBased }"
+
+ros2 action send_goal /robot2/ComputePathToPose nav2_msgs/ComputePathToPose "{pose: {header: {stamp: {sec: 0, nanosec: 0}, frame_id: base_link}, pose: {position: {x: 0.0, y: 0.5, z: 0}, orientation: {x: 0, y: 0, z: 0, w: 0}}}, planner_id: GridBased }"
+
+
+#  target_poses.push_back({-2.0, -0.5, 0});
+#  target_poses.push_back({0.94, -0.55, 0});
+#  target_poses.push_back({1.7, 0.5, 1.4});
+#  target_poses.push_back({0.97, 1.68, 2.94});
+#  target_poses.push_back({0.02, 1.74, -2.9});

@@ -58,21 +58,14 @@ static const char bt_xml[] =
       </Sequence>
       <Message msg="Getting robot poses..."/>
       <Forever>
-        <ReactiveFallback>
-          <Sequence>
-            <Message msg="Checking for a safe distance"/>
-            <GetRobotPose transform_buffer="{tf_1}" pose="{leader_pose}"/>
-            <GetRobotPose transform_buffer="{tf_2}" pose="{follower_pose}"/>
-            <Inverter>
-              <SafeDistance distance="1.5" pose_1="{leader_pose}" pose_2="{follower_pose}"/>
-            </Inverter>
-            <Message msg="After checking for a safe distance"/>
-          </Sequence>
-          <Sequence>
-            <Message msg="Lead robot a safe distance away, continue following ..."/>
-            <AsyncWait msec="1000"/>
-          </Sequence>
-        </ReactiveFallback>
+        <ReactiveSequence>
+          <Message msg="Checking for a safe distance"/>
+          <GetRobotPose transform_buffer="{tf_1}" pose="{leader_pose}"/>
+          <GetRobotPose transform_buffer="{tf_2}" pose="{follower_pose}"/>
+          <SafeDistance distance="1.5" pose_1="{leader_pose}" pose_2="{follower_pose}"/>
+          <Message msg="Lead robot a safe distance away, continue following ..."/>
+		  <AsyncWait msec="1000"/>
+        </ReactiveSequence>
       </Forever>
     </Sequence>
   </BehaviorTree>

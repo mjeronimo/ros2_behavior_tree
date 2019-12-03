@@ -69,15 +69,15 @@ public:
 
     rclcpp::Time transform_time = node->now();
     std::string tf_error;
-    double tf_tolerance = 1.0;
+    double timeout = 0.0;
 
     if (tf_buffer->canTransform(target_frame, source_frame,
-      tf2_ros::fromMsg(transform_time), tf2::durationFromSec(tf_tolerance), &tf_error))
+      tf2_ros::fromMsg(transform_time), tf2::durationFromSec(timeout), &tf_error))
     {
       return BT::NodeStatus::SUCCESS;
     } else {
-      RCLCPP_ERROR(node->get_logger(), "Transform from %s to %s with tolerance %.2f failed: %s",
-        source_frame.c_str(), target_frame.c_str(), tf_tolerance, tf_error.c_str());
+      RCLCPP_WARN(node->get_logger(), "Transform from %s to %s failed: %s",
+        source_frame.c_str(), target_frame.c_str(), tf_error.c_str());
       return BT::NodeStatus::FAILURE;
     }
   }

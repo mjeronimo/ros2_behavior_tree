@@ -17,6 +17,7 @@
 
 #include <string>
 #include <memory>
+#include <cmath>
 
 #include "behaviortree_cpp_v3/condition_node.h"
 #include "geometry_msgs/msg/pose_stamped.hpp"
@@ -46,8 +47,8 @@ public:
 
   BT::NodeStatus tick() override
   {
-    double distance;
-    if (!getInput<double>("distance", distance)) {
+    double threshold;
+    if (!getInput<double>("distance", threshold)) {
       throw BT::RuntimeError("Missing parameter [distance] in SafeDistance node");
     }
 
@@ -61,14 +62,15 @@ public:
       throw BT::RuntimeError("Missing parameter [pose_2] in SafeDistance node");
     }
 
-    double dx = pose1->pose.position.x - pose2->pose.position.x;
-    double dy = pose1->pose.position.y - pose2->pose.position.y;
+    double distance = sqrt(
+	  pow(pose1->pose.position.x - pose2->pose.position.x, 2) - 
+	  pow(pose1->pose.position.y - pose2->pose.position.y, 2)
+	);
 
-    printf("threshold distance: : %lf\n", distance);
-    printf("1: %lf\n", sqrt(dx*dx + dy*dy));
-    printf("\n");
+    printf("threshold: : %lf\n", threshold);
+    printf("distance: %lf\n\n", distance);
 
-    return ((dx * dx + dy * dy) > (distance * distance)) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+    return (distance > threshold) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
 

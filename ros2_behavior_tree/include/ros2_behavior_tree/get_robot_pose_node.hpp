@@ -42,7 +42,7 @@ public:
   {
     return {
       BT::InputPort<std::shared_ptr<tf2_ros::Buffer>>("transform_buffer", "The transform buffer to use"),
-      BT::OutputPort<geometry_msgs::msg::PoseStamped>("pose", "The current pose of the robot")
+      BT::OutputPort<std::shared_ptr<geometry_msgs::msg::PoseStamped>>("pose", "The current pose of the robot")
     };
   }
 
@@ -54,10 +54,11 @@ public:
       throw BT::RuntimeError("Missing parameter [transform_buffer] in GetRobotPose node");
     }
 
-    geometry_msgs::msg::PoseStamped current_pose = geometry_msgs::msg::PoseStamped();
-
+    geometry_msgs::msg::PoseStamped current_pose;
     if (get_robot_pose(current_pose, tf_buffer)) {
-      if (!setOutput<geometry_msgs::msg::PoseStamped>("pose", current_pose)) {
+      auto pose = std::make_shared<geometry_msgs::msg::PoseStamped>();
+      *pose = current_pose;
+      if (!setOutput<std::shared_ptr<geometry_msgs::msg::PoseStamped>>("pose", pose)) {
         throw BT::RuntimeError("Failed to set output port value [transform_buffer] in CreateTransformBuffer");
       }
       return BT::NodeStatus::SUCCESS;

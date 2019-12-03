@@ -39,8 +39,8 @@ public:
   {
     return {
       BT::InputPort<double>("distance", "The distance threshold"),
-      BT::InputPort<geometry_msgs::msg::PoseStamped>("pose_1", "The first pose"),
-      BT::InputPort<geometry_msgs::msg::PoseStamped>("pose_2", "The second pose")
+      BT::InputPort<std::shared_ptr<geometry_msgs::msg::PoseStamped>>("pose_1", "The first pose"),
+      BT::InputPort<std::shared_ptr<geometry_msgs::msg::PoseStamped>>("pose_2", "The second pose")
     };
   }
 
@@ -51,20 +51,24 @@ public:
       throw BT::RuntimeError("Missing parameter [distance] in SafeDistance node");
     }
 
-    geometry_msgs::msg::PoseStamped pose1 = geometry_msgs::msg::PoseStamped();
-    if (!getInput<geometry_msgs::msg::PoseStamped>("pose_1", pose1)) {
+    std::shared_ptr<geometry_msgs::msg::PoseStamped> pose1;
+    if (!getInput<std::shared_ptr<geometry_msgs::msg::PoseStamped>>("pose_1", pose1)) {
       throw BT::RuntimeError("Missing parameter [pose_1] in SafeDistance node");
     }
 
-    geometry_msgs::msg::PoseStamped pose2 = geometry_msgs::msg::PoseStamped();
-    if (!getInput<geometry_msgs::msg::PoseStamped>("pose_2", pose2)) {
+    std::shared_ptr<geometry_msgs::msg::PoseStamped> pose2;
+    if (!getInput<std::shared_ptr<geometry_msgs::msg::PoseStamped>>("pose_2", pose2)) {
       throw BT::RuntimeError("Missing parameter [pose_2] in SafeDistance node");
     }
 
-    double dx = pose1.pose.position.x - pose2.pose.position.x;
-    double dy = pose1.pose.position.y - pose2.pose.position.y;
+    double dx = pose1->pose.position.x - pose2->pose.position.x;
+    double dy = pose1->pose.position.y - pose2->pose.position.y;
 
-    return (dx * dx + dy * dy > distance * distance) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+    printf("threshold distance: : %lf\n", distance);
+    printf("1: %lf\n", sqrt(dx*dx + dy*dy));
+    printf("\n");
+
+    return ((dx * dx + dy * dy) > (distance * distance)) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
 

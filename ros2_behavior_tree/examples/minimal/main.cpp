@@ -52,17 +52,27 @@ static const char bt_xml[] =
           </Sequence>
           <Sequence>
             <Message msg="Waiting for base_link to map transform to become available..."/>
-            <Wait msec="1000"/>
+            <AsyncWait msec="1000"/>
           </Sequence>
         </Recovery>
       </Sequence>
       <Message msg="Getting robot poses..."/>
       <Forever>
-        <Sequence>
-          <GetRobotPose transform_buffer="{tf_1}" pose="{leader_pose}"/>
-          <GetRobotPose transform_buffer="{tf_2}" pose="{follower_pose}"/>
-          <SafeDistance distance="1.0" pose_1="{leader_pose>" pose_2="{follower_pose}"/>
-        </Sequence>
+        <ReactiveFallback>
+          <Sequence>
+            <Message msg="Checking for a safe distance"/>
+            <GetRobotPose transform_buffer="{tf_1}" pose="{leader_pose}"/>
+            <GetRobotPose transform_buffer="{tf_2}" pose="{follower_pose}"/>
+            <Inverter>
+              <SafeDistance distance="1.5" pose_1="{leader_pose}" pose_2="{follower_pose}"/>
+            </Inverter>
+            <Message msg="After checking for a safe distance"/>
+          </Sequence>
+          <Sequence>
+            <Message msg="Lead robot a safe distance away, continue following ..."/>
+            <AsyncWait msec="1000"/>
+          </Sequence>
+        </ReactiveFallback>
       </Forever>
     </Sequence>
   </BehaviorTree>

@@ -39,16 +39,15 @@ static const char bt_xml[] =
   <BehaviorTree ID="MainTree">
     <Sequence name="FollowTheLeader">
       <Sequence name="startup">
-        <SetBlackboard output_key="first_path_available" value="0"/>
         <CreateROS2Node node_name="node1" namespace="robot1" spin="true" node_handle="{ros_node_1}"/>
         <CreateROS2Node node_name="node2" namespace="robot2" spin="true" node_handle="{ros_node_2}"/>
-        <CreateTransformBuffer node_handle="{ros_node_1}" transform_buffer="{tf_1}"/>
-        <CreateTransformBuffer node_handle="{ros_node_2}" transform_buffer="{tf_2}"/>
-        <Recovery num_retries="5">
+        <CreateTransformBuffer node_handle="{ros_node_1}" tf_buffer="{tf_1}"/>
+        <CreateTransformBuffer node_handle="{ros_node_2}" tf_buffer="{tf_2}"/>
+        <Recovery num_retries="7">
           <Sequence>
             <Message msg="Trying transforms..."/>
-            <CanTransform node_handle="{ros_node_1}" transform_buffer="{tf_1}" source_frame="base_link" target_frame="map"/>
-            <CanTransform node_handle="{ros_node_2}" transform_buffer="{tf_2}" source_frame="base_link" target_frame="map"/>
+            <CanTransform node_handle="{ros_node_1}" tf_buffer="{tf_1}" source_frame="base_link" target_frame="map"/>
+            <CanTransform node_handle="{ros_node_2}" tf_buffer="{tf_2}" source_frame="base_link" target_frame="map"/>
           </Sequence>
           <Sequence>
             <Message msg="Waiting for base_link to map transform to become available..."/>
@@ -60,11 +59,22 @@ static const char bt_xml[] =
       <Forever>
         <ReactiveSequence>
           <Message msg="Checking for a safe distance"/>
-          <GetRobotPose transform_buffer="{tf_1}" pose="{leader_pose}"/>
-          <GetRobotPose transform_buffer="{tf_2}" pose="{follower_pose}"/>
-          <SafeDistance distance="1.5" pose_1="{leader_pose}" pose_2="{follower_pose}"/>
-          <Message msg="Lead robot a safe distance away, continue following ..."/>
-		  <AsyncWait msec="1000"/>
+          <GetRobotPose tf_buffer="{tf_1}" pose="{leader_pose}"/>
+          <GetRobotPose tf_buffer="{tf_2}" pose="{follower_pose}"/>
+          <DistanceConstraint threshold="1.0" pose_1="{leader_pose}" pose_2="{follower_pose}">
+            <PipelineSequence>
+              <ThrottleTickRate hz="1.0">
+                <Sequence>
+                  <Message msg="GetPoseNearRobot"/>
+                  <Message msg="ComputePathToPose"/>
+                  <AsyncWait msec="1000"/>
+                </Sequence>
+              </ThrottleTickRate>
+              <Forever>
+                <Message msg="FollowPath: Safe distance away, following path..."/>
+              </Forever>
+            </PipelineSequence>
+          </DistanceConstraint>
         </ReactiveSequence>
       </Forever>
     </Sequence>

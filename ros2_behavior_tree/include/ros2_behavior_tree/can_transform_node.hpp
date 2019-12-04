@@ -39,7 +39,7 @@ public:
   {
     return {
       BT::InputPort<std::shared_ptr<rclcpp::Node>>("node_handle", "The ROS2 node to use"),
-      BT::InputPort<std::shared_ptr<tf2_ros::Buffer>>("transform_buffer", "The transform buffer to use"),
+      BT::InputPort<std::shared_ptr<tf2_ros::Buffer>>("tf_buffer", "The transform buffer to use"),
       BT::InputPort<std::string>("source_frame", "The source frame for the transform"),
       BT::InputPort<std::string>("target_frame", "The target frame for the transform")
     };
@@ -53,8 +53,8 @@ public:
     }
 
     std::shared_ptr<tf2_ros::Buffer> tf_buffer;
-    if (!getInput<std::shared_ptr<tf2_ros::Buffer>>("transform_buffer", tf_buffer)) {
-      throw BT::RuntimeError("Missing parameter [transform_buffer] in CanTransform node");
+    if (!getInput<std::shared_ptr<tf2_ros::Buffer>>("tf_buffer", tf_buffer)) {
+      throw BT::RuntimeError("Missing parameter [tf_buffer] in CanTransform node");
     }
 
     std::string source_frame;

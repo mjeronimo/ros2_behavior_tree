@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROS2_BEHAVIOR_TREE__SAFE_DISTANCE_NODE_HPP_
-#define ROS2_BEHAVIOR_TREE__SAFE_DISTANCE_NODE_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__DISTANCE_CONSTRAINT_NODE_HPP_
+#define ROS2_BEHAVIOR_TREE__DISTANCE_CONSTRAINT_NODE_HPP_
 
 #include <string>
 #include <memory>
@@ -28,18 +28,18 @@
 namespace ros2_behavior_tree
 {
 
-class SafeDistanceNode : public BT::ConditionNode
+class DistanceConstraintNode : public BT::DecoratorNode
 {
 public:
-  SafeDistanceNode(const std::string & name, const BT::NodeConfiguration & config)
-  : BT::ConditionNode(name, config)
+  DistanceConstraintNode(const std::string & name, const BT::NodeConfiguration & config)
+  : BT::DecoratorNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
     return {
-      BT::InputPort<double>("distance", "The distance threshold"),
+      BT::InputPort<double>("threshold", "The distance threshold"),
       BT::InputPort<std::shared_ptr<geometry_msgs::msg::PoseStamped>>("pose_1", "The first pose"),
       BT::InputPort<std::shared_ptr<geometry_msgs::msg::PoseStamped>>("pose_2", "The second pose")
     };
@@ -48,18 +48,18 @@ public:
   BT::NodeStatus tick() override
   {
     double threshold;
-    if (!getInput<double>("distance", threshold)) {
-      throw BT::RuntimeError("Missing parameter [distance] in SafeDistance node");
+    if (!getInput<double>("threshold", threshold)) {
+      throw BT::RuntimeError("Missing parameter [threshold] in DistanceConstraint node");
     }
 
     std::shared_ptr<geometry_msgs::msg::PoseStamped> pose1;
     if (!getInput<std::shared_ptr<geometry_msgs::msg::PoseStamped>>("pose_1", pose1)) {
-      throw BT::RuntimeError("Missing parameter [pose_1] in SafeDistance node");
+      throw BT::RuntimeError("Missing parameter [pose_1] in DistanceConstraint node");
     }
 
     std::shared_ptr<geometry_msgs::msg::PoseStamped> pose2;
     if (!getInput<std::shared_ptr<geometry_msgs::msg::PoseStamped>>("pose_2", pose2)) {
-      throw BT::RuntimeError("Missing parameter [pose_2] in SafeDistance node");
+      throw BT::RuntimeError("Missing parameter [pose_2] in DistanceConstraint node");
     }
 
     double distance = sqrt(
@@ -67,10 +67,18 @@ public:
       pow(pose1->pose.position.y - pose2->pose.position.y, 2)
     );
 
-    return (distance > threshold) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+    // printf("threshold: : %lf\n", threshold);
+    // printf("distance: %lf\n\n", distance);
+
+    if (distance <= threshold) {
+      child_node_->halt();
+      return BT::NodeStatus::RUNNING;  // TODO(mjeronimo): parameter for return value
+    }
+
+    return child_node_->executeTick();
   }
 };
 
 }  // namespace ros2_behavior_tree
 
-#endif  // ROS2_BEHAVIOR_TREE__SAFE_DISTANCE_NODE_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__DISTANCE_CONSTRAINT_NODE_HPP_

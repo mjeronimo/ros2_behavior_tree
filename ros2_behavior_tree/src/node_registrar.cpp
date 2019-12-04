@@ -20,9 +20,11 @@
 #include "ros2_behavior_tree/can_transform_node.hpp"
 #include "ros2_behavior_tree/create_ros2_node.hpp"
 #include "ros2_behavior_tree/create_transform_buffer_node.hpp"
+#include "ros2_behavior_tree/distance_constraint_node.hpp"
 #include "ros2_behavior_tree/first_result_node.hpp"
 #include "ros2_behavior_tree/forever_node.hpp"
 #include "ros2_behavior_tree/get_robot_pose_node.hpp"
+#include "ros2_behavior_tree/pipeline_sequence_node.hpp"
 #include "ros2_behavior_tree/recovery_node.hpp"
 #include "ros2_behavior_tree/repeat_until_node.hpp"
 #include "ros2_behavior_tree/ros2_service_client_node.hpp"
@@ -65,6 +67,7 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
     std::bind(&NodeRegistrar::wait, std::placeholders::_1), wait_params);
 
   // Decorator nodes
+  factory.registerNodeType<ros2_behavior_tree::DistanceConstraintNode>("DistanceConstraint");
   factory.registerNodeType<ros2_behavior_tree::ForeverNode>("Forever");
   factory.registerNodeType<ros2_behavior_tree::RepeatUntilNode>("RepeatUntil");
   factory.registerNodeType<ros2_behavior_tree::ThrottleTickRateNode>("ThrottleTickRate");
@@ -73,6 +76,7 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
   factory.registerNodeType<ros2_behavior_tree::FirstResultNode>("FirstResult");
   factory.registerNodeType<ros2_behavior_tree::RecoveryNode>("Recovery");
   factory.registerNodeType<ros2_behavior_tree::RoundRobinNode>("RoundRobin");
+  factory.registerNodeType<ros2_behavior_tree::PipelineSequenceNode>("PipelineSequence");
 }
 
 #define ANSI_COLOR_RESET    "\x1b[0m"

@@ -44,7 +44,7 @@ public:
   {
     return {
       BT::InputPort<std::shared_ptr<rclcpp::Node>>("node_handle", "The ROS2 node to use"),
-      BT::OutputPort<std::shared_ptr<tf2_ros::Buffer>>("transform_buffer", "The created transform buffer")
+      BT::OutputPort<std::shared_ptr<tf2_ros::Buffer>>("tf_buffer", "The created transform buffer")
     };
   }
 
@@ -59,15 +59,16 @@ public:
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node->get_clock());
 
     auto timer_interface = std::make_shared<tf2_ros::CreateTimerROS>(
-        node->get_node_base_interface(),
-        node->get_node_timers_interface());
+      node->get_node_base_interface(),
+      node->get_node_timers_interface());
 
     tf_buffer_->setCreateTimerInterface(timer_interface);
     tf_buffer_->setUsingDedicatedThread(true);
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, node, false);
 
-    if (!setOutput<std::shared_ptr<tf2_ros::Buffer>>("transform_buffer", tf_buffer_)) {
-      throw BT::RuntimeError("Failed to set output port value [transform_buffer] in CreateTransformBuffer");
+    if (!setOutput<std::shared_ptr<tf2_ros::Buffer>>("tf_buffer", tf_buffer_)) {
+      throw BT::RuntimeError(
+              "Failed to set output port value [tf_buffer] in CreateTransformBuffer");
     }
 
     return BT::NodeStatus::SUCCESS;

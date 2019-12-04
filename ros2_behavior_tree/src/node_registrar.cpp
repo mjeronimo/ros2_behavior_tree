@@ -29,7 +29,6 @@
 #include "ros2_behavior_tree/repeat_until_node.hpp"
 #include "ros2_behavior_tree/ros2_service_client_node.hpp"
 #include "ros2_behavior_tree/round_robin_node.hpp"
-#include "ros2_behavior_tree/safe_distance_node.hpp"
 #include "ros2_behavior_tree/throttle_tick_rate_node.hpp"
 
 BT_REGISTER_NODES(factory)
@@ -45,7 +44,6 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
 {
   // Condition nodes
   factory.registerNodeType<ros2_behavior_tree::CanTransformNode>("CanTransform");
-  factory.registerNodeType<ros2_behavior_tree::SafeDistanceNode>("SafeDistance");
 
   // Action nodes
   factory.registerNodeType<ros2_behavior_tree::AsyncWaitNode>("AsyncWait");

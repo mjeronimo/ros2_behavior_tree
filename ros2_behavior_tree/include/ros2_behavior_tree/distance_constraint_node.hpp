@@ -67,9 +67,6 @@ public:
       pow(pose1->pose.position.y - pose2->pose.position.y, 2)
     );
 
-    // printf("threshold: : %lf\n", threshold);
-    // printf("distance: %lf\n\n", distance);
-
     if (distance <= threshold) {
       child_node_->halt();
       return BT::NodeStatus::RUNNING;  // TODO(mjeronimo): parameter for return value

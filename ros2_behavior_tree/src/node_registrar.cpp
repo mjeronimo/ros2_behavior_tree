@@ -20,9 +20,11 @@
 #include "ros2_behavior_tree/can_transform_node.hpp"
 #include "ros2_behavior_tree/create_ros2_node.hpp"
 #include "ros2_behavior_tree/create_transform_buffer_node.hpp"
+#include "ros2_behavior_tree/compute_path_to_pose_node.hpp"
 #include "ros2_behavior_tree/distance_constraint_node.hpp"
 #include "ros2_behavior_tree/first_result_node.hpp"
 #include "ros2_behavior_tree/forever_node.hpp"
+#include "ros2_behavior_tree/get_pose_near_robot_node.hpp"
 #include "ros2_behavior_tree/get_robot_pose_node.hpp"
 #include "ros2_behavior_tree/pipeline_sequence_node.hpp"
 #include "ros2_behavior_tree/recovery_node.hpp"
@@ -49,6 +51,8 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
   factory.registerNodeType<ros2_behavior_tree::AsyncWaitNode>("AsyncWait");
   factory.registerNodeType<ros2_behavior_tree::CreateROS2Node>("CreateROS2Node");
   factory.registerNodeType<ros2_behavior_tree::CreateTransformBufferNode>("CreateTransformBuffer");
+  factory.registerNodeType<ros2_behavior_tree::ComputePathToPoseClient>("ComputePathToPose");
+  factory.registerNodeType<ros2_behavior_tree::GetPoseNearRobotNode>("GetPoseNearRobot");
   factory.registerNodeType<ros2_behavior_tree::GetRobotPoseNode>("GetRobotPose");
 
   const BT::PortsList message_params {BT::InputPort<std::string>("msg")};

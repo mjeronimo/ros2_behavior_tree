@@ -66,7 +66,9 @@ static const char bt_xml[] =
               <ThrottleTickRate hz="1.0">
                 <Sequence>
                   <Message msg="GetPoseNearRobot"/>
-                  <Message msg="ComputePathToPose"/>
+                  <GetPoseNearRobot robot_pose="{leader_pose}" nearby_pose="{nearby_pose}"/>
+                  <Message msg="Computing path to the goal"/>
+                  <ComputePathToPose action_name="compute_path_to_pose" server_timeout="1000" ros2_node="{ros_node_2}" goal="{nearby_pose}" planner_id="GridBased" path="{path}"/>
                   <AsyncWait msec="1000"/>
                 </Sequence>
               </ThrottleTickRate>

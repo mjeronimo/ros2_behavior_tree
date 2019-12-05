@@ -60,7 +60,7 @@ public:
       auto pose = std::make_shared<geometry_msgs::msg::PoseStamped>();
       *pose = current_pose;
       if (!setOutput<std::shared_ptr<geometry_msgs::msg::PoseStamped>>("pose", pose)) {
-        throw BT::RuntimeError("Failed to set output port value [pose] in CreateTransformBuffer");
+        throw BT::RuntimeError("Failed to set output port value [pose] for GetRobotPose");
       }
       return BT::NodeStatus::SUCCESS;
     }

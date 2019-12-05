@@ -82,15 +82,15 @@ public:
   BT::NodeStatus tick() override
   {
     if (!getInput("action_name", action_name_)) {
-      throw BT::RuntimeError("Missing parameter [action_name] in ROS2ServiceClientNode");
+      throw BT::RuntimeError("Missing parameter [action_name] in ROS2ActionClientNode");
     }
 
     if (!getInput<std::chrono::milliseconds>("server_timeout", server_timeout_)) {
-      throw BT::RuntimeError("Missing parameter [server_timeout] in ROS2ServiceClientNode");
+      throw BT::RuntimeError("Missing parameter [server_timeout] in ROS2ActionClientNode");
     }
 
     if (!getInput<std::shared_ptr<rclcpp::Node>>("ros2_node", ros2_node_)) {
-      throw BT::RuntimeError("Missing parameter [ros2_node] in ROS2ServiceClientNode");
+      throw BT::RuntimeError("Missing parameter [ros2_node] in ROS2ActionClientNode");
     }
 
     read_input_ports(goal_);

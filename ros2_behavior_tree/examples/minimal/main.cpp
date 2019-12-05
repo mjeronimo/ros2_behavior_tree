@@ -72,9 +72,7 @@ static const char bt_xml[] =
                   <AsyncWait msec="1000"/>
                 </Sequence>
               </ThrottleTickRate>
-              <Forever>
-                <Message msg="FollowPath: Safe distance away, following path..."/>
-              </Forever>
+              <FollowPath action_name="follow_path" server_timeout="1000" ros2_node="{ros_node_2}" path="{path}" controller_id="FollowPath"/>
             </PipelineSequence>
           </DistanceConstraint>
         </ReactiveSequence>

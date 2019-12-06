@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROS2_BEHAVIOR_TREE__GET_POSE_NEAR_ROBOT_NODE_HPP_
-#define ROS2_BEHAVIOR_TREE__GET_POSE_NEAR_ROBOT_NODE_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__ACTION__GET_POSE_NEAR_ROBOT_NODE_HPP_
+#define ROS2_BEHAVIOR_TREE__ACTION__GET_POSE_NEAR_ROBOT_NODE_HPP_
 
 #include <string>
 #include <memory>
@@ -73,4 +73,4 @@ protected:
 
 }  // namespace ros2_behavior_tree
 
-#endif  // ROS2_BEHAVIOR_TREE__GET_POSE_NEAR_ROBOT_NODE_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__ACTION__GET_POSE_NEAR_ROBOT_NODE_HPP_

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROS2_BEHAVIOR_TREE__COMPUTE_PATH_TO_POSE_NODE_HPP_
-#define ROS2_BEHAVIOR_TREE__COMPUTE_PATH_TO_POSE_NODE_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__ACTION__COMPUTE_PATH_TO_POSE_NODE_HPP_
+#define ROS2_BEHAVIOR_TREE__ACTION__COMPUTE_PATH_TO_POSE_NODE_HPP_
 
 #include <memory>
 #include <string>
@@ -64,4 +64,4 @@ public:
 
 }  // namespace ros2_behavior_tree
 
-#endif  // ROS2_BEHAVIOR_TREE__COMPUTE_PATH_TO_POSE_NODE_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__ACTION__COMPUTE_PATH_TO_POSE_NODE_HPP_

@@ -59,8 +59,8 @@ static const char bt_xml[] =
       <Forever>
         <ReactiveSequence>
           <Message msg="Checking for a safe distance"/>
-          <GetRobotPose tf_buffer="{tf_1}" pose="{leader_pose}"/>
-          <GetRobotPose tf_buffer="{tf_2}" pose="{follower_pose}"/>
+          <TransformPose tf_buffer="{tf_1}" source_frame="base_link" target_frame="map" pose="{leader_pose}"/>
+          <TransformPose tf_buffer="{tf_2}" source_frame="base_link" target_frame="map" pose="{follower_pose}"/>
           <DistanceConstraint threshold="1.0" pose_1="{leader_pose}" pose_2="{follower_pose}">
             <PipelineSequence>
               <ThrottleTickRate hz="1.0">

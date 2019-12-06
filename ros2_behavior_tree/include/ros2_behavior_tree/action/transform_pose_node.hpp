@@ -14,8 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ROS2_BEHAVIOR_TREE__ACTION__GET_ROBOT_POSE_NODE_HPP_
-#define ROS2_BEHAVIOR_TREE__ACTION__GET_ROBOT_POSE_NODE_HPP_
+#ifndef ROS2_BEHAVIOR_TREE__ACTION__TRANSFORM_POSE_NODE_HPP_
+#define ROS2_BEHAVIOR_TREE__ACTION__TRANSFORM_POSE_NODE_HPP_
 
 #include <string>
 #include <memory>
@@ -30,10 +30,10 @@
 namespace ros2_behavior_tree
 {
 
-class GetRobotPoseNode : public BT::SyncActionNode
+class TransformPoseNode : public BT::SyncActionNode
 {
 public:
-  GetRobotPoseNode(const std::string & name, const BT::NodeConfiguration & config)
+  TransformPoseNode(const std::string & name, const BT::NodeConfiguration & config)
   : BT::SyncActionNode(name, config)
   {
   }
@@ -42,6 +42,8 @@ public:
   {
     return {
       BT::InputPort<std::shared_ptr<tf2_ros::Buffer>>("tf_buffer", "The transform buffer to use"),
+      BT::InputPort<std::string>("source_frame", "The source frame"),
+      BT::InputPort<std::string>("target_frame", "The target frame"),
       BT::OutputPort<std::shared_ptr<geometry_msgs::msg::PoseStamped>>("pose",
         "The current pose of the robot")
     };
@@ -52,15 +54,25 @@ public:
     std::shared_ptr<tf2_ros::Buffer> tf_buffer;
 
     if (!getInput<std::shared_ptr<tf2_ros::Buffer>>("tf_buffer", tf_buffer)) {
-      throw BT::RuntimeError("Missing parameter [tf_buffer] in GetRobotPose node");
+      throw BT::RuntimeError("Missing parameter [tf_buffer] in TransformPose node");
+    }
+
+    std::string source_frame;
+    if (!getInput<std::string>("source_frame", source_frame)) {
+      throw BT::RuntimeError("Missing parameter [source_frame] in TransformPose node");
+    }
+
+    std::string target_frame;
+    if (!getInput<std::string>("target_frame", target_frame)) {
+      throw BT::RuntimeError("Missing parameter [target_frame] in TransformPose node");
     }
 
     geometry_msgs::msg::PoseStamped current_pose;
-    if (get_robot_pose(current_pose, tf_buffer)) {
+    if (transform_pose(current_pose, tf_buffer, source_frame, target_frame)) {
       auto pose = std::make_shared<geometry_msgs::msg::PoseStamped>();
       *pose = current_pose;
       if (!setOutput<std::shared_ptr<geometry_msgs::msg::PoseStamped>>("pose", pose)) {
-        throw BT::RuntimeError("Failed to set output port value [pose] for GetRobotPose");
+        throw BT::RuntimeError("Failed to set output port value [pose] for TransformPose");
       }
       return BT::NodeStatus::SUCCESS;
     }
@@ -69,14 +81,14 @@ public:
   }
 
 protected:
-  bool get_robot_pose(
+  bool transform_pose(
     geometry_msgs::msg::PoseStamped & target_pose,
     std::shared_ptr<tf2_ros::Buffer> tf_buffer,
-    const std::string source_frame = "base_link",
-    const std::string target_frame = "map",
+    const std::string source_frame,
+    const std::string target_frame,
     const double transform_timeout = 0.1)
   {
-    /*static*/ rclcpp::Logger logger = rclcpp::get_logger("get_robot_pose");
+    rclcpp::Logger logger = rclcpp::get_logger("transform_pose");
 
     // Initialize the robot pose
     geometry_msgs::msg::PoseStamped robot_pose;
@@ -115,4 +127,4 @@ protected:
 
 }  // namespace ros2_behavior_tree
 
-#endif  // ROS2_BEHAVIOR_TREE__ACTION__GET_ROBOT_POSE_NODE_HPP_
+#endif  // ROS2_BEHAVIOR_TREE__ACTION__TRANSFORM_POSE_NODE_HPP_

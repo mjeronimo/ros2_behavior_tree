@@ -22,7 +22,7 @@
 #include "ros2_behavior_tree/action/create_transform_buffer_node.hpp"
 #include "ros2_behavior_tree/action/follow_path_node.hpp"
 #include "ros2_behavior_tree/action/get_pose_near_robot_node.hpp"
-#include "ros2_behavior_tree/action/get_robot_pose_node.hpp"
+#include "ros2_behavior_tree/action/transform_pose_node.hpp"
 #include "ros2_behavior_tree/condition/can_transform_node.hpp"
 #include "ros2_behavior_tree/control/first_result_node.hpp"
 #include "ros2_behavior_tree/control/pipeline_sequence_node.hpp"
@@ -58,12 +58,12 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
   factory.registerNodeType<ros2_behavior_tree::FollowPathNode>("FollowPath");
   factory.registerNodeType<ros2_behavior_tree::ForeverNode>("Forever");
   factory.registerNodeType<ros2_behavior_tree::GetPoseNearRobotNode>("GetPoseNearRobot");
-  factory.registerNodeType<ros2_behavior_tree::GetRobotPoseNode>("GetRobotPose");
   factory.registerNodeType<ros2_behavior_tree::PipelineSequenceNode>("PipelineSequence");
   factory.registerNodeType<ros2_behavior_tree::RecoveryNode>("Recovery");
   factory.registerNodeType<ros2_behavior_tree::RepeatUntilNode>("RepeatUntil");
   factory.registerNodeType<ros2_behavior_tree::RoundRobinNode>("RoundRobin");
   factory.registerNodeType<ros2_behavior_tree::ThrottleTickRateNode>("ThrottleTickRate");
+  factory.registerNodeType<ros2_behavior_tree::TransformPoseNode>("TransformPose");
 }
 
 #define ANSI_COLOR_RESET    "\x1b[0m"

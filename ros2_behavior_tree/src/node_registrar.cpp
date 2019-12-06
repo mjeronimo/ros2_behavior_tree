@@ -21,7 +21,7 @@
 #include "ros2_behavior_tree/action/create_ros2_node.hpp"
 #include "ros2_behavior_tree/action/create_transform_buffer_node.hpp"
 #include "ros2_behavior_tree/action/follow_path_node.hpp"
-#include "ros2_behavior_tree/action/get_pose_near_robot_node.hpp"
+#include "ros2_behavior_tree/action/get_poses_near_robot_node.hpp"
 #include "ros2_behavior_tree/action/transform_pose_node.hpp"
 #include "ros2_behavior_tree/condition/can_transform_node.hpp"
 #include "ros2_behavior_tree/control/first_result_node.hpp"
@@ -29,6 +29,7 @@
 #include "ros2_behavior_tree/control/recovery_node.hpp"
 #include "ros2_behavior_tree/control/round_robin_node.hpp"
 #include "ros2_behavior_tree/decorator/distance_constraint_node.hpp"
+#include "ros2_behavior_tree/decorator/for_each_pose_node.hpp"
 #include "ros2_behavior_tree/decorator/forever_node.hpp"
 #include "ros2_behavior_tree/decorator/repeat_until_node.hpp"
 #include "ros2_behavior_tree/decorator/throttle_tick_rate_node.hpp"
@@ -57,7 +58,8 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
   factory.registerNodeType<ros2_behavior_tree::FirstResultNode>("FirstResult");
   factory.registerNodeType<ros2_behavior_tree::FollowPathNode>("FollowPath");
   factory.registerNodeType<ros2_behavior_tree::ForeverNode>("Forever");
-  factory.registerNodeType<ros2_behavior_tree::GetPoseNearRobotNode>("GetPoseNearRobot");
+  factory.registerNodeType<ros2_behavior_tree::ForEachPoseNode>("ForEachPose");
+  factory.registerNodeType<ros2_behavior_tree::GetPosesNearRobotNode>("GetPosesNearRobot");
   factory.registerNodeType<ros2_behavior_tree::PipelineSequenceNode>("PipelineSequence");
   factory.registerNodeType<ros2_behavior_tree::RecoveryNode>("Recovery");
   factory.registerNodeType<ros2_behavior_tree::RepeatUntilNode>("RepeatUntil");

@@ -66,13 +66,17 @@ static const char bt_xml[] =
               <ThrottleTickRate hz="1.0">
                 <Sequence>
                   <Message msg="GetPoseNearRobot"/>
-                  <GetPoseNearRobot robot_pose="{leader_pose}" nearby_pose="{nearby_pose}"/>
-                  <Message msg="Computing path to the goal"/>
-                  <ComputePathToPose action_name="compute_path_to_pose" server_timeout="1000" ros2_node="{ros_node_2}" goal="{nearby_pose}" planner_id="GridBased" path="{path}"/>
+                  <GetPosesNearRobot robot_pose="{leader_pose}" nearby_poses="{nearby_poses}"/>
+                  <ForEachPose poses="{nearby_poses}" pose="{goal_pose}">
+                    <Sequence>
+                      <Message msg="Computing path to the goal"/>
+                      <ComputePathToPose action_name="compute_path_to_pose" server_timeout="1000" ros2_node="{ros_node_2}" goal="{goal_pose}" planner_id="GridBased" path="{path_to_follow}"/>
+                    </Sequence>
+                  </ForEachPose>
                   <AsyncWait msec="1000"/>
                 </Sequence>
               </ThrottleTickRate>
-              <FollowPath action_name="follow_path" server_timeout="1000" ros2_node="{ros_node_2}" path="{path}" controller_id="FollowPath"/>
+              <FollowPath action_name="follow_path" server_timeout="1000" ros2_node="{ros_node_2}" path="{path_to_follow}" controller_id="FollowPath"/>
             </PipelineSequence>
           </DistanceConstraint>
         </ReactiveSequence>

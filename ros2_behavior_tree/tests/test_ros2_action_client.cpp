@@ -113,7 +113,7 @@ TEST_F(TestROS2ActionClientNode, CallUsingXML)
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
         <Sequence name="root">
-            <CreateROS2Node node_name="ros2_node2" spin="true" node_handle="{ros2_node}"/>
+            <CreateROS2Node node_name="ros2_node2" namespace="" spin="true" node_handle="{ros2_node}"/>
             <Fibonacci action_name="fibonacci" server_timeout="1000" ros2_node="{ros2_node}" n="10" sequence="{sequence}"/>
         </Sequence>
      </BehaviorTree>

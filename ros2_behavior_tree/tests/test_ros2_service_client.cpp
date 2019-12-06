@@ -115,7 +115,7 @@ TEST_F(TestROS2ServiceClientNode, ChainUsingXMLAndPorts)
      <BehaviorTree ID="MainTree">
         <Sequence name="root">
             <SetBlackboard output_key="a1" value="33"/>
-            <CreateROS2Node node_name="test_bt_node" spin="true" node_handle="{ros2_node}"/>
+            <CreateROS2Node node_name="test_bt_node" namespace="" spin="true" node_handle="{ros2_node}"/>
             <AddTwoInts service_name="add_two_ints" server_timeout="1000" ros2_node="{ros2_node}" a="{a1}" b="44" sum="{sum1}"/>
             <AddTwoInts service_name="add_two_ints" server_timeout="1000" ros2_node="{ros2_node}" a="{sum1}" b="44" sum="{sum2}"/>
             <AddTwoInts service_name="add_two_ints" server_timeout="1000" ros2_node="{ros2_node}" a="{sum2}" b="{sum2}" sum="{sum3}"/>

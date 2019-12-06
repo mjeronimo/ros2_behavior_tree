@@ -39,7 +39,8 @@ namespace ros2_behavior_tree
  * --------------------------------
  * |  IDLE   |  IDLE   |  IDLE   |
  * | RUNNING |  IDLE   |  IDLE   |  - at first A gets ticked. Assume it returns RUNNING
- *                                  - PipelineSequence returns RUNNING and no other nodes are ticked. * | SUCCESS | RUNNING |  IDLE   |  - This time A returns SUCCESS so B gets ticked as well
+ *                                  - PipelineSequence returns RUNNING and no other nodes are ticked.
+ * | SUCCESS | RUNNING |  IDLE   |  - This time A returns SUCCESS so B gets ticked as well
  *                                  - PipelineSequence returns RUNNING and C is not ticked yet
  * | RUNNING | SUCCESS | RUNNING |  - A gets ticked and returns RUNNING, but since it had previously
  *                                  - returned SUCCESS, PipelineSequence continues on and ticks B.
@@ -84,10 +85,12 @@ protected:
           last_child_ticked_ = 0;  // reset
           return status;
           break;
+
         case BT::NodeStatus::SUCCESS:
-          // do nothing and continue on to the next child. If it is the last child
-          // we'll exit the loop and hit the wrap-up code at the end of the method.
+          // Do nothing and continue on to the next child. If it is the last child
+          // we'll exit the loop and hit the wrap-up code at the end of the method
           break;
+
         case BT::NodeStatus::RUNNING:
           if (i >= last_child_ticked_) {
             last_child_ticked_ = i;
@@ -95,6 +98,7 @@ protected:
           }
           // else do nothing and continue on to the next child
           break;
+
         default:
           std::stringstream error_msg;
           error_msg << "Invalid node status. Received status " << status <<
@@ -103,7 +107,7 @@ protected:
           break;
       }
     }
-    // Wrap up.
+    // Wrap up
     haltChildren(0);
     last_child_ticked_ = 0;  // reset
     return BT::NodeStatus::SUCCESS;

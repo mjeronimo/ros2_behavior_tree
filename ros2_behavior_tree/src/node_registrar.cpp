@@ -48,11 +48,6 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
   factory.registerSimpleAction("Message",
     std::bind(&NodeRegistrar::message, std::placeholders::_1), message_params);
 
-  const BT::PortsList set_condition_params {
-    BT::InputPort<std::string>("key"), BT::InputPort<std::string>("value")};
-  factory.registerSimpleAction("SetCondition",
-    std::bind(&NodeRegistrar::set_condition, std::placeholders::_1), set_condition_params);
-
   factory.registerNodeType<ros2_behavior_tree::AsyncWaitNode>("AsyncWait");
   factory.registerNodeType<ros2_behavior_tree::CanTransformNode>("CanTransform");
   factory.registerNodeType<ros2_behavior_tree::ComputePathToPoseNode>("ComputePathToPose");
@@ -81,20 +76,6 @@ NodeRegistrar::message(BT::TreeNode & tree_node)
   tree_node.getInput<std::string>("msg", msg);
 
   printf(ANSI_COLOR_BLUE "\33[1m%s\33[0m" ANSI_COLOR_RESET "\n", msg.c_str());
-
-  return BT::NodeStatus::SUCCESS;
-}
-
-BT::NodeStatus
-NodeRegistrar::set_condition(BT::TreeNode & tree_node)
-{
-  std::string key;
-  tree_node.getInput<std::string>("key", key);
-
-  std::string value;
-  tree_node.getInput<std::string>("value", value);
-
-  tree_node.config().blackboard->template set<bool>(key, (value == "true") ? true : false);  // NOLINT
 
   return BT::NodeStatus::SUCCESS;
 }

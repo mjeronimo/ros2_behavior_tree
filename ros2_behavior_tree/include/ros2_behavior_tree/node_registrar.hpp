@@ -29,7 +29,6 @@ public:
 private:
   // Methods to be registered as SimpleAction nodes
   static BT::NodeStatus message(BT::TreeNode & tree_node);
-  static BT::NodeStatus set_condition(BT::TreeNode & tree_node);
 };
 
 }  // namespace ros2_behavior_tree

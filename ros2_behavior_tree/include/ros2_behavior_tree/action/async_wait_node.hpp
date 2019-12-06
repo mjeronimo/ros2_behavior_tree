@@ -67,9 +67,9 @@ public:
     // Wait for the specified duration
     std::mutex mtx;
     std::unique_lock<std::mutex> lck(mtx);
-    auto status = cv_.wait_for(lck, std::chrono::milliseconds(wait_duration_));
+    cv_.wait_for(lck, std::chrono::milliseconds(wait_duration_));
 
-    return (status == std::cv_status::timeout) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+    return BT::NodeStatus::SUCCESS;
   }
 
 private:

@@ -15,9 +15,7 @@
 #ifndef ROS2_BEHAVIOR_TREE__ACTION__FOLLOW_PATH_NODE_HPP_
 #define ROS2_BEHAVIOR_TREE__ACTION__FOLLOW_PATH_NODE_HPP_
 
-#include <memory>
 #include <string>
-#include <vector>
 
 #include "ros2_behavior_tree/ros2_action_client_node.hpp"
 #include "nav2_msgs/action/follow_path.hpp"

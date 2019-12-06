@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "behaviortree_cpp_v3/xml_parsing.h"
+#include "behaviortree_cpp_v3/loggers/bt_cout_logger.h"
 #include "rclcpp/rclcpp.hpp"
 
 namespace ros2_behavior_tree
@@ -49,6 +50,8 @@ BehaviorTree::execute(
 {
   // Create the corresponding Behavior Tree
   BT::Tree tree = xml_parser_.instantiateTree(blackboard_);
+
+  BT::StdCoutLogger logger(tree);
 
   // Set up a loop rate controller based on the desired tick period
   rclcpp::WallRate loop_rate(tick_period);

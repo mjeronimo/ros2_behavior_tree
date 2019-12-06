@@ -27,10 +27,10 @@ namespace ros2_behavior_tree
 
 using ComputePathToPose = nav2_msgs::action::ComputePathToPose;
 
-class ComputePathToPoseClient : public ros2_behavior_tree::ROS2ActionClientNode<ComputePathToPose>
+class ComputePathToPoseNode : public ros2_behavior_tree::ROS2ActionClientNode<ComputePathToPose>
 {
 public:
-  explicit ComputePathToPoseClient(const std::string & name, const BT::NodeConfiguration & config)
+  explicit ComputePathToPoseNode(const std::string & name, const BT::NodeConfiguration & config)
   : ROS2ActionClientNode<ComputePathToPose>(name, config)
   {
   }
@@ -47,11 +47,11 @@ public:
   void read_input_ports(ComputePathToPose::Goal & goal) override
   {
     if (!getInput<geometry_msgs::msg::PoseStamped>("goal", goal.pose)) {
-      throw BT::RuntimeError("Missing parameter [goal] in ComputePathToPoseClient node");
+      throw BT::RuntimeError("Missing parameter [goal] in ComputePathToPoseNode node");
     }
 
     if (!getInput<std::string>("planner_id", goal.planner_id)) {
-      throw BT::RuntimeError("Missing parameter [planner_id] in ComputePathToPoseClient node");
+      throw BT::RuntimeError("Missing parameter [planner_id] in ComputePathToPoseNode node");
     }
   }
 

@@ -17,7 +17,7 @@
 #include <string>
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
-#include "ros2_behavior_tree/repeat_until_node.hpp"
+#include "ros2_behavior_tree/decorator/repeat_until_node.hpp"
 #include "stub_action_test_node.hpp"
 
 struct TestRepeatUntilNode : testing::Test

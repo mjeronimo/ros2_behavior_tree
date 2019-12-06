@@ -27,10 +27,9 @@ public:
   static void RegisterNodes(BT::BehaviorTreeFactory & factory);
 
 private:
-  // Simple nodes to be registered
+  // Methods to be registered as SimpleAction nodes
   static BT::NodeStatus message(BT::TreeNode & tree_node);
   static BT::NodeStatus set_condition(BT::TreeNode & tree_node);
-  static BT::NodeStatus wait(BT::TreeNode & tree_node);
 };
 
 }  // namespace ros2_behavior_tree

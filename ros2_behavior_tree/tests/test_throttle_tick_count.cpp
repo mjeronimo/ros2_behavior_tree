@@ -16,7 +16,7 @@
 #include <memory>
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
-#include "ros2_behavior_tree/throttle_tick_rate_node.hpp"
+#include "ros2_behavior_tree/decorator/throttle_tick_rate_node.hpp"
 #include "stub_action_test_node.hpp"
 
 struct TestThrottleTickRateNode : testing::Test

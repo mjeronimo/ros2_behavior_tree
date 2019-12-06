@@ -16,7 +16,7 @@
 #include <memory>
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
-#include "ros2_behavior_tree/async_wait_node.hpp"
+#include "ros2_behavior_tree/action/async_wait_node.hpp"
 
 struct TestAsyncWaitNode : testing::Test
 {

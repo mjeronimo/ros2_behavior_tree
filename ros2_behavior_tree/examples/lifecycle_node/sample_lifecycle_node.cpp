@@ -28,7 +28,7 @@ const char SampleLifecycleNode::bt_xml_[] =
     <Forever>
       <Sequence name="say_hello">
         <Message msg="Hello, World!"/>
-        <Wait msec="1000"/>
+        <AsyncWait msec="1000"/>
       </Sequence>
     </Forever>
   </BehaviorTree>

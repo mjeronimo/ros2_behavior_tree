@@ -17,7 +17,7 @@
 #include <string>
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
-#include "ros2_behavior_tree/round_robin_node.hpp"
+#include "ros2_behavior_tree/control/round_robin_node.hpp"
 #include "stub_action_test_node.hpp"
 
 struct TestRoundRobinNode : testing::Test

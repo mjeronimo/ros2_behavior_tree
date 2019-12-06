@@ -27,10 +27,10 @@ namespace ros2_behavior_tree
 
 using FollowPath = nav2_msgs::action::FollowPath;
 
-class FollowPathClient : public ros2_behavior_tree::ROS2ActionClientNode<FollowPath>
+class FollowPathNode : public ros2_behavior_tree::ROS2ActionClientNode<FollowPath>
 {
 public:
-  explicit FollowPathClient(const std::string & name, const BT::NodeConfiguration & config)
+  explicit FollowPathNode(const std::string & name, const BT::NodeConfiguration & config)
   : ROS2ActionClientNode<FollowPath>(name, config)
   {
   }
@@ -46,11 +46,11 @@ public:
   void read_input_ports(FollowPath::Goal & goal) override
   {
     if (!getInput<nav_msgs::msg::Path>("path", goal.path)) {
-      throw BT::RuntimeError("Missing parameter [path] in FollowPathClient node");
+      throw BT::RuntimeError("Missing parameter [path] in FollowPathNode node");
     }
 
     if (!getInput<std::string>("controller_id", goal.controller_id)) {
-      throw BT::RuntimeError("Missing parameter [controller_id] in FollowPathClient node");
+      throw BT::RuntimeError("Missing parameter [controller_id] in FollowPathNode node");
     }
   }
 
@@ -58,7 +58,7 @@ public:
   {
     nav_msgs::msg::Path path;
     if (!getInput<nav_msgs::msg::Path>("path", path)) {
-      throw BT::RuntimeError("Missing parameter [path] in FollowPathClient node");
+      throw BT::RuntimeError("Missing parameter [path] in FollowPathNode node");
     }
 
     // If it's not the same as the goal we're currently working on, update the goal

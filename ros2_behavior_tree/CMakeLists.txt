@@ -15,6 +15,7 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(example_interfaces REQUIRED)
 find_package(nav2_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 include_directories(
   include
@@ -27,6 +28,7 @@ add_library(${library_name} SHARED
 )
 
 add_library(ros2_behavior_tree_nodes SHARED
+  src/pure_pursuit_node.cpp
   src/node_registrar.cpp
 )
 
@@ -76,6 +78,7 @@ set(dependencies
   tf2_ros
   example_interfaces
   nav2_msgs
+  visualization_msgs
 )
 
 ament_target_dependencies(${library_name} ${dependencies})

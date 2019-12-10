@@ -66,7 +66,7 @@ static const char bt_xml[] =
               <ThrottleTickRate hz="1.0">
                 <Sequence>
                   <Message msg="GetPoseNearRobot"/>
-                  <GetPosesNearRobot robot_pose="{leader_pose}" nearby_poses="{nearby_poses}"/>
+                  <GetPosesNearRobot node_handle="{ros_node_1}" robot_pose="{leader_pose}" nearby_poses="{nearby_poses}"/>
                   <ForEachPose poses="{nearby_poses}" pose="{goal_pose}">
                     <Sequence>
                       <Message msg="Computing path to the goal"/>

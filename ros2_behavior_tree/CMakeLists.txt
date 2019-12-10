@@ -11,6 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(ros2_behavior_tree_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(example_interfaces REQUIRED)
@@ -74,11 +75,13 @@ set(dependencies
   ros2_behavior_tree_msgs
   std_msgs
   std_srvs
+  tf2
   tf2_geometry_msgs
   tf2_ros
   example_interfaces
   nav2_msgs
   visualization_msgs
+  builtin_interfaces
 )
 
 ament_target_dependencies(${library_name} ${dependencies})

@@ -27,7 +27,7 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "visualization_msgs/msg/marker.hpp"
 
-#pragma GCC diagnostic push
+#pragma GCC diagnosbuild/ros2_behavior_tree/minimal --ros-args -r node1:/tf:=/robot1/tf -r node1:/tf_static:=/robot1/tf_static -r node2:/tf:=/robot2/tf -r node2:/tf_static:=/robot2/tf_static --param use_sim_time:=True
 #pragma GCC diagnostic ignored "-Wpedantic"
 #include "tf2/utils.h"
 #pragma GCC diagnostic pop
@@ -50,6 +50,9 @@ public:
         "A node for publishing the markers for the poses"),
       BT::InputPort<std::shared_ptr<geometry_msgs::msg::PoseStamped>>("robot_pose",
         "The current pose of the robot"),
+      BT::InputPort<double>("min_distance", "The minimum safe distance"),
+      BT::InputPort<double>("max_distance", "The maximum search distance"),
+      BT::InputPort<double>("step_distance", "Increments between min and max search distances"),
       BT::OutputPort<std::vector<geometry_msgs::msg::PoseStamped>>("nearby_poses",
         "Poses near the robot")
     };
@@ -84,17 +87,29 @@ public:
   std::vector<geometry_msgs::msg::PoseStamped> getNearbyPoses(
     const geometry_msgs::msg::PoseStamped & pose)
   {
-    double min_distance = 0.5;
-    double max_distance = 1.5;
-    double step = 0.1;
-
-    int num_steps = (max_distance - min_distance) / step;
-    std::vector<double> distances;
-    for (int s = 0; s <= num_steps; s++) {
-      distances.push_back(min_distance + s * step);
+    // TODO(orduno) Define as ports to be configured
+    double min_distance;
+    if (!getInput<double>("min_distance", min_distance)) {
+      throw BT::RuntimeError("Missing parameter [min_distance] in GetPosesNearRobot node");
     }
 
-    // Considering poses behind, left and right
+    double max_distance;
+    if (!getInput<double>("max_distance", max_distance)) {
+      throw BT::RuntimeError("Missing parameter [max_distance] in GetPosesNearRobot node");
+    }
+
+    double step_distance;
+    if (!getInput<double>("step_distance", step_distance)) {
+      throw BT::RuntimeError("Missing parameter [step_distance] in GetPosesNearRobot node");
+    }
+
+    int num_steps = (max_distance - min_distance) / step_distance;
+    std::vector<double> distances;
+    for (int s = 0; s <= num_steps; s++) {
+      distances.push_back(min_distance + s * step_distance);
+    }
+
+    // Considering poses behind, left, right and diagonally
     auto diag = std::sqrt(0.5);
     std::vector<std::vector<double>> positions{{-1, 0}, {0, 1},{0, -1}, {-diag, diag}, {-diag, -diag}};
 
@@ -127,7 +142,8 @@ public:
     // normalize
     angle = atan2(sin(angle), cos(angle));
 
-    // Rotate to align with reference, first translate such that the reference is now the origin
+    // Rotate to align with reference
+    // first, translate such that the reference is now the origin
     double x_t = x - reference.pose.position.x;
     double y_t = y - reference.pose.position.y;
 
@@ -163,16 +179,12 @@ public:
     marker.header.stamp = time;
     marker.header.frame_id = "map";
 
-    // Set the namespace and id for this marker.  This serves to create a unique ID
+    // Set the namespace and id for this marker. This serves to create a unique ID
     // Any marker sent with the same namespace and id will overwrite the old one
     marker.ns = "follower_goal";
-    // static int index;
-    // marker.id = index++;
     marker.id = 1;
 
     marker.type = visualization_msgs::msg::Marker::SPHERE_LIST;
-
-    // Set the marker action.
     marker.action = visualization_msgs::msg::Marker::ADD;
 
     // Set the scale of the marker -- 1x1x1 here means 1m on a side
@@ -180,35 +192,26 @@ public:
     marker.scale.y = 0.1;
     marker.scale.z = 0.1;
 
-    marker.color.r = 0.0;
-    marker.color.g = 0.0;
-    marker.color.b = 1.0;
-    marker.color.a = 1.0;
-
     // 0 indicates the object should last forever
     marker.lifetime = rclcpp::Duration(0);
 
     marker.frame_locked = false;
 
     marker.points.resize(poses.size());
+    marker.colors.resize(poses.size());
 
-    // std_msgs::msg::ColorRGBA color;
-    // color.r = 0.0;
-    // color.g = 0.0;
-    // color.b = 1.0;
-    // color.a = 1.0;
+    std_msgs::msg::ColorRGBA color;
+    color.r = 1.0;
+    color.a = 0.5;
+
     for (const auto & p : poses) {
       geometry_msgs::msg::Pose pose;
       pose.orientation.w = 1.0;
       pose.position.x = p.pose.position.x;
       pose.position.y = p.pose.position.y;
       marker.points.push_back(pose.position);
-      // marker.colors.push_back(color);
-
-      // color.b = color.b >= 0.2 ? color.b - 0.2 : 1.0;
-      // color.r = color.r <= 0.8 ? color.r + 0.2 : 0.0;
-
-      // marker.pose.orientation = pose.orientation;
+      marker.colors.push_back(color);
+      color.r = color.r >= 0.25 ? color.r - 0.25 : 1.0;
     }
 
     marker_pub_->publish(marker);

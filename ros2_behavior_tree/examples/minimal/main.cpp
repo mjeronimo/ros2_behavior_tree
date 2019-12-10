@@ -61,12 +61,12 @@ static const char bt_xml[] =
           <Message msg="Checking for a safe distance"/>
           <TransformPose tf_buffer="{tf_1}" source_frame="base_link" target_frame="map" pose="{leader_pose}"/>
           <TransformPose tf_buffer="{tf_2}" source_frame="base_link" target_frame="map" pose="{follower_pose}"/>
-          <DistanceConstraint threshold="1.0" pose_1="{leader_pose}" pose_2="{follower_pose}">
+          <DistanceConstraint threshold="0.4" pose_1="{leader_pose}" pose_2="{follower_pose}">
             <PipelineSequence>
               <ThrottleTickRate hz="1.0">
                 <Sequence>
                   <Message msg="GetPoseNearRobot"/>
-                  <GetPosesNearRobot node_handle="{ros_node_1}" robot_pose="{leader_pose}" nearby_poses="{nearby_poses}"/>
+                  <GetPosesNearRobot node_handle="{ros_node_1}" min_distance="0.5" max_distance="1.5" step_distance="0.25" robot_pose="{leader_pose}" nearby_poses="{nearby_poses}"/>
                   <ForEachPose poses="{nearby_poses}" pose="{goal_pose}">
                     <Sequence>
                       <Message msg="Computing path to the goal"/>

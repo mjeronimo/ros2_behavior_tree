@@ -34,16 +34,11 @@
 namespace ros2_behavior_tree
 {
 
-class PurePursuitController : public BT::SyncActionNode
+class PurePursuitNode : public BT::SyncActionNode
 {
 public:
-  PurePursuitController(const std::string & name, const BT::NodeConfiguration & config);
-  virtual ~PurePursuitController();
-
-  // PurePursuitController(const PurePursuitController & other) = delete;
-  // PurePursuitController & operator=(const PurePursuitController & other) = delete;
-  // PurePursuitController(PurePursuitController && other) = delete;
-  // PurePursuitController & operator=(PurePursuitController && other) = delete;
+  PurePursuitNode(const std::string & name, const BT::NodeConfiguration & config);
+  virtual ~PurePursuitNode();
 
   static BT::PortsList providedPorts()
   {

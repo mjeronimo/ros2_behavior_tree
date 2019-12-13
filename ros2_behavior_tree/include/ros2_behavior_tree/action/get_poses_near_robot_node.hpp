@@ -27,7 +27,7 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "visualization_msgs/msg/marker.hpp"
 
-#pragma GCC diagnosbuild/ros2_behavior_tree/minimal --ros-args -r node1:/tf:=/robot1/tf -r node1:/tf_static:=/robot1/tf_static -r node2:/tf:=/robot2/tf -r node2:/tf_static:=/robot2/tf_static --param use_sim_time:=True
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
 #include "tf2/utils.h"
 #pragma GCC diagnostic pop
@@ -111,7 +111,7 @@ public:
 
     // Considering poses behind, left, right and diagonally
     auto diag = std::sqrt(0.5);
-    std::vector<std::vector<double>> positions{{-1, 0}, {0, 1},{0, -1}, {-diag, diag}, {-diag, -diag}};
+    std::vector<std::vector<double>> positions{{-1, 0}, {0, 1}, {0, -1}, {-diag, diag}, {-diag, -diag}};
 
     std::vector<geometry_msgs::msg::PoseStamped> nearby_poses;
     for (const auto & d : distances) {

@@ -23,6 +23,7 @@
 #include "ros2_behavior_tree/action/follow_path_node.hpp"
 #include "ros2_behavior_tree/action/get_poses_near_robot_node.hpp"
 #include "ros2_behavior_tree/action/pure_pursuit_node.hpp"
+#include "ros2_behavior_tree/action/pure_pursuit_node2.hpp"
 #include "ros2_behavior_tree/action/transform_pose_node.hpp"
 #include "ros2_behavior_tree/condition/can_transform_node.hpp"
 #include "ros2_behavior_tree/control/first_result_node.hpp"
@@ -62,7 +63,8 @@ NodeRegistrar::RegisterNodes(BT::BehaviorTreeFactory & factory)
   factory.registerNodeType<ros2_behavior_tree::ForEachPoseNode>("ForEachPose");
   factory.registerNodeType<ros2_behavior_tree::GetPosesNearRobotNode>("GetPosesNearRobot");
   factory.registerNodeType<ros2_behavior_tree::PipelineSequenceNode>("PipelineSequence");
-  factory.registerNodeType<ros2_behavior_tree::PurePursuitController>("PurePursuit"); // TODO: name
+  factory.registerNodeType<ros2_behavior_tree::PurePursuitNode>("PurePursuit");
+  factory.registerNodeType<ros2_behavior_tree::PurePursuitNode2>("PurePursuit2");
   factory.registerNodeType<ros2_behavior_tree::RecoveryNode>("Recovery");
   factory.registerNodeType<ros2_behavior_tree::RepeatUntilNode>("RepeatUntil");
   factory.registerNodeType<ros2_behavior_tree::RoundRobinNode>("RoundRobin");

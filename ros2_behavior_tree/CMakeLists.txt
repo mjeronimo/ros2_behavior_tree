@@ -29,8 +29,11 @@ add_library(${library_name} SHARED
 )
 
 add_library(ros2_behavior_tree_nodes SHARED
-  src/pure_pursuit_node.cpp
+  src/libwaypoint_follower.cpp
   src/node_registrar.cpp
+  src/pure_pursuit_controller.cpp
+  src/pure_pursuit_node.cpp
+  src/pure_pursuit_node2.cpp
 )
 
 add_library(example_custom_nodes SHARED

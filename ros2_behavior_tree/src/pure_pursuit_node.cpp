@@ -20,6 +20,7 @@
 
 #include <cmath>
 #include <memory>
+#include <string>
 
 #include "geometry_msgs/msg/twist.hpp"
 #include "visualization_msgs/msg/marker.hpp"
@@ -29,11 +30,11 @@ using std::placeholders::_1;
 namespace ros2_behavior_tree
 {
 
-PurePursuitController::PurePursuitController(const std::string & name, const BT::NodeConfiguration & config)
+PurePursuitNode::PurePursuitNode(const std::string & name, const BT::NodeConfiguration & config)
 : BT::SyncActionNode(name, config)
 {
   if (!getInput<std::shared_ptr<rclcpp::Node>>("node_handle", node_)) {
-    throw BT::RuntimeError("Missing parameter [node_handle] in PurePursuitController node");
+    throw BT::RuntimeError("Missing parameter [node_handle] in PurePursuitNode node");
   }
 
   if (!getInput<std::shared_ptr<tf2_ros::Buffer>>("tf_buffer", tf_buffer_)) {
@@ -41,11 +42,11 @@ PurePursuitController::PurePursuitController(const std::string & name, const BT:
   }
 
   path_sub_ = node_->create_subscription<nav_msgs::msg::Path>(path_topic_name_, queue_depth_, std::bind(
-        &PurePursuitController::path_callback, this,
+        &PurePursuitNode::path_callback, this,
         _1));
 
   odom_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(odom_topic_name_, queue_depth_, std::bind(
-        &PurePursuitController::odometry_callback, this,
+        &PurePursuitNode::odometry_callback, this,
         _1));
 
   cmd_vel_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>(cmd_vel_topic_name_, queue_depth_);
@@ -54,24 +55,24 @@ PurePursuitController::PurePursuitController(const std::string & name, const BT:
     cmd_traj_topic_name_, queue_depth_);
 }
 
-PurePursuitController::~PurePursuitController()
+PurePursuitNode::~PurePursuitNode()
 {
 }
 
 geometry_msgs::msg::PoseStamped
-PurePursuitController::get_current_pose() const
+PurePursuitNode::get_current_pose() const
 {
   geometry_msgs::msg::PoseStamped pose;
   geometry_msgs::msg::PoseStamped transformed_pose;
 
   pose.header.frame_id = pose_frame_id_;
-  double transform_timeout = 0.1;   // TODO
+  double transform_timeout = 0.1;   // TODO(mjeronimo)
 
   try {
     // tf_listener_->transformPose(cur_ref_path_.header.frame_id, pose, transformed_pose);
     transformed_pose = tf_buffer_->transform(pose, cur_ref_path_.header.frame_id, tf2::durationFromSec(transform_timeout));
   } catch (tf2::TransformException & exception) {
-    RCLCPP_ERROR(node_->get_logger(), "PurePursuitController::get_current_pose: %s",
+    RCLCPP_ERROR(node_->get_logger(), "PurePursuitNode::get_current_pose: %s",
       exception.what());
   }
 
@@ -79,20 +80,20 @@ PurePursuitController::get_current_pose() const
 }
 
 void
-PurePursuitController::path_callback(const nav_msgs::msg::Path::SharedPtr msg)
+PurePursuitNode::path_callback(const nav_msgs::msg::Path::SharedPtr msg)
 {
   cur_ref_path_ = *msg;
   next_waypoint_ = -1;
 }
 
 void
-PurePursuitController::odometry_callback(const nav_msgs::msg::Odometry::SharedPtr msg)
+PurePursuitNode::odometry_callback(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
   current_velocity_ = msg->twist.twist;
 }
 
 BT::NodeStatus
-PurePursuitController::tick()
+PurePursuitNode::tick()
 {
   geometry_msgs::msg::Twist cmd_vel;
 
@@ -138,7 +139,7 @@ PurePursuitController::tick()
 }
 
 bool
-PurePursuitController::step(geometry_msgs::msg::Twist & twist)
+PurePursuitNode::step(geometry_msgs::msg::Twist & twist)
 {
   twist.linear.x = 0.0;
   twist.linear.y = 0.0;
@@ -178,17 +179,17 @@ PurePursuitController::step(geometry_msgs::msg::Twist & twist)
 }
 
 double
-PurePursuitController::get_lookahead_distance(const geometry_msgs::msg::PoseStamped & pose) const
+PurePursuitNode::get_lookahead_distance(const geometry_msgs::msg::PoseStamped & pose) const
 {
   geometry_msgs::msg::PoseStamped origin = get_current_pose();
   geometry_msgs::msg::PoseStamped transformed_pose;
-  double transform_timeout = 0.1; // TODO:
+  double transform_timeout = 0.1;  // TODO(mjeronimo)
 
   try {
     transformed_pose = tf_buffer_->transform(pose, cur_ref_path_.header.frame_id, tf2::durationFromSec(transform_timeout));
   } catch (tf2::TransformException & exception) {
     RCLCPP_ERROR(node_->get_logger(),
-      "PurePursuitController::get_lookahead_distance: %s", exception.what());
+      "PurePursuitNode::get_lookahead_distance: %s", exception.what());
     return -1.0;
   }
 
@@ -204,18 +205,18 @@ PurePursuitController::get_lookahead_distance(const geometry_msgs::msg::PoseStam
 }
 
 double
-PurePursuitController::get_lookahead_angle(const geometry_msgs::msg::PoseStamped & pose) const
+PurePursuitNode::get_lookahead_angle(const geometry_msgs::msg::PoseStamped & pose) const
 {
   geometry_msgs::msg::PoseStamped origin = get_current_pose();
   geometry_msgs::msg::PoseStamped transformed_pose;
 
-  double transform_timeout = 0.1; // TODO
+  double transform_timeout = 0.1;  // TODO(mjeronimo)
 
   try {
     transformed_pose = tf_buffer_->transform(pose, cur_ref_path_.header.frame_id, tf2::durationFromSec(transform_timeout));
   } catch (tf2::TransformException & exception) {
     RCLCPP_ERROR(node_->get_logger(),
-      "PurePursuitController::get_lookahead_angle: %s", exception.what());
+      "PurePursuitNode::get_lookahead_angle: %s", exception.what());
     return -1.0;
   }
 
@@ -231,13 +232,13 @@ PurePursuitController::get_lookahead_angle(const geometry_msgs::msg::PoseStamped
 }
 
 double
-PurePursuitController::get_lookahead_threshold() const
+PurePursuitNode::get_lookahead_threshold() const
 {
   return lookahead_ratio_ * current_velocity_.linear.x;
 }
 
 double
-PurePursuitController::get_arc_distance(const geometry_msgs::msg::PoseStamped & pose) const
+PurePursuitNode::get_arc_distance(const geometry_msgs::msg::PoseStamped & pose) const
 {
   double lookAheadDistance = get_lookahead_distance(pose);
   double lookAheadAngle = get_lookahead_angle(pose);
@@ -250,7 +251,7 @@ PurePursuitController::get_arc_distance(const geometry_msgs::msg::PoseStamped & 
 }
 
 int
-PurePursuitController::get_next_waypoint(int /*wayPoint*/) const
+PurePursuitNode::get_next_waypoint(int /*wayPoint*/) const
 {
   if (!cur_ref_path_.poses.empty()) {
     if (next_waypoint_ >= 0) {
@@ -280,7 +281,7 @@ PurePursuitController::get_next_waypoint(int /*wayPoint*/) const
 }
 
 int
-PurePursuitController::get_closest_waypoint() const
+PurePursuitNode::get_closest_waypoint() const
 {
   if (!cur_ref_path_.poses.empty()) {
     int closestWaypoint = -1;
@@ -302,7 +303,7 @@ PurePursuitController::get_closest_waypoint() const
 }
 
 bool
-PurePursuitController::get_interpolated_pose(
+PurePursuitNode::get_interpolated_pose(
   int wayPoint, geometry_msgs::msg::PoseStamped & interpolatedPose) const
 {
   if (!cur_ref_path_.poses.empty()) {

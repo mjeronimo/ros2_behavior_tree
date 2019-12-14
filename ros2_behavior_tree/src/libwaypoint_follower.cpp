@@ -50,17 +50,19 @@ static inline void pointMsgToTF(const geometry_msgs::msg::Point& msg_v, tf2::Poi
 int
 WayPoints::getSize() const
 {
-  if (current_waypoints_.waypoints.empty())
+  if (current_waypoints_.waypoints.empty()) {
     return 0;
-  else
+  } else {
     return current_waypoints_.waypoints.size();
+  }
 }
 
 double
 WayPoints::getInterval() const
 {
-  if (current_waypoints_.waypoints.empty())
+  if (current_waypoints_.waypoints.empty()) {
     return 0;
+  }
 
   // interval between 2 waypoints
   tf2::Vector3 v1(current_waypoints_.waypoints[0].pose.pose.position.x,
@@ -75,8 +77,9 @@ geometry_msgs::msg::Point
 WayPoints::getWaypointPosition(int waypoint) const
 {
   geometry_msgs::msg::Point p;
-  if (waypoint > getSize() - 1 || waypoint < 0)
+  if (waypoint > getSize() - 1 || waypoint < 0) {
     return p;
+  }
 
   p = current_waypoints_.waypoints[waypoint].pose.pose.position;
   return p;
@@ -86,8 +89,9 @@ geometry_msgs::msg::Quaternion
 WayPoints::getWaypointOrientation(int waypoint) const
 {
   geometry_msgs::msg::Quaternion q;
-  if (waypoint > getSize() - 1 || waypoint < 0)
+  if (waypoint > getSize() - 1 || waypoint < 0) {
     return q;
+  }
 
   q = current_waypoints_.waypoints[waypoint].pose.pose.orientation;
   return q;
@@ -97,8 +101,9 @@ geometry_msgs::msg::Pose
 WayPoints::getWaypointPose(int waypoint) const
 {
   geometry_msgs::msg::Pose pose;
-  if (waypoint > getSize() - 1 || waypoint < 0)
+  if (waypoint > getSize() - 1 || waypoint < 0) {
     return pose;
+  }
 
   pose = current_waypoints_.waypoints[waypoint].pose.pose;
   return pose;
@@ -107,8 +112,9 @@ WayPoints::getWaypointPose(int waypoint) const
 double
 WayPoints::getWaypointVelocityMPS(int waypoint) const
 {
-  if (waypoint > getSize() - 1 || waypoint < 0)
+  if (waypoint > getSize() - 1 || waypoint < 0) {
     return 0;
+  }
 
   return current_waypoints_.waypoints[waypoint].twist.twist.linear.x;
 }
@@ -118,10 +124,11 @@ WayPoints::isFront(int waypoint, geometry_msgs::msg::Pose current_pose) const
 {
   double x = calcRelativeCoordinate(current_waypoints_.waypoints[waypoint].pose.pose.position, current_pose).x;
 
-  if (x < 0)
+  if (x < 0) {
     return false;
-  else
+  } else {
     return true;
+  }
 }
 
 double
@@ -209,23 +216,27 @@ getClosestWaypoint(const ros2_behavior_tree_msgs::msg::Lane &current_path, geome
   WayPoints wp;
   wp.setPath(current_path);
 
-  if (wp.isEmpty())
+  if (wp.isEmpty()) {
     return -1;
+  }
 
   // search closest candidate within a certain meter
   double search_distance = 5.0;
   std::vector<int> waypoint_candidates;
   for (int i = 1; i < wp.getSize(); i++)
   {
-    if (getPlaneDistance(wp.getWaypointPosition(i), current_pose.position) > search_distance)
+    if (getPlaneDistance(wp.getWaypointPosition(i), current_pose.position) > search_distance) {
       continue;
+    }
 
-    if (!wp.isFront(i, current_pose))
+    if (!wp.isFront(i, current_pose)) {
       continue;
+    }
 
     double angle_threshold = 90;
-    if (getRelativeAngle(wp.getWaypointPose(i), current_pose) > angle_threshold)
+    if (getRelativeAngle(wp.getWaypointPose(i), current_pose) > angle_threshold) {
       continue;
+    }
 
     waypoint_candidates.push_back(i);
   }
@@ -234,8 +245,7 @@ getClosestWaypoint(const ros2_behavior_tree_msgs::msg::Lane &current_path, geome
   if (!waypoint_candidates.empty()) {
     int waypoint_min = -1;
     double distance_min = DBL_MAX;
-    for (auto el : waypoint_candidates)
-    {
+    for (auto el : waypoint_candidates) {
       // ROS_INFO("closest_candidates : %d",el);
       double d = getPlaneDistance(wp.getWaypointPosition(el), current_pose.position);
       if (d < distance_min)
@@ -252,15 +262,15 @@ getClosestWaypoint(const ros2_behavior_tree_msgs::msg::Lane &current_path, geome
     double distance_min = DBL_MAX;
     for (int i = 1; i < wp.getSize(); i++)
     {
-      if (!wp.isFront(i, current_pose))
+      if (!wp.isFront(i, current_pose)) {
         continue;
+      }
 
       // if (!wp.isValid(i, current_pose))
       //  continue;
 
       double d = getPlaneDistance(wp.getWaypointPosition(i), current_pose.position);
-      if (d < distance_min)
-      {
+      if (d < distance_min) {
         waypoint_min = i;
         distance_min = d;
       }
@@ -279,8 +289,7 @@ getLinearEquation(geometry_msgs::msg::Point start, geometry_msgs::msg::Point end
   double sub_y = fabs(start.y - end.y);
   double error = pow(10, -5);  // 0.00001
 
-  if (sub_x < error && sub_y < error)
-  {
+  if (sub_x < error && sub_y < error) {
     // ROS_INFO("two points are the same point!!");
     return false;
   }

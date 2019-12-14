@@ -1,0 +1,11 @@
+static const char bt_xml[] =
+  R"(
+<root main_tree_to_execute="HelloWorld">
+  <BehaviorTree ID="HelloWorld">
+    <Sequence name="SayHello">
+      <Message msg="Hello,"/>
+      <Message msg="World!"/>
+    </Sequence>
+  </BehaviorTree>
+</root>
+)";

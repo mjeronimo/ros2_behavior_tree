@@ -1,0 +1,33 @@
+static const char bt_xml[] =
+  R"(
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <Sequence name="FollowTheLeader">
+      <Sequence name="startup">
+        <CreateROS2Node node_name="node1" namespace="" spin="true" node_handle="{ros_node_1}"/>
+        <CreateTransformBuffer node_handle="{ros_node_1}" tf_buffer="{tf_1}"/>
+        <Recovery num_retries="7">
+          <Sequence>
+            <Message msg="Trying transforms..."/>
+            <CanTransform node_handle="{ros_node_1}" tf_buffer="{tf_1}" source_frame="base_link" target_frame="map"/>
+          </Sequence>
+          <Sequence>
+            <Message msg="Waiting for base_link to map transform to become available..."/>
+            <AsyncWait msec="2000"/>
+          </Sequence>
+        </Recovery>
+      </Sequence>
+      <Forever>
+        <PipelineSequence>
+          <Sequence>
+            <Message msg="Computing path to the goal"/>
+            <ComputePathToPose action_name="compute_path_to_pose" server_timeout="1000" ros2_node="{ros_node_1}" goal="1.7,0.5,1.4;0,0,0,-1" planner_id="GridBased" path="{path_to_follow}"/>
+            <AsyncWait msec="1000"/>
+          </Sequence>
+          <PurePursuit2 node_handle="{ros_node_1}" tf_buffer="{tf_1}"/> <!-- path="{path_to_follow}"/> -->
+        </PipelineSequence>
+      </Forever>
+    </Sequence>
+  </BehaviorTree>
+</root>
+)";

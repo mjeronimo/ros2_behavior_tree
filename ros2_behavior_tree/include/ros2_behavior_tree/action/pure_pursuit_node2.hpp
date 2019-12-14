@@ -46,6 +46,9 @@ protected:
   std::shared_ptr<rclcpp::Node> node_;
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::unique_ptr<PurePursuitController> controller_;
+
+  std::string cmd_vel_topic_name_{"cmd_vel"};
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub_;
 };
 
 }  // namespace ros2_behavior_tree

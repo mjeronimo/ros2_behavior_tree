@@ -46,7 +46,7 @@ private:
 
       case BT::NodeStatus::FAILURE:
       default:
-        child_node_->setStatus(BT::NodeStatus::IDLE);
+        child_node_->halt();
         return BT::NodeStatus::FAILURE;
     }
   }

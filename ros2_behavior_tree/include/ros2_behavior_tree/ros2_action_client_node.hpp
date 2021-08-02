@@ -27,11 +27,11 @@ namespace ros2_behavior_tree
 {
 
 template<class ActionT>
-class ROS2ActionClientNode : public BT::CoroActionNode
+class ROS2ActionClientNode : public BT::AsyncActionNode
 {
 public:
   ROS2ActionClientNode(const std::string & name, const BT::NodeConfiguration & config)
-  : BT::CoroActionNode(name, config)
+  : BT::AsyncActionNode(name, config)
   {
     // Initialize the input and output messages
     goal_ = typename ActionT::Goal();
@@ -140,9 +140,6 @@ new_goal_received:
             goto new_goal_received;
           }
         }
-
-        // Yield to any other CoroActionNodes (coroutines)
-        setStatusRunningAndYield();
       }
     } while (rc != std::future_status::ready);
 
@@ -175,7 +172,7 @@ new_goal_received:
       }
     }
 
-    CoroActionNode::halt();
+    AsyncActionNode::halt();
   }
 
 protected:

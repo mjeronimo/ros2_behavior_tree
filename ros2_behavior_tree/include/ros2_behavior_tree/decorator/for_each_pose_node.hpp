@@ -22,7 +22,7 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
 namespace ros2_behavior_tree
 {

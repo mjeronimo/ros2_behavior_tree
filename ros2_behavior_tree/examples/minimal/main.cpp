@@ -18,7 +18,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "ros2_behavior_tree/behavior_tree.hpp"
 
-#if 0
+#if 1
 // The Behavior Tree to execute. This tree simple prints "Hello," and
 // "World!" on separate lines and then terminates.
 static const char bt_xml[] =

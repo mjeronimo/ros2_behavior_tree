@@ -60,12 +60,12 @@ BehaviorTree::execute(
   BT::NodeStatus result = BT::NodeStatus::RUNNING;
   while (rclcpp::ok() && result == BT::NodeStatus::RUNNING) {
     if (should_halt()) {
-      tree.root_node->halt();
+      tree.rootNode()->halt();
       return BtStatus::HALTED;
     }
 
     // Execute one tick of the tree
-    result = tree.root_node->executeTick();
+    result = tree.rootNode()->executeTick();
 
     // Give the caller a chance to do something on each loop iteration
     on_loop_iteration();

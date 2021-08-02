@@ -44,7 +44,8 @@ struct TestRoundRobinNode : testing::Test
 
   ~TestRoundRobinNode()
   {
-    BT::haltAllActions(root_.get());
+    //BT::haltAllActions(root_.get());
+    root_->halt();
   }
 
   std::unique_ptr<ros2_behavior_tree::RoundRobinNode> root_;

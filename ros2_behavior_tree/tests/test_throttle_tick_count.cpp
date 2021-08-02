@@ -48,7 +48,8 @@ struct TestThrottleTickRateNode : testing::Test
 
   ~TestThrottleTickRateNode()
   {
-    BT::haltAllActions(root_.get());
+    //BT::haltAllActions(root_.get());
+    root_->halt();
   }
 
   std::unique_ptr<ros2_behavior_tree::ThrottleTickRateNode> root_;

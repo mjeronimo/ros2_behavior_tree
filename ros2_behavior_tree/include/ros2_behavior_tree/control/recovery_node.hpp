@@ -91,7 +91,7 @@ public:
       if (current_child_idx_ == 0) {
         switch (child_status) {
           case BT::NodeStatus::SUCCESS:
-            haltChildren(0);
+            haltChildren();
             return BT::NodeStatus::SUCCESS;
 
           case BT::NodeStatus::FAILURE:
@@ -100,7 +100,7 @@ public:
               current_child_idx_++;
               break;
             } else {
-              haltChildren(0);
+              haltChildren();
               return BT::NodeStatus::FAILURE;
             }
 
@@ -120,7 +120,7 @@ public:
             break;
 
           case BT::NodeStatus::FAILURE:
-            haltChildren(0);
+            haltChildren();
             return BT::NodeStatus::FAILURE;
 
           case BT::NodeStatus::RUNNING:
@@ -133,7 +133,7 @@ public:
       }
     }
 
-    haltChildren(0);
+    haltChildren();
     return BT::NodeStatus::FAILURE;
   }
 

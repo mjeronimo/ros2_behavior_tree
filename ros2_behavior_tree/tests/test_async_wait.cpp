@@ -36,7 +36,8 @@ struct TestAsyncWaitNode : testing::Test
 
   ~TestAsyncWaitNode()
   {
-    BT::haltAllActions(async_wait_node_.get());
+    //BT::haltAllActions(async_wait_node_.get());
+    async_wait_node_->halt();
   }
 
   BT::Blackboard::Ptr blackboard_;

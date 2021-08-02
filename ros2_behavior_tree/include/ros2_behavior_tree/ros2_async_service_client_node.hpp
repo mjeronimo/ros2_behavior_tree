@@ -27,11 +27,11 @@ namespace ros2_behavior_tree
 {
 
 template<class ServiceT>
-class ROS2AsyncServiceClientNode : public BT::CoroActionNode
+class ROS2AsyncServiceClientNode : public BT::AsyncActionNode
 {
 public:
   ROS2AsyncServiceClientNode(const std::string & name, const BT::NodeConfiguration & config)
-  : BT::CoroActionNode(name, config)
+  : BT::AsyncActionNode(name, config)
   {
     request_ = std::make_shared<typename ServiceT::Request>();
     response_ = std::make_shared<typename ServiceT::Response>();
@@ -104,8 +104,6 @@ public:
           return BT::NodeStatus::SUCCESS;
 
         case std::future_status::timeout:
-          // Yield to any other CoroActionNodes (coroutines)
-          setStatusRunningAndYield();
           break;
 
         default:

@@ -47,7 +47,8 @@ struct TestRepeatUntilNode : testing::Test
 
   ~TestRepeatUntilNode()
   {
-    BT::haltAllActions(root_.get());
+    //BT::haltAllActions(root_.get());
+    root_->halt();
   }
 
   std::unique_ptr<ros2_behavior_tree::RepeatUntilNode> root_;

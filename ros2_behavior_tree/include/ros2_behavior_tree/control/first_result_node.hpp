@@ -43,11 +43,11 @@ public:
 
       switch (child_status) {
         case BT::NodeStatus::SUCCESS:
-          haltChildren(0);
+          haltChildren();
           return BT::NodeStatus::SUCCESS;
 
         case BT::NodeStatus::FAILURE:
-          haltChildren(0);
+          haltChildren();
           return BT::NodeStatus::FAILURE;
 
         case BT::NodeStatus::RUNNING:

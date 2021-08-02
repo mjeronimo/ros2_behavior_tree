@@ -81,7 +81,7 @@ protected:
       auto status = children_nodes_[i]->executeTick();
       switch (status) {
         case BT::NodeStatus::FAILURE:
-          haltChildren(0);
+          haltChildren();
           last_child_ticked_ = 0;  // reset
           return status;
           break;
@@ -108,7 +108,7 @@ protected:
       }
     }
     // Wrap up
-    haltChildren(0);
+    haltChildren();
     last_child_ticked_ = 0;  // reset
     return BT::NodeStatus::SUCCESS;
   }

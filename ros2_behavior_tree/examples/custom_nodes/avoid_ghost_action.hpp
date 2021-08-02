@@ -23,11 +23,11 @@
 namespace ros2_behavior_tree
 {
 
-class AvoidGhostAction : public BT::CoroActionNode
+class AvoidGhostAction : public BT::AsyncActionNode
 {
 public:
   explicit AvoidGhostAction(const std::string & action_name)
-  : BT::CoroActionNode(action_name, {})
+  : BT::AsyncActionNode(action_name, {})
   {
   }
 
@@ -49,11 +49,10 @@ public:
       }
 
       if (!ghost_avoided) {
-        std::cerr << "<";
+        //std::cerr << "<";
 
         // Set status to RUNNING and "pause/sleep"
         // If halt() is called, we will NOT resume execution
-        setStatusRunningAndYield();
       }
     }
 
@@ -67,7 +66,7 @@ public:
     // There may be some work to do upon halting. If not, this method can be omitted and the
     // base classes halt() method will be called
 
-    CoroActionNode::halt();
+    AsyncActionNode::halt();
   }
 };
 

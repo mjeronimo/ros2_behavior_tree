@@ -44,7 +44,7 @@ public:
 
   void read_input_ports(ComputePathToPose::Goal & goal) override
   {
-    if (!getInput<geometry_msgs::msg::PoseStamped>("goal", goal.pose)) {
+    if (!getInput<geometry_msgs::msg::PoseStamped>("goal", goal.goal)) {
       throw BT::RuntimeError("Missing parameter [goal] in ComputePathToPoseNode node");
     }
 

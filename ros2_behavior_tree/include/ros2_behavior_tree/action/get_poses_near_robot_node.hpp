@@ -24,7 +24,7 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "builtin_interfaces/msg/duration.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "visualization_msgs/msg/marker.hpp"
 
 #pragma GCC diagnosbuild/ros2_behavior_tree/minimal --ros-args -r node1:/tf:=/robot1/tf -r node1:/tf_static:=/robot1/tf_static -r node2:/tf:=/robot2/tf -r node2:/tf_static:=/robot2/tf_static --param use_sim_time:=True
@@ -193,7 +193,7 @@ public:
     marker.scale.z = 0.1;
 
     // 0 indicates the object should last forever
-    marker.lifetime = rclcpp::Duration(0);
+    marker.lifetime = rclcpp::Duration::from_nanoseconds(0);
 
     marker.frame_locked = false;
 
